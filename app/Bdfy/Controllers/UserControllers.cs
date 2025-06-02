@@ -15,65 +15,81 @@ namespace BDfy.Controllers
     {
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] RegisterDto Dto, BDfyDbContext db)
-        {   
-            using var transaction = await db.Database.BeginTransactionAsync();
-
-            if (!ModelState.IsValid)
+        {
+            try
             {
-                return BadRequest(ModelState);
+                using var transaction = await db.Database.BeginTransactionAsync();
+
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                //Lo creo porque al instanciarlo generamos un id unico, que luego usamos en userdetails.
+                var user = new User
+                {
+                    FirstName = Dto.FirstName,
+                    LastName = Dto.LastName,
+                    Email = Dto.Email,
+                    Password = Dto.Password,
+                    Ci = Dto.Ci,
+                    Phone = Dto.Phone,
+                    Role = Dto.Role,
+                    Reputation = 75,
+                    Direction = Dto.Direction,
+                };
+
+                db.Users.Add(user);
+                await db.SaveChangesAsync();
+
+
+                if (Dto.Role == UserRole.Buyer && Dto.Details != null)
+                {
+                    var UserObject = ((JsonElement)Dto.Details).Deserialize<UserDetailsDto>(); //deserializo el json a objecta para poder utlizarlo
+
+                    if (UserObject != null) //Verifico que el objeto no sean nulo
+                    {
+                        var detailsUser = new UserDetails //instanciamos userdetails para crear los details
+                        {
+                            UserId = user.Id, //le asigno el user id generado en la instancia user
+                            IsAdmin = UserObject.IsAdmin //El objeto que deserialize tiene si es admin o no
+                        };
+                        db.UserDetails.Add(detailsUser);
+                        await db.SaveChangesAsync();
+                        return Created();
+
+                    }
+                    else { return BadRequest("Error: User details missing"); }
+                }
+
+                else if (Dto.Role == UserRole.Auctioneer && Dto.Details != null) //Validacion segun roles
+                {
+                    var AuctioneerObject = ((JsonElement)Dto.Details).Deserialize<AuctioneerDetailsDto>(); //deserializo de json a objeto para poder utlizarlo
+                    if (AuctioneerObject != null) //verifico que el objeto no sea nulo
+                    {
+                        var detailsAuctioneer = new AuctioneerDetails
+                        {
+                            //UserId = user.Id,
+                            // Plate = AuctioneerObject.Plate 
+                        };
+                        db.AuctioneerDetails.Add(detailsAuctioneer);
+                        await db.SaveChangesAsync();
+                        return Created();
+                    }
+                    else { return BadRequest("Error: Auctioneer details missing"); }
+                }
+                return BadRequest("Error: Invalid user role or details missing");
+
             }
-            var user = new User
+            catch (Exception ex) //
             {
-                FirstName = Dto.FirstName,
-                LastName = Dto.LastName,
-                Email = Dto.Email,
-                Password = Dto.Password,
-                Ci = Dto.Ci,
-                Phone = Dto.Phone,
-                Role = Dto.Role,
-                Reputation = 75,
-                Direction = Dto.Direction,
-            };
-
-            db.Users.Add(user);
-            await db.SaveChangesAsync();
-
-
-             if (Dto.Role == UserRole.Buyer && Dto.Details != null)
-             {
-                 var UserObject = ((JsonElement)Dto.Details).Deserialize<UserDetailsDto>();
-
-                     if (UserObject != null)
-                     {
-                    var details = new UserDetails{
-                        UserId =  user.Id,
-                        IsAdmin = UserObject.IsAdmin
-                    };
-                   
-                );
-                   }
-                else if (Dto.Role == UserRole.Auctioneer && Dto.Details != null)
-            {
-                var AuctioneerObject = ((JsonElement)Dto.Details).Deserialize<AuctioneerDetailsDto>();
+                var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return BadRequest($"Error inesperado al crear usuario: {errorMessage}");
             }
 
-            }
 
-                return Ok();
         }
+        
     }
 
 }
-
-// object? Details -----> C#
-
-// dto.Details ----> JSON
-
-// if (dto.Role == UserRole.Buyer){ // Buyer es UserDetails
-
-// 	-Desearilazar el objecto (detailsObject) / JSON a C# Obj
-// 	-Verificar que no este null
-// 	-Usar el objeto (var details = new UserDetails(UserId = user.Id, IsAdmin = detailsObject.IsAdmin))
-// 	-Guardar el details en la base de datos (userdetails // Tabla)
-// 	-using var transaction = await db.Database.BeginTransactionAsync();
-// }
