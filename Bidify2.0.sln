@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bdfy", "Bdfy\Bdfy.csproj", "{27F2301F-98A9-5A3F-B827-BFD3C80D480D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{27F2301F-98A9-5A3F-B827-BFD3C80D480D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27F2301F-98A9-5A3F-B827-BFD3C80D480D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27F2301F-98A9-5A3F-B827-BFD3C80D480D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27F2301F-98A9-5A3F-B827-BFD3C80D480D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8B59A8FF-72D9-4E46-AE39-97FE26DE2496}
+	EndGlobalSection
+EndGlobal
