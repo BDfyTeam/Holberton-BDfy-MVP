@@ -8,8 +8,7 @@ using System.Text.Json;
 namespace BDfy.Controllers
 {
     [ApiController]
-    [Route("api/1.0/users/[controller]")]
-    [ApiExplorerSettings(GroupName = "Users")]
+    [Route("api/1.0/users")]
 
     public class UsersController : ControllerBase
     {
