@@ -17,6 +17,7 @@ namespace BDfy.Models
         [InverseProperty("Winner")]
         public List<Lot> Lots { get; set; } = [];
         
+        [ForeignKey("UserId")]
         public User User { get; set; } = null!;
 
         public UserDetails() { } // EF
