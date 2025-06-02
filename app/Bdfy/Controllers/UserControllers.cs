@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using BDfy.Dtos;
 using System.Data.Common;
+using BDfy.Data;
+using BDfy.Models;
+using System.Text.Json;
 
 namespace BDfy.Controllers
 {
@@ -11,7 +14,7 @@ namespace BDfy.Controllers
     public class UsersController : ControllerBase
     {
         [HttpPost("register")]
-        public async Task<ActionResult> Register([FromBody] RegisterDto Dto)
+        public async Task<ActionResult> Register([FromBody] RegisterDto Dto, BDfyDbContext db)
         {   
             using var transaction = await db.Database.BeginTransactionAsync();
 
@@ -19,40 +22,42 @@ namespace BDfy.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var user = new RegisterDto
-            (
-                Dto.FirstName,
-                Dto.LastName,
-                Dto.Email,
-                Dto.Password,
-                Dto.Ci,
-                Dto.Phone,
-                Dto.Role,
-                Dto.Direction,
-                Dto.Details
-            );
+            var user = new User
+            {
+                FirstName = Dto.FirstName,
+                LastName = Dto.LastName,
+                Email = Dto.Email,
+                Password = Dto.Password,
+                Ci = Dto.Ci,
+                Phone = Dto.Phone,
+                Role = Dto.Role,
+                Reputation = 75,
+                Direction = Dto.Direction,
+            };
 
-            // db.users.Add(user);
-            // await db.SaveChangeAsync();
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
 
 
+             if (Dto.Role == UserRole.Buyer && Dto.Details != null)
+             {
+                 var UserObject = ((JsonElement)Dto.Details).Deserialize<UserDetailsDto>();
 
-            // if (Dto.Role == UserRole.Buyer && Dto.Details != null)
-            // {
-            //     var UserObject = ((JsonElement)Dto.Details).Deserialize<UserDetailsDto>();
-
-            //         if (UserObject != null)
-            //         {
-            //             var details = new UserDetails
+                     if (UserObject != null)
+                     {
+                    var details = new UserDetails{
+                        UserId =  user.Id,
+                        IsAdmin = UserObject.IsAdmin
+                    };
                    
-            //     );
-            //        }
-            //     else if (Dto.Role == UserRole.Auctioneer && Dto.Details != null)
-            // {
-            //     var AuctioneerObject = ((JsonElement)Dto.Details).Deserialize<AuctioneerDetailsDto>();
-            // }
+                );
+                   }
+                else if (Dto.Role == UserRole.Auctioneer && Dto.Details != null)
+            {
+                var AuctioneerObject = ((JsonElement)Dto.Details).Deserialize<AuctioneerDetailsDto>();
+            }
 
-            // }
+            }
 
                 return Ok();
         }

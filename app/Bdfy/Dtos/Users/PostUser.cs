@@ -1,4 +1,4 @@
-
+using BDfy.Models;
 
 namespace BDfy.Dtos
 {
@@ -9,8 +9,8 @@ namespace BDfy.Dtos
 		string LastName,
 		string Email,
 		string Password,
-		int Ci,
-		int Phone,
+		string Ci,
+		string Phone,
 		UserRole Role,
 		Direction Direction,
 		object? Details
