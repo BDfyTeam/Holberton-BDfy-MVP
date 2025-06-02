@@ -8,7 +8,7 @@ namespace BDfy.Models
         [Column("user_id")]
         [ForeignKey("User")]
         [Required]
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Column("is_admin")]
         [Required]

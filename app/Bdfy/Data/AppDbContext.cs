@@ -3,9 +3,9 @@ using BDfy.Models;
 
 namespace BDfy.Data
 {
-    public class BdfyDbContext : DbContext
+    public class BDfyDbContext : DbContext
     {
-        public BdfyDbContext(DbContextOptions<BdfyDbContext> options)
+        public BDfyDbContext(DbContextOptions<BDfyDbContext> options)
             : base(options)
         {
         }
