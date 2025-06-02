@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using BDfy.Dtos;
-using System.Data.Common;
 using BDfy.Data;
 using BDfy.Models;
 using System.Text.Json;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
+using System.IdentityModel.Tokens.Jwt;
+
 
 namespace BDfy.Controllers
 {
@@ -25,23 +30,45 @@ namespace BDfy.Controllers
                     return BadRequest(ModelState);
                 }
                 //Lo creo porque al instanciarlo generamos un id unico, que luego usamos en userdetails.
+                var passwordHasher = new PasswordHasher<User>();
                 var user = new User
                 {
                     FirstName = Dto.FirstName,
                     LastName = Dto.LastName,
                     Email = Dto.Email,
-                    Password = Dto.Password,
-                    Ci = Dto.Ci,
                     Phone = Dto.Phone,
                     Role = Dto.Role,
                     Reputation = 75,
                     Direction = Dto.Direction,
                 };
+                user.Password = passwordHasher.HashPassword(user, Dto.Password);
 
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
 
+                var claims = new List<Claim> //genera los claims mapeados a los de user
+                {
+                    new("Id", user.Id.ToString()),
+                    new("email", user.Email),
+                    new("Role", user.Role.ToString())
+                };
 
+                string _secretKey = "Impossible_to_get_this_key"; //key secreta para el token para todos
+
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey)); //Paso la secret key que es un string a bytes
+
+                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);//Genero las credencial con un algoritmo
+
+                var tokeOptions = new JwtSecurityToken(//parametros que queremos guardar en el jwt token
+                issuer: "http://localhost:5015",
+                audience: "http://localhost:5015/api/1.0/users/register",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(60),
+                signingCredentials: signinCredentials
+                );
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+
+           
                 if (Dto.Role == UserRole.Buyer && Dto.Details != null)
                 {
                     var UserObject = ((JsonElement)Dto.Details).Deserialize<UserDetailsDto>(); //deserializo el json a objecta para poder utlizarlo
@@ -55,7 +82,7 @@ namespace BDfy.Controllers
                         };
                         db.UserDetails.Add(detailsUser);
                         await db.SaveChangesAsync();
-                        return Created();
+                        return Ok(new { Token = tokenString });
 
                     }
                     else { return BadRequest("Error: User details missing"); }
@@ -85,9 +112,12 @@ namespace BDfy.Controllers
                 var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 return BadRequest($"Error inesperado al crear usuario: {errorMessage}");
             }
-
+        
 
         }
+        // [HttpPost("login")]
+
+        // public async Task<ActionResult> Login([FromBody] RegisterDto Dto, BDfyDbContext db){}
         
     }
 

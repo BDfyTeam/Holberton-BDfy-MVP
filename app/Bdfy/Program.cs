@@ -1,6 +1,9 @@
 using BDfy.Data;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -27,6 +30,21 @@ builder.Services.AddSwaggerGen(c =>
         var groupName = apiDesc.GroupName ?? "v1";
         return docName == groupName;
     });
+});
+
+
+builder.Services.AddAuthentication().AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "https://localhost:7134",
+        ValidAudience = "https://localhost:7134",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Impossible_to_get_this_key"))
+    };
 });
 
 var app = builder.Build();
