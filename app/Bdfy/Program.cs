@@ -1,8 +1,9 @@
 using BDfy.Data;
+using BDfy.Controllers;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddControllers();
 builder.Services.AddDbContext<BDfyDbContext>(options =>
     options
         // .UseLazyLoadingProxies() // LazyMode para BiddingHistory
@@ -14,10 +15,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.MapControllers();
 app.Run();
