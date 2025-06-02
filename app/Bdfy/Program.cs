@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<BdfyDbContext>(options =>
+builder.Services.AddDbContext<BDfyDbContext>(options =>
     options
         // .UseLazyLoadingProxies() // LazyMode para BiddingHistory
         .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
