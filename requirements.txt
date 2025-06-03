@@ -10,5 +10,6 @@ dotnet add package RabbitMQ.Client
 dotnet add package Microsoft.AspNetCore.SignalR
 sudo apt-get install rabbitmq-server
 sudo systemctl enable rabbitmq-server
-
-pip install psycopg2-binary --break-system-packages // script crear database
+dotnet add package System.IdentityModel.Tokens.Jwt
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.5
+pip install psycopg2-binary --break-system-packages //script crear database

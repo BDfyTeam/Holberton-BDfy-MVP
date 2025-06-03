@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using BDfy.Dtos;
-using System.Data.Common;
 using BDfy.Data;
 using BDfy.Models;
 using System.Text.Json;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
+using System.IdentityModel.Tokens.Jwt;
+
 
 namespace BDfy.Controllers
 {
@@ -25,21 +30,43 @@ namespace BDfy.Controllers
                     return BadRequest(ModelState);
                 }
                 //Lo creo porque al instanciarlo generamos un id unico, que luego usamos en userdetails.
+                var passwordHasher = new PasswordHasher<User>();
                 var user = new User
                 {
                     FirstName = Dto.FirstName,
                     LastName = Dto.LastName,
                     Email = Dto.Email,
-                    Password = Dto.Password,
-                    Ci = Dto.Ci,
                     Phone = Dto.Phone,
                     Role = Dto.Role,
                     Reputation = 75,
                     Direction = Dto.Direction,
                 };
+                user.Password = passwordHasher.HashPassword(user, Dto.Password);
 
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
+
+                var claims = new List<Claim> //genera los claims mapeados a los de user
+                {
+                    new("Id", user.Id.ToString()),
+                    new("email", user.Email),
+                    new("Role", user.Role.ToString())
+                };
+
+                string _secretKey = "Impossible_to_get_this_key"; //key secreta para el token para todos
+
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey)); //Paso la secret key que es un string a bytes
+
+                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);//Genero las credencial con un algoritmo
+
+                var tokeOptions = new JwtSecurityToken(//parametros que queremos guardar en el jwt token
+                issuer: "http://localhost:5015",
+                audience: "http://localhost:5015/api/1.0/users/register",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(60),
+                signingCredentials: signinCredentials
+                );
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
 
 
                 if (Dto.Role == UserRole.Buyer && Dto.Details != null)
@@ -55,7 +82,7 @@ namespace BDfy.Controllers
                         };
                         db.UserDetails.Add(detailsUser);
                         await db.SaveChangesAsync();
-                        return Created();
+                        return Ok(new { Token = tokenString });
 
                     }
                     else { return BadRequest("Error: User details missing"); }
@@ -88,7 +115,40 @@ namespace BDfy.Controllers
 
 
         }
+        [HttpPost("login")]
+        public async Task<ActionResult> Login([FromBody] LoginUserDto Dto, BDfyDbContext db)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var email = await db.Users.FindAsync(Dto.Email);
+
+                if (email == null) { return NotFound("Email not found."); }
+                else
+                {
+                    
+                }
+
+                
+
+
+            }
+            catch (Exception ex)
+            {
+            }
+            ;  
+        }
         
+        				Receta Login:
+				 //1-Validar Modelo -checked
+				// 2-verificar si el email que llega existe en la db -checked
+				// -si esta seguimos
+				// -en caso que no error
+				// 3-generar el claim del jwt token
+				// 4-retornar jwt token
     }
 
 }
