@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace BDfy.Controllers
@@ -184,7 +185,7 @@ namespace BDfy.Controllers
                     new("Id", user.Id.ToString()),
                     new("email", user.Email),
                     new("Role", user.Role.ToString())
-                
+
                 };
 
                 string _secretKey = "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; //key secreta para el token para todos
@@ -214,7 +215,7 @@ namespace BDfy.Controllers
                 else if (user.Role == UserRole.Auctioneer) return Ok(new { Token = tokenString });
 
                 return Ok();
-                
+
 
 
             }
@@ -224,7 +225,30 @@ namespace BDfy.Controllers
                 return BadRequest($"Error inesperado al crear usuario: {errorMessage}");
             }
         }
-        
-    }
+        // [Authorize]
+        // [HttpPut("{userId}/edit")]
+        // public async Task<ActionResult> Update(Guid userID, [FromBody] EditUserDto Dto, BDfyDbContext db)
+        // {
+        //     var userClaims = HttpContext.User;
+        //     var userIdFromToken = userClaims.FindFirst("id")?.Value;
+
+        //     if (!ModelState.IsValid) // Reviso el modelo
+        //     {
+        //         return BadRequest(ModelState);
+        //     }
+
+        //     if (userIdFromToken != userID.ToString())
+        //     {
+        //         return Unauthorized("Permission denied.");
+        //     }
+
+        //     var user = await db.Users.FindAsync(userID);
+            
+        //     if (user == null) { return BadRequest(); }
+        //     user.Ci = Dto.Ci;
+
+  
+        // }
+    }   
 
 }
