@@ -68,7 +68,7 @@ namespace BDfy.Controllers
                 );
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
 
-           
+
                 if (Dto.Role == UserRole.Buyer && Dto.Details != null)
                 {
                     var UserObject = ((JsonElement)Dto.Details).Deserialize<UserDetailsDto>(); //deserializo el json a objecta para poder utlizarlo
@@ -112,13 +112,43 @@ namespace BDfy.Controllers
                 var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 return BadRequest($"Error inesperado al crear usuario: {errorMessage}");
             }
-        
+
 
         }
-        // [HttpPost("login")]
+        [HttpPost("login")]
+        public async Task<ActionResult> Login([FromBody] LoginUserDto Dto, BDfyDbContext db)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var email = await db.Users.FindAsync(Dto.Email);
 
-        // public async Task<ActionResult> Login([FromBody] RegisterDto Dto, BDfyDbContext db){}
+                if (email == null) { return NotFound("Email not found."); }
+                else
+                {
+                    
+                }
+
+                
+
+
+            }
+            catch (Exception ex)
+            {
+            }
+            ;  
+        }
         
+        				Receta Login:
+				 //1-Validar Modelo -checked
+				// 2-verificar si el email que llega existe en la db -checked
+				// -si esta seguimos
+				// -en caso que no error
+				// 3-generar el claim del jwt token
+				// 4-retornar jwt token
     }
 
 }
