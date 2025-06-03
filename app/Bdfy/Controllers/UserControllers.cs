@@ -37,6 +37,7 @@ namespace BDfy.Controllers
                     LastName = Dto.LastName,
                     Email = Dto.Email,
                     Phone = Dto.Phone,
+                    Ci = Dto.Ci,
                     Role = Dto.Role,
                     Reputation = 75,
                     Direction = Dto.Direction,
@@ -53,7 +54,7 @@ namespace BDfy.Controllers
                     new("Role", user.Role.ToString())
                 };
 
-                string _secretKey = "Impossible_to_get_this_key"; //key secreta para el token para todos
+                string _secretKey = "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; //key secreta para el token para todos
 
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey)); //Paso la secret key que es un string a bytes
 
@@ -80,8 +81,11 @@ namespace BDfy.Controllers
                             UserId = user.Id, //le asigno el user id generado en la instancia user
                             IsAdmin = UserObject.IsAdmin //El objeto que deserialize tiene si es admin o no
                         };
+
                         db.UserDetails.Add(detailsUser);
                         await db.SaveChangesAsync();
+                        await transaction.CommitAsync();
+
                         return Ok(new { Token = tokenString });
 
                     }
@@ -95,11 +99,14 @@ namespace BDfy.Controllers
                     {
                         var detailsAuctioneer = new AuctioneerDetails
                         {
-                            //UserId = user.Id,
-                            // Plate = AuctioneerObject.Plate 
+                            UserId = user.Id,
+                            Plate = AuctioneerObject.Plate 
                         };
+                        
+                        await transaction.CommitAsync();
                         db.AuctioneerDetails.Add(detailsAuctioneer);
                         await db.SaveChangesAsync();
+
                         return Created();
                     }
                     else { return BadRequest("Error: Auctioneer details missing"); }
