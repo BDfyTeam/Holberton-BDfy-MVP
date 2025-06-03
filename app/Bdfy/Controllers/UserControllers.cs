@@ -84,14 +84,14 @@ namespace BDfy.Controllers
                 var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);//Genero las credencial con un algoritmo
 
                 var tokeOptions = new JwtSecurityToken(//parametros que queremos guardar en el jwt token
-                issuer: "http://localhost:5015",
-                audience: "http://localhost:5015/api/1.0/users/register",
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(60),
-                signingCredentials: signinCredentials
+                    issuer: "http://localhost:5015",
+                    audience: "http://localhost:5015/api/1.0/users/register",
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(60),
+                    signingCredentials: signinCredentials
                 );
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
 
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
 
                 if (Dto.Role == UserRole.Buyer && Dto.Details != null)
                 {
@@ -120,17 +120,24 @@ namespace BDfy.Controllers
                     var AuctioneerObject = ((JsonElement)Dto.Details).Deserialize<AuctioneerDetailsDto>(); //deserializo de json a objeto para poder utlizarlo
                     if (AuctioneerObject != null) //verifico que el objeto no sea nulo
                     {
-                        var detailsAuctioneer = new AuctioneerDetails
-                        {
-                            UserId = user.Id,
-                            Plate = AuctioneerObject.Plate 
-                        };
+                        var auctioneerDetailsCheck = await db.AuctioneerDetails.FirstOrDefaultAsync(ad => ad.Plate == AuctioneerObject.Plate); // si el plate esta en la db guarda el auctioneer details
                         
-                        await transaction.CommitAsync();
-                        db.AuctioneerDetails.Add(detailsAuctioneer);
-                        await db.SaveChangesAsync();
+                        if (auctioneerDetailsCheck != null) { return BadRequest("Plate already in use"); }
 
-                        return Created();
+                        else
+                        {
+                            var detailsAuctioneer = new AuctioneerDetails
+                            {
+                                UserId = user.Id,
+                                Plate = AuctioneerObject.Plate
+                            };
+
+                            await transaction.CommitAsync();
+                            db.AuctioneerDetails.Add(detailsAuctioneer);
+                            await db.SaveChangesAsync();
+
+                            return Ok(new { Token = tokenString });
+                        }
                     }
                     else { return BadRequest("Error: Auctioneer details missing"); }
                 }
@@ -147,39 +154,77 @@ namespace BDfy.Controllers
 
 
         }
-        // [HttpPost("login")]
-        // public async Task<ActionResult> Login([FromBody] LoginUserDto Dto, BDfyDbContext db)
-        // {
-        //     try
-        //     {
-        //         if (!ModelState.IsValid)
-        //         {
-        //             return BadRequest(ModelState);
-        //         }
-        //         var email = await db.Users.FindAsync(Dto.Email);
+        [HttpPost("login")]
+        public async Task<ActionResult> Login([FromBody] LoginUserDto Dto, BDfyDbContext db)
+        {
+            try
+            {
+                if (!ModelState.IsValid) // Reviso el modelo
+                {
+                    return BadRequest(ModelState);
+                }
+                if (Dto.Email == null) { return BadRequest("You must put a email"); } //Revisa que no este vacio
+                if (Dto.Password == null) { return BadRequest("You must put a password"); } // IDEM
 
-        //         if (email == null) { return NotFound("Email not found."); }
-        //         else
-        //         {
+                var user = await db.Users //instancio el usuario para agarrar los user details y los auctioneer details para determinar que hacer segun el rol
+                    .Include(u => u.UserDetails) //Es db.include
+                    .Include(u => u.AuctioneerDetails)
+                    .FirstOrDefaultAsync(u => u.Email == Dto.Email) ?? throw new InvalidOperationException("User not found"); // Si es false el first or default tira un error usando el operador ternario ??
 
-        //         }
+                var passwordHasher = new PasswordHasher<User>();
+                var passDehashed = passwordHasher.VerifyHashedPassword(user, user.Password, Dto.Password); //Compara la pass de user contra el dto que llega del front
 
+                if (passDehashed == PasswordVerificationResult.Failed) //revisa que la password dehasheada no haya fallado
+                {
+                    return Unauthorized("Invalid password");
+                }
+
+                var claims = new List<Claim> //genera los claims mapeados a los de user
+                {
+                    new("Id", user.Id.ToString()),
+                    new("email", user.Email),
+                    new("Role", user.Role.ToString())
+                
+                };
+
+                string _secretKey = "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; //key secreta para el token para todos
+
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey)); //Paso la secret key que es un string a bytes
+
+                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);//Genero las credencial con un algoritmo
+
+                var tokeOptions = new JwtSecurityToken(//parametros que queremos guardar en el jwt token
+                issuer: "http://localhost:5015",
+                audience: "http://localhost:5015/api/1.0/users/login",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(60),
+                signingCredentials: signinCredentials
+                );
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+
+                if (user.Role == UserRole.Buyer)
+                {
+                    if (user.UserDetails != null)
+                    {
+                        claims.Add(new Claim("IsAdmin", user.UserDetails.IsAdmin.ToString()));
+                    }
+                    return Ok(new { Token = tokenString });
+                }
+
+                else if (user.Role == UserRole.Auctioneer) return Ok(new { Token = tokenString });
+
+                return Ok();
                 
 
 
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //     }
-        //     ;  
-        // }
+            }
+            catch (Exception ex) //
+            {
+                var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return BadRequest($"Error inesperado al crear usuario: {errorMessage}");
+            }
+        }
         
-				 //1-Validar Modelo -checked
-				// 2-verificar si el email que llega existe en la db -checked
-				// -si esta seguimos
-				// -en caso que no error
-				// 3-generar el claim del jwt token
-				// 4-retornar jwt token
     }
 
 }
