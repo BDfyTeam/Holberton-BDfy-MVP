@@ -104,7 +104,9 @@ namespace BDfy.Controllers
                     }
                     else { return BadRequest("Error: Auctioneer details missing"); }
                 }
-                return BadRequest("Error: Invalid user role or details missing");
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return (ActionResult)Results.Created();
 
             }
             catch (Exception ex) //
@@ -115,34 +117,33 @@ namespace BDfy.Controllers
 
 
         }
-        [HttpPost("login")]
-        public async Task<ActionResult> Login([FromBody] LoginUserDto Dto, BDfyDbContext db)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-                var email = await db.Users.FindAsync(Dto.Email);
+        // [HttpPost("login")]
+        // public async Task<ActionResult> Login([FromBody] LoginUserDto Dto, BDfyDbContext db)
+        // {
+        //     try
+        //     {
+        //         if (!ModelState.IsValid)
+        //         {
+        //             return BadRequest(ModelState);
+        //         }
+        //         var email = await db.Users.FindAsync(Dto.Email);
 
-                if (email == null) { return NotFound("Email not found."); }
-                else
-                {
-                    
-                }
+        //         if (email == null) { return NotFound("Email not found."); }
+        //         else
+        //         {
+
+        //         }
 
                 
 
 
-            }
-            catch (Exception ex)
-            {
-            }
-            ;  
-        }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //     }
+        //     ;  
+        // }
         
-        				Receta Login:
 				 //1-Validar Modelo -checked
 				// 2-verificar si el email que llega existe en la db -checked
 				// -si esta seguimos
