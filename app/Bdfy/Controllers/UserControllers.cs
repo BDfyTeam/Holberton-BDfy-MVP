@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace BDfy.Controllers
@@ -29,6 +30,28 @@ namespace BDfy.Controllers
                 {
                     return BadRequest(ModelState);
                 }
+                var emailCheck = await db.Users.FirstOrDefaultAsync(u => u.Email == Dto.Email);
+
+                var ci = await db.Users.FirstOrDefaultAsync(u => u.Ci == Dto.Ci);
+
+                if (emailCheck != null || ci != null)
+                {
+                    string duplicate = "";
+
+                    if (emailCheck != null)
+                    {
+                        duplicate += $"email {Dto.Email}";
+                    }
+
+                    if (ci != null )
+                    {
+                        if (duplicate != "") duplicate += " and ";
+                        duplicate += $"CI {Dto.Ci}";
+
+                        return BadRequest($"The {duplicate} is already registered");
+                    }
+}
+
                 //Lo creo porque al instanciarlo generamos un id unico, que luego usamos en userdetails.
                 var passwordHasher = new PasswordHasher<User>();
                 var user = new User
