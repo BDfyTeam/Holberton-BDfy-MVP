@@ -40,7 +40,7 @@ namespace BDfy.Models
 
         [Required]
         [Column("auctioneer_id")]
-        public int AuctioneerId { get; set; }
+        public Guid AuctioneerId { get; set; }
 
         [Required]
         [Column("auctioneer")]

@@ -35,11 +35,11 @@ namespace BDfy.Models
 
         [Required]
         [Column("auction_id")]
-        public int AuctionId { get; set; }
+        public Guid AuctionId { get; set; }
         public Auction Auction { get; set; } = null!;
 
         [Column("winner_id")]
-        public int? WinnerId { get; set; }
+        public Guid? WinnerId { get; set; }
         public UserDetails? Winner { get; set; }
 
         public List<Bid> BiddingHistory { get; set; } = null!;

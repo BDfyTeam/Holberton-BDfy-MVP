@@ -1,9 +1,16 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace BDfy.Models
 {
     public class Base // Clase base el cual todas las clases heredan
     {
-        public Guid Id { get; set; } 
+        [Column("id")]
+        public Guid Id { get; set; }
+
+        [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+        
+        [Column("updated_at")]
         public DateTime UpdatedAt { get; set; }
 
         protected Base()
