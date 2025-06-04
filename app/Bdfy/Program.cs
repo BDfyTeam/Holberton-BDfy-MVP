@@ -9,15 +9,25 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
-    // .AddNewtonsoftJson(options =>
-    // {
-    //     options.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error; // Maneja casos de cuando pasan argumentos extras en el swagger
-    // });
+// .AddNewtonsoftJson(options =>
+// {
+//     options.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error; // Maneja casos de cuando pasan argumentos extras en el swagger
+// });
 builder.Services.AddDbContext<BDfyDbContext>(options =>
     options
         // .UseLazyLoadingProxies() // LazyMode para BiddingHistory
         .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+
+builder.Services.AddCors(options =>
+   {
+       options.AddPolicy("AllowAll", builder =>
+       {
+           builder.AllowAnyOrigin(); 
+           builder.AllowAnyMethod(); 
+           builder.AllowAnyHeader(); 
+       });
+   });
 
 builder.Services.AddEndpointsApiExplorer();
 
