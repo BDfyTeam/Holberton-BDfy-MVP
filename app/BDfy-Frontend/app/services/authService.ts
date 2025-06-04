@@ -1,7 +1,7 @@
 export async function loginUser(email: string, password: string) {
   try {
     // Llamamos al back con los datos del formulario
-    const response = await fetch("http://localhost:5015/api/v1.0/users/login", {
+    const response = await fetch("http://127.0.0.1:5015/api/1.0/users/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json", // Le decimos que enviamos JSON
