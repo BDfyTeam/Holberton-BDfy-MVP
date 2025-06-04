@@ -13,7 +13,7 @@ namespace BDfy.Models
         [Required]
         [StringLength(200, ErrorMessage = "The Description cannot have more than 50 characters")]
         [Column("description")]
-        public string Descritpion { get; set; } = null!;
+        public string Description { get; set; } = null!;
 
         [Required]
         [StringLength(80, ErrorMessage = "The Details cannot have more than 80 characters")]
@@ -31,12 +31,12 @@ namespace BDfy.Models
 
         [Range(0, double.MaxValue, ErrorMessage = "Ending price must be greater than 0")]
         [Column("ending_price")]
-        public decimal? EndigPrice { get; set; }
+        public decimal? EndingPrice { get; set; }
 
         [Required]
-        [Column("auction_id")]
-        public Guid AuctionId { get; set; }
-        public Auction Auction { get; set; } = null!;
+        [Column("auctioneer_details_id")]
+        public Guid AuctioneerId { get; set; } // AuctionId puede ser
+        public AuctioneerDetails Auctioneer { get; set; } = null!; // Auction
 
         [Column("winner_id")]
         public Guid? WinnerId { get; set; }
