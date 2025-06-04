@@ -1,6 +1,6 @@
 import type { Route } from "./+types/home";
 import { NavBar } from "~/components/navBar";
-import MyForm from "~/components/registerForms";
+import UserRegisterForm from "~/components/registerForms";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -18,9 +18,9 @@ export default function Register() {
         <nav className="flex flex-row justify-end space-x-4 p-4 bg-slate-800">
           <NavBar to="/">Inicio</NavBar>
         </nav>
-        <div className="flex flex-col items-center p-5">
-          <h1 className="font-bold p-5">Subastador</h1>
-          <MyForm />
+        <div className="flex flex-col items-center p-6">
+          <h1 className="font-bold p-5">Formulario</h1>
+          <UserRegisterForm />
         </div>
       </div>
     </main>

@@ -16,3 +16,7 @@ body {
     color-scheme: dark;
   }
 }
+
+input::placeholder {
+  color: rgb(26, 27, 36);
+}
