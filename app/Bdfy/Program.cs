@@ -101,5 +101,6 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bdfy API v1");
     });
 }
+app.UseCors("AllowAll");
 app.MapControllers();
 app.Run();
