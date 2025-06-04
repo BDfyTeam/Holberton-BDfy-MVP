@@ -1,9 +1,14 @@
+using System.ComponentModel.DataAnnotations;
 using BDfy.Models;
 
 namespace BDfy.Dtos
 {
-	public record AuctioneerDetailsDto(
-		int Plate
-	);
+	public class AuctioneerDetailsDto
+	{
+		[Required]
+		public int Plate { get; set; }
+		[Required]
+        public Guid UserId { get; set; }
+	}
 
 }

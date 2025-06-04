@@ -1,8 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace BDfy.Dtos
 {
 
-	public record UserDetailsDto
-	(
-		bool IsAdmin = false
-	);
+	public class UserDetailsDto
+	{
+		[Required]
+		public bool IsAdmin { get; set; } = false;
+		public Guid UserId { get; set; }
+	}
 }
