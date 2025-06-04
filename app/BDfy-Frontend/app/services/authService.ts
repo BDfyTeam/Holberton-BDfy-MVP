@@ -11,14 +11,16 @@ export async function loginUser(email: string, password: string) {
 
     // Convertimos la respuesta en JSON para poder leerla
     const data = await response.json();
+    console.log("Respuesta del backend:", data);
 
     // Si la respuesta no fue exitosa (código 400 o 401 ??), lanzamos un error
     if (!response.ok) {
       throw new Error(data.error || data || "Error desconocido");
     }
+    console.log("Codigo HTTP:", response.status);
 
     // Si todo salió bien, devolvemos el token
-    return data.Token;
+    return data.token;
   } catch (error) {
     throw error;
   }
