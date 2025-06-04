@@ -1,5 +1,6 @@
+import { NavBar } from "~/components/navBar";
 import type { Route } from "./+types/home";
-import RegisterButton from "~/components/registerButton";
+import DynamicButton from "~/components/dynamicButton";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -10,12 +11,18 @@ export function meta({ }: Route.MetaArgs) {
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center p-5">
-      <h1 className="font-bold p-5">BDfy</h1>
-      <h3>Facil y seguro</h3>
-      <br />
-      <br />
-      <RegisterButton />
-    </div>
+    <main className="bg-primaryDark">
+      <div>
+        <nav  className="flex flex-row justify-end space-x-4 p-4 bg-slate-800">
+          <NavBar to="/login">Iniciar seción</NavBar>
+          <NavBar to="/register">Registrarse</NavBar>
+        </nav>
+        <div className="flex flex-col items-center p-5">
+          <h1 className="font-bold p-5">BDfy</h1>
+          <h3>Fácil y seguro</h3>
+        </div>
+      </div>
+    </main>
   );
 }
+
