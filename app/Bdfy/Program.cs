@@ -3,10 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Newtonsoft.Json;
 
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
+    // .AddNewtonsoftJson(options =>
+    // {
+    //     options.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error; // Maneja casos de cuando pasan argumentos extras en el swagger
+    // });
 builder.Services.AddDbContext<BDfyDbContext>(options =>
     options
         // .UseLazyLoadingProxies() // LazyMode para BiddingHistory
