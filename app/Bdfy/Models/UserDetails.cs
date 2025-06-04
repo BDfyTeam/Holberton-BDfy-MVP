@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BDfy.Models
 {
@@ -16,8 +17,9 @@ namespace BDfy.Models
 
         [InverseProperty("Winner")]
         public List<Lot> Lots { get; set; } = [];
-        
+
         [ForeignKey("UserId")]
+        [JsonIgnore]
         public User User { get; set; } = null!;
 
         public UserDetails() { } // EF

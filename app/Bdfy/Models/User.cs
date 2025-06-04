@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BDfy.Models
 {
@@ -56,7 +57,9 @@ namespace BDfy.Models
         [Column("direction")]
         public Direction Direction { get; set; } = null!;
 
+        [JsonIgnore]
         public UserDetails? UserDetails { get; set; }
+        [JsonIgnore]
         public AuctioneerDetails? AuctioneerDetails { get; set; }
 
         public User() {  } // EF

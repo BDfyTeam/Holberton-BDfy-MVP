@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 
 namespace BDfy.Controllers
@@ -110,7 +111,7 @@ namespace BDfy.Controllers
                             UserId = user.Id
                         };
 
-                        if (!TryValidateModel(DetailsDto)){ return BadRequest(ModelState); } // Asi si usa las annotations del modelo
+                        if (!TryValidateModel(DetailsDto)) { return BadRequest(ModelState); } // Asi si usa las annotations del modelo
 
                         var detailsUser = new UserDetails //instanciamos userdetails para crear los details
                         {
@@ -134,7 +135,7 @@ namespace BDfy.Controllers
                     if (AuctioneerObject != null) //verifico que el objeto no sea nulo
                     {
                         var auctioneerDetailsCheck = await _db.AuctioneerDetails.FirstOrDefaultAsync(ad => ad.Plate == AuctioneerObject.Plate); // si el plate esta en la _db guarda el auctioneer details
-                        
+
                         if (auctioneerDetailsCheck != null) { return BadRequest("Plate already in use"); }
 
                         else
@@ -144,7 +145,7 @@ namespace BDfy.Controllers
                                 Plate = AuctioneerObject.Plate,
                                 UserId = user.Id
                             };
-                            
+
                             if (!TryValidateModel(DetailsDto)) { return BadRequest(ModelState); } // Asi si usa las annotations del modelo
 
                             var detailsAuctioneer = new AuctioneerDetails
@@ -166,7 +167,8 @@ namespace BDfy.Controllers
                 await transaction.CommitAsync();
                 return (ActionResult)Results.Created();
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 return BadRequest($"Error inesperado al crear usuario: {errorMessage}");
@@ -232,7 +234,8 @@ namespace BDfy.Controllers
                 else if (user.Role == UserRole.Auctioneer) return Ok(new { Token = tokenString });
 
                 return Ok();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 return BadRequest($"Error inesperado al crear usuario: {errorMessage}");
@@ -256,12 +259,62 @@ namespace BDfy.Controllers
         //     }
 
         //     var user = await db.Users.FindAsync(userID);
-            
+
         //     if (user == null) { return BadRequest(); }
         //     user.Ci = Dto.Ci;
 
-  
+
         // }
-    }   
+
+    // Get User by ID
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<User>> GetUserById(Guid userId)
+        {
+            try
+            {
+                var user = await _db.Users
+                        .Include(ud => ud.UserDetails)
+                        .Include(ad => ad.AuctioneerDetails)
+                        .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+        // GET all users
+        [HttpGet ("_internal")]
+        public async Task<ActionResult<IEnumerable<User>>> GetAllUsers()
+        {
+            try
+            {
+                var users = await _db.Users
+                    .Include(ud => ud.UserDetails)
+                    .ToListAsync();
+                
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+    }
+
+    private ActionResult<IEnumerable<User>> Ok(List<User> users, List<User> auctioneers)
+    {
+      throw new NotImplementedException();
+    }
+  }
+
+        
 
 }
