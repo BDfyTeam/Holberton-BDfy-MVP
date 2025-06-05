@@ -38,7 +38,7 @@ namespace BDfy.Controllers
 			{
 				var userClaims = HttpContext.User;
 				var userRoleFromToken = userClaims.FindFirst(ClaimTypes.Role)?.Value;
-				var userIdFromToken = userClaims.FindFirst("id")?.Value;
+				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
 
 				if (AuctioneerID.ToString() != userIdFromToken) { return Unauthorized(""); }
 
