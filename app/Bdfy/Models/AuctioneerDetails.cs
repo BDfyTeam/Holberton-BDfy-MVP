@@ -11,15 +11,18 @@ namespace BDfy.Models
         [Required]
         public Guid UserId { get; set; }
 
-        [Column("plate")] 
+        [Column("plate")]
         [Required]
         public int Plate { get; set; }
 
         [ForeignKey("UserId")]
         [JsonIgnore]
         public User User { get; set; } = null!;
-        
+
         [InverseProperty("Auctioneer")]
         public List<Auction> Auctions { get; set; } = null!;
+
+        [InverseProperty("Auctioneer")]
+        public List<Lot> Lots { get; set; } = null!;
     }
 }

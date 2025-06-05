@@ -19,7 +19,7 @@ namespace BDfy.Dtos
         [Required]
         public DateTime EndAt { get; set; }
 
-        public List<int>? Category { get; set; } = [];
+        public int[]? Category { get; set; } = [];
 
         [Required]
         public AuctionStatus Status { get; set; }

@@ -71,29 +71,23 @@ namespace BDfy.Data
                 dir.Property(d => d.Department)
                     .HasColumnName("direction_department");
             });
-                
+
             // Auction --> AuctioneerDetails
             modelBuilder.Entity<Auction>(entity =>
             {
                 entity.HasOne(a => a.Auctioneer) // Auctioneer es AuctioneerDetails
-                      .WithMany(ad => ad.Auctions)
-                      .HasForeignKey(a => a.AuctioneerId)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                // Auction --> Lot
-                entity.HasMany(a => a.Lots)
-                      .WithOne(l => l.Auction)
-                      .HasForeignKey(l => l.AuctionId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany(ad => ad.Auctions)
+                        .HasForeignKey(a => a.AuctioneerId)
+                        .OnDelete(DeleteBehavior.Restrict);
             });
 
             //  Lot --> Winner (User)
             modelBuilder.Entity<Lot>(entity =>
             {
-            entity.HasOne(l => l.Winner)
-                .WithMany(ud => ud.Lots)
-                .HasForeignKey(l => l.WinnerId)
-                .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(l => l.Winner)
+                    .WithMany(ud => ud.Lots)
+                    .HasForeignKey(l => l.WinnerId)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 // Lot --> Bid
                 entity.HasMany(l => l.BiddingHistory)
@@ -108,6 +102,15 @@ namespace BDfy.Data
                 entity.HasOne(b => b.Buyer) // User
                       .WithMany()
                       .HasForeignKey(b => b.BuyerId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Lot --> Auctioneer
+            modelBuilder.Entity<Lot>(entity =>
+            {
+                entity.HasOne(l => l.Auctioneer)
+                      .WithMany(ad => ad.Lots)
+                      .HasForeignKey(l => l.AuctioneerId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
         }

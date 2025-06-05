@@ -205,9 +205,9 @@ namespace BDfy.Controllers
 
                 var claims = new List<Claim> //genera los claims mapeados a los de user
                 {
-                    new("id", user.Id.ToString()),
+                    new("Id", user.Id.ToString()),
                     new("email", user.Email),
-                    new("role", user.Role.ToString())
+                    new("Role", user.Role.ToString())
 
                 };
 
