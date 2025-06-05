@@ -63,7 +63,7 @@ namespace BDfy.Controllers
 
 				var checkLot = await _db.Lots.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber);
 
-					
+				if (checkLot == null) { return BadRequest("Lot already exists"); }
 
 				_db.Lots.Add(lot);
 				await _db.SaveChangesAsync();
