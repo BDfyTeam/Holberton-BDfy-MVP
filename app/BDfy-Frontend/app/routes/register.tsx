@@ -1,6 +1,10 @@
 import type { Route } from "./+types/home";
 import { NavBar } from "~/components/navBar";
-import UserRegisterForm from "~/components/registerForms";
+import UserRegisterForm from "~/components/userRegisterForms";
+import AuctionerRegisterFrom from "~/components/auctionerRegisterForm";
+
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -18,10 +22,16 @@ export default function Register() {
         <nav className="flex flex-row justify-end space-x-4 p-4 bg-slate-800">
           <NavBar to="/">Inicio</NavBar>
         </nav>
-        <div className="flex flex-col items-center p-6">
-          <h1 className="font-bold p-5">Formulario</h1>
+        <div className="w-full max-w-4xl mx-auto">
+      <Swiper>
+        <SwiperSlide>
+          <AuctionerRegisterFrom />
+        </SwiperSlide>
+        <SwiperSlide>
           <UserRegisterForm />
-        </div>
+        </SwiperSlide>
+      </Swiper>
+    </div>
       </div>
     </main>
   );

@@ -1,4 +1,4 @@
-import DynamicButton from "~/components/dynamicButton";
+import DynamicButton from "~/components/navegationButton";
 
 interface NavBarProps {
     to: string;                // URL de destino

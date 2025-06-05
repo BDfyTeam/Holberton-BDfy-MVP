@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { isPasswordValid, isEmailValid, isDocumentValid } from './validations'
+import { isPasswordValid, isEmailValid, isDocumentValid } from '../services/validations'
+import type { RegisterUserPayload } from '../services/types';
+import { registerUser } from '~/services/fetchService';
 
 function UserRegisterForm() {
   const navigate = useNavigate();
@@ -9,57 +11,77 @@ function UserRegisterForm() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [reputation] = useState(75);
   const [phone, setPhone] = useState('');
-  const [documentType, setDocumentType] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
-  const [role] = useState('Buyer');
+  const [role] = useState(0);
   const [street, setStreet] = useState('');
   const [streetNumber, setStreetNumber] = useState('');
   const [zipCode, setZipCode] = useState('');
   const [department, setDepartment] = useState('');
   const [isAdmin] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
 
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     const form = event.currentTarget as HTMLFormElement;
-    setError(null);
 
-    if (!form.checkValidity()) {
+    if (
+      !form.checkValidity() ||
+      !acceptedTerms ||
+      !isEmailValid(email) ||
+      !isPasswordValid(password) ||
+      !isDocumentValid(documentNumber) ||
+      !/^09\d{7}$/.test(phone) ||
+      !/^\d{5}$/.test(zipCode) ||
+      street.trim() === '' ||
+      !/^\d{1,4}$/.test(streetNumber.trim()) ||
+      department.trim() === ''
+    ) {
       event.preventDefault();
       event.stopPropagation();
     } else {
       event.preventDefault();
 
+      setLoading(true);
+
       if (!acceptedTerms) {
         return;
       }
 
-      const finalDocument = `${documentType} ${documentNumber}`;
-      const finalDirection = {
-        street,
-        streetNumber,
-        zipCode,
-        department
-      };
-
-      const payload = {
+      const payload: RegisterUserPayload = {
         firstName,
         lastName,
         email,
         password,
-        ci: finalDocument,
-        reputation: 75,
+        ci: `${documentNumber}`,
+        reputation,
         phone,
         role,
-        direction: finalDirection,
-        IsAdmin: isAdmin
+        direction: {
+          street,
+          streetNumber: parseInt(streetNumber),
+          zipCode: parseInt(zipCode),
+          department
+        },
+        details: {
+          IsAdmin: isAdmin
+        }
       };
 
-      navigate('/');
+      try {
+        const token = await registerUser(payload);
+        localStorage.setItem("token", token);
+        navigate('/');
+      } catch (error: any) {
+        console.error("Error al registrar el usuario:", error);
+        alert(error.message || "Error al registrar el usuario");
+      }
+      setLoading(false);
+      return;
     }
 
     setValidated(true);
@@ -78,7 +100,7 @@ function UserRegisterForm() {
           <input
             type="text"
             className={`
-              form-control border-2 rounded-lg p-1 w-full
+              form-control border-2 rounded-lg p-1 w-full text-black
               ${validated && firstName.trim() === '' ? 'border-red-500' : 'border-gray-300'}
             `}
             style={{ backgroundColor: 'rgb(168, 175, 234)' }}
@@ -105,7 +127,7 @@ function UserRegisterForm() {
           <input
             type="text"
             className={`
-              form-control border-2 rounded-lg p-1 w-full
+              form-control border-2 rounded-lg p-1 w-full text-black
               ${validated && lastName.trim() === '' ? 'border-red-500' : 'border-gray-300'}
             `}
             style={{ backgroundColor: 'rgb(168, 175, 234)' }}
@@ -132,7 +154,7 @@ function UserRegisterForm() {
           <input
             type="email"
             className={`
-              form-control border-2 rounded-lg p-1 w-full
+              form-control border-2 rounded-lg p-1 w-full text-black
               ${validated && email.trim() === '' ? 'border-red-500' : 'border-gray-300'}
             `}
             style={{ backgroundColor: 'rgb(168, 175, 234)' }}
@@ -161,7 +183,7 @@ function UserRegisterForm() {
           <input
             type="password"
             className={`
-              form-control border-2 rounded-lg p-1 w-full
+              form-control border-2 rounded-lg p-1 w-full text-black
               ${validated && !isPasswordValid(password) ? 'border-red-500' : 'border-gray-300'}
             `}
             style={{ backgroundColor: 'rgb(168, 175, 234)' }}
@@ -191,7 +213,7 @@ function UserRegisterForm() {
         <div className="flex-1 min-w-[200px]">
           <label htmlFor="document" className="text-white">Documento</label> <br />
           <div className="flex space-x-2">
-            <select
+            {/* <select
               className={
                 `flex form-select border-2 rounded-lg p-1 text-black
                 ${validated && documentType === 'Doc' ? 'border-red-500' : 'border-gray-300'}
@@ -206,7 +228,7 @@ function UserRegisterForm() {
               <option value="ci">CI</option>
               <option value="pasaport">Pasaporte</option>
               <option value="dni">DNI</option>
-            </select>
+            </select> */}
 
             <input
               type="text"
@@ -224,11 +246,7 @@ function UserRegisterForm() {
           </div>
           {validated && (
             <>
-              {(documentType === 'DOC' || documentType.trim() === '') ? (
-                <div className="text-red-500 text-sm mt-1">
-                  Por favor seleccione un tipo de documento ❌
-                </div>
-              ) : !isDocumentValid(documentNumber) ? (
+              {!isDocumentValid(documentNumber) ? (
                 <div className="text-red-500 text-sm mt-1">
                   Por favor ingrese un documento válido ❌
                 </div>
@@ -369,7 +387,7 @@ function UserRegisterForm() {
             pattern="^\d+$"
             required
           />
-          {validated && streetNumber.trim() !== '' && !/^\d{1,4}$/.test(streetNumber.trim()) && (
+          {validated && streetNumber.trim() === '' && !/^\d{1,4}$/.test(streetNumber.trim()) && parseInt(streetNumber.trim()) >= 9999 && (
             <div className="invalid-feedback text-red-500 mt-1">
               El número de calle no puede tener más de 4 dígitos ❌
             </div>
@@ -407,8 +425,9 @@ function UserRegisterForm() {
         <button
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 text-center"
           type="submit"
+          disabled={loading}
         >
-          Resgistrarme
+          {loading ? "Registrando..." : "Registrarse"}
         </button>
       </div>
     </form>

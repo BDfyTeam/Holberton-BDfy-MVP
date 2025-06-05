@@ -26,7 +26,7 @@ public class RegisterDto
     public string Password { get; set; } = null!;
 
     [Required(ErrorMessage = "The document (C.I) is mandatory")]
-    [RegularExpression(@"^[1-9]\d{8,9}$", ErrorMessage = "The document must contain between 8-9 digits")]
+    [RegularExpression(@"^[1-9]\d{7,8}$", ErrorMessage = "The document must contain between 7-8 digits")]
     public string Ci { get; set; } = null!;
 
     [Required(ErrorMessage = "The reputation is mandatory")]

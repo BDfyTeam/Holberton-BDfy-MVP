@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import Button from "~/components/Button";
+import Button from "~/components/functionButton";
 import Header from "~/components/Header";
-import { loginUser } from "~/services/authService";
+import { loginUser } from "~/services/fetchService";
 import { Mail, Lock, Eye, EyeOff, Gavel, Trophy } from "lucide-react";
 
 export default function LoginPage() {
