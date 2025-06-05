@@ -62,5 +62,38 @@ namespace BDfy.Controllers
             }
 
         }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<User>>> GetAllAuction()
+        {
+            try
+            {
+                var auctions = await _db.Auctions
+                    .Include(ad => ad.Auctioneer) // Re pensar y usar Dtos para la circularidad
+                    .ToListAsync();
+
+                return Ok(auctions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+        [HttpGet("{status}")]
+        public async Task<ActionResult<IEnumerable<User>>> GetAucionByStatus(AuctionStatus Status)
+        {
+            try
+            {
+                var auctionStatus = await _db.Auctions
+                        .Include(ad => ad.Auctioneer)
+                        .FirstOrDefaultAsync(a => a.Status == Status);
+
+                return Ok(auctionStatus);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
     }
 }
