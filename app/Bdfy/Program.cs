@@ -80,13 +80,11 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
+        ValidateIssuer = false,
+        ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = "https://localhost:7134",
-        ValidAudience = "https://localhost:7134",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Impossible_to_get_this_key"))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
     };
 });
 

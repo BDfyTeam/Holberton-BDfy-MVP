@@ -3,7 +3,6 @@ using BDfy.Models;
 
 namespace BDfy.Dtos
 {
-
 public class RegisterDto
 {
     [Required(ErrorMessage = "The first name is mandatory")]
