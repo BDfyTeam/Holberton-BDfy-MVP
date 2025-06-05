@@ -22,8 +22,8 @@ namespace BDfy.Controllers
             try
             {
                 var userClaims = HttpContext.User;
-                var userIdFromToken = userClaims.FindFirst("id")?.Value;
-                var userRoleFromToken = userClaims.FindFirst("role")?.Value;
+                var userIdFromToken = userClaims.FindFirst("Id")?.Value;
+                var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 
                 if (userId.ToString() != userIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
