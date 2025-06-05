@@ -6,7 +6,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"
-DB_USER = "moto"
+DB_USER = "rodrigo"
 DB_PASSWORD = "1234"
 
 def create_tables():
@@ -98,9 +98,11 @@ def create_tables():
                 starting_price DECIMAL(19, 4) NOT NULL CHECK (starting_price >= 0),
                 current_price DECIMAL(19, 4) CHECK (current_price >= 0),
                 ending_price DECIMAL(19, 4) CHECK (ending_price >= 0),
-                auction_id UUID NOT NULL,
-                winner_id UUID NOT NULL,
-                FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE,
+                created_at TIMESTAMP NOT NULL,
+                updated_at TIMESTAMP NOT NULL,
+                auctioneer_id UUID NOT NULL,
+                winner_id UUID,
+                FOREIGN KEY (auctioneer_id) REFERENCES auctioneerdetails(id) ON DELETE CASCADE,
                 FOREIGN KEY (winner_id) REFERENCES userdetails(id) ON DELETE SET NULL
             )
         """)
@@ -113,6 +115,8 @@ def create_tables():
                 time TIMESTAMP NOT NULL,
                 lot_id UUID NOT NULL,
                 buyer_id UUID NOT NULL,
+                created_at TIMESTAMP NOT NULL,
+                updated_at TIMESTAMP NOT NULL,
                 FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE,
                 FOREIGN KEY (buyer_id) REFERENCES userdetails(id) ON DELETE CASCADE
             )
