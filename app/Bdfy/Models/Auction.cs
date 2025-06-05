@@ -28,7 +28,7 @@ namespace BDfy.Models
         public DateTime EndAt { get; set; }
 
         [Column("category")]
-        public List<int>? Category { get; set; } = [];
+        public  int[]? Category { get; set; } = [];
 
         [Required]
         [Column("status")]

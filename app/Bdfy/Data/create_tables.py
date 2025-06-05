@@ -6,7 +6,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"
-DB_USER = "rodrigo"
+DB_USER = "lucas"
 DB_PASSWORD = "1234"
 
 def create_tables():
@@ -31,12 +31,15 @@ def create_tables():
                 ci TEXT NOT NULL,
                 reputation INT NOT NULL CHECK (reputation BETWEEN 0 AND 100),
                 phone TEXT NOT NULL,
-                role INT NOT NULL CHECK (role IN (0, 1)),
+                role INT NOT NULL, -- UserRole: Buyer=0, Auctioneer=1
+
+                -- Propiedad embebida Direction
                 direction_street TEXT NOT NULL,
                 direction_street_number INT NOT NULL,
                 direction_corner TEXT NOT NULL,
                 direction_zip_code INT NOT NULL,
                 direction_department TEXT NOT NULL,
+
                 created_at TIMESTAMP NOT NULL,
                 updated_at TIMESTAMP NOT NULL
             )
@@ -74,17 +77,20 @@ def create_tables():
                 description TEXT NOT NULL,
                 start_at TIMESTAMP NOT NULL,
                 end_at TIMESTAMP NOT NULL,
-                category JSONB,
-                status INT NOT NULL CHECK (status IN (0, 1, 2)),
+                category INTEGER[],
+                status INT NOT NULL, -- AuctionStatus: Closed=0, Active=1, Draft=2
+
+                -- Propiedad embebida Direction
                 direction_street TEXT NOT NULL,
                 direction_street_number INT NOT NULL,
                 direction_corner TEXT NOT NULL,
                 direction_zip_code INT NOT NULL,
                 direction_department TEXT NOT NULL,
+
                 auctioneer_id UUID NOT NULL,
                 created_at TIMESTAMP NOT NULL,
                 updated_at TIMESTAMP NOT NULL,
-                FOREIGN KEY (auctioneer_id) REFERENCES auctioneerdetails(id) ON DELETE CASCADE
+                FOREIGN KEY (auctioneer_id) REFERENCES auctioneerdetails(id) ON DELETE RESTRICT
             )
         """)
 
@@ -95,13 +101,15 @@ def create_tables():
                 lot_number INT NOT NULL CHECK (lot_number > 0),
                 description TEXT NOT NULL,
                 details TEXT NOT NULL,
-                starting_price DECIMAL(19, 4) NOT NULL CHECK (starting_price >= 0),
-                current_price DECIMAL(19, 4) CHECK (current_price >= 0),
-                ending_price DECIMAL(19, 4) CHECK (ending_price >= 0),
-                created_at TIMESTAMP NOT NULL,
-                updated_at TIMESTAMP NOT NULL,
+                starting_price DECIMAL(19,4) NOT NULL CHECK (starting_price >= 0),
+                current_price DECIMAL(19,4) CHECK (current_price >= 0),
+                ending_price DECIMAL(19,4) CHECK (ending_price >= 0),
+
                 auctioneer_id UUID NOT NULL,
                 winner_id UUID,
+
+                created_at TIMESTAMP NOT NULL,
+                updated_at TIMESTAMP NOT NULL,
                 FOREIGN KEY (auctioneer_id) REFERENCES auctioneerdetails(id) ON DELETE CASCADE,
                 FOREIGN KEY (winner_id) REFERENCES userdetails(id) ON DELETE SET NULL
             )
@@ -111,30 +119,34 @@ def create_tables():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS bids (
                 id UUID PRIMARY KEY,
-                amount DECIMAL(19, 4) NOT NULL,
+                amount DECIMAL(19,4) NOT NULL CHECK (amount >= 0),
                 time TIMESTAMP NOT NULL,
+
                 lot_id UUID NOT NULL,
                 buyer_id UUID NOT NULL,
+
                 created_at TIMESTAMP NOT NULL,
                 updated_at TIMESTAMP NOT NULL,
+
                 FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE,
                 FOREIGN KEY (buyer_id) REFERENCES userdetails(id) ON DELETE CASCADE
             )
         """)
 
         conn.commit()
-        print("✅✅✅✅✅✅✅✅ Todas las tablas están listas pa ✅✅✅✅✅✅")
+        print("✅")
         cursor.close()
         conn.close()
         return True
+
     except Exception as e:
-        print(f"🚨 Error al crear las tablas: {e}")
+        print(f"🚨: {e}")
         return False
 
 def main():
-    print("⌛🚨⌛🚨⌛🚨⌛🚨⌛🚨⌛🚨⌛🚨 creando tablas espera wachín...⌛🚨⌛🚨⌛🚨⌛🚨⌛🚨⌛🚨⌛🚨⌛🚨⌛🚨")
+    print("⌛")
     create_tables()
-    print("✅✅✅ Listo pa✅✅✅")
+    print("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅")
 
 if __name__ == "__main__":
     main()
