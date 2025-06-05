@@ -2,7 +2,7 @@ import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { getAuctionById } from "~/services/api";
 import type { Auction } from "~/services/types";
-// import LotCard from "~/components/LotCard";
+import LotCard from "~/components/LotCard";
 
 export default function AuctionPage() {
   const { id } = useParams();
@@ -12,7 +12,9 @@ export default function AuctionPage() {
   useEffect(() => {
     const fetchAuction = async () => {
       try {
+        console.log("Solicitando subasta con ID:", id);
         const data = await getAuctionById(Number(id));
+        console.log("Datos de la subasta recibidos:", data);
         setAuction(data);
       } catch (err) {
         console.error("Error al cargar la subasta:", err);
@@ -33,9 +35,9 @@ export default function AuctionPage() {
       <p className="text-gray-300 mb-6">{auction.description}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {/* {auction.lots.map((lot) => (
+        {auction.lots.map((lot) => (
           <LotCard key={lot.id} lot={lot} />
-        ))} */}
+        ))}
       </div>
     </div>
   );
