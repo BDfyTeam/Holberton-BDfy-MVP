@@ -75,11 +75,13 @@ namespace BDfy.Controllers
                 _db.Users.Add(user);
                 await _db.SaveChangesAsync();
 
+
+
                 var claims = new List<Claim> //genera los claims mapeados a los de user
                 {
+                    new("Role", user.Role.ToString()),
                     new("Id", user.Id.ToString()),
-                    new("email", user.Email),
-                    new("Role", user.Role.ToString())
+                    new("email", user.Email)
                 };
 
                 string _secretKey = "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; //key secreta para el token para todos
@@ -90,7 +92,7 @@ namespace BDfy.Controllers
 
                 var tokeOptions = new JwtSecurityToken(//parametros que queremos guardar en el jwt token
                     issuer: "http://localhost:5015",
-                    audience: "http://localhost:5015/api/1.0/users/register",
+                    audience: "http://localhost:5015/api/1.0/users",
                     claims: claims,
                     expires: DateTime.Now.AddMinutes(60),
                     signingCredentials: signinCredentials
@@ -199,11 +201,13 @@ namespace BDfy.Controllers
                     return Unauthorized("Invalid password");
                 }
 
+                Console.WriteLine($"Mi Rol: {user.Role.ToString()}");
+
                 var claims = new List<Claim> //genera los claims mapeados a los de user
                 {
-                    new("Id", user.Id.ToString()),
+                    new("id", user.Id.ToString()),
                     new("email", user.Email),
-                    new("Role", user.Role.ToString())
+                    new("role", user.Role.ToString())
 
                 };
 
