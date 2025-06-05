@@ -95,5 +95,24 @@ namespace BDfy.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+
+        [HttpGet("specific/{auctionId}")]
+        public async Task<ActionResult<Auction>> GetAuctionById([FromRoute] Guid auctionId)
+        {
+            try
+            {
+                var auctionById = await _db.Auctions
+                        .Include(ad => ad.Auctioneer)
+                        .FirstOrDefaultAsync(a => a.Id == auctionId);
+                        
+                if (auctionById == null) { return NotFound("Auction not found"); }
+    
+                return Ok(auctionById);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
     }
 }

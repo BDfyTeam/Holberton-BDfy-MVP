@@ -37,7 +37,7 @@ namespace BDfy.Controllers
 			try
 			{
 				var userClaims = HttpContext.User;
-				var userRoleFromToken = userClaims.FindFirst(ClaimTypes.Role)?.Value;
+				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
 
 				if (AuctioneerID.ToString() != userIdFromToken) { return Unauthorized(""); }
@@ -50,6 +50,7 @@ namespace BDfy.Controllers
 						.Include(u => u.AuctioneerDetails)
 						.FirstOrDefaultAsync(u => u.Id == AuctioneerID);
 				if (auctioneer == null || auctioneer.AuctioneerDetails == null) { return NotFound(); }
+                Console.WriteLine("ENTRE ANTES");
 
 				var lot = new Lot
 				{
@@ -59,6 +60,7 @@ namespace BDfy.Controllers
 					StartingPrice = Dto.StartingPrice,
 					Auctioneer = auctioneer.AuctioneerDetails 
 				};
+                Console.WriteLine("ENTRE");
 
 				var checkLot = await _db.Lots.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber);
 				_db.Lots.Add(lot);
