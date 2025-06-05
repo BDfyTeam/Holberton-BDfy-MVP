@@ -58,7 +58,7 @@ namespace BDfy.Controllers
 					Details = Dto.Details,
 					StartingPrice = Dto.StartingPrice,
 					AuctioneerId = auctioneer.AuctioneerDetails.Id,
-    			Auctioneer = auctioneer.AuctioneerDetails	
+    				Auctioneer = auctioneer.AuctioneerDetails	
 				};
 
 				var checkLot = await _db.Lots.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber);
