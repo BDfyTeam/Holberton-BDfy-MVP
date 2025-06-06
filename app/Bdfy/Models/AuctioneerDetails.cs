@@ -22,7 +22,7 @@ namespace BDfy.Models
         [InverseProperty("Auctioneer")]
         public List<Auction> Auctions { get; set; } = null!;
 
-        [InverseProperty("Auctioneer")]
-        public List<Lot> Lots { get; set; } = null!;
+        // [InverseProperty("Auctioneer")]
+        // public List<Lot> Lots { get; set; } = null!;
     }
 }
