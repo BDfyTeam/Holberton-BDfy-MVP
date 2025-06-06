@@ -142,7 +142,7 @@ namespace BDfy.Controllers
         }
 
         [HttpGet("specific/{auctionId}")]
-        public async Task<ActionResult<Auction>> GetAuctionById([FromRoute] Guid auctionId)
+        public async Task<ActionResult<AuctionDto>> GetAuctionById([FromRoute] Guid auctionId)
         {
             try
             {
