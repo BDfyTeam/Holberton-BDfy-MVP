@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BDfy.Models
 {
     public enum AuctionStatus
     {
-        Closed, Active, Draft
+        Closed, Active, Draft, Storage
     }
     public class Auction : Base // Clase Subasta
     {
@@ -44,6 +45,7 @@ namespace BDfy.Models
 
         [Required]
         [Column("auctioneer")]
+        //[JsonIgnore]
         public AuctioneerDetails Auctioneer { get; set; } = null!;
 
         [Required]

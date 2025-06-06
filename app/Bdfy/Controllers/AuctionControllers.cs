@@ -46,7 +46,7 @@ namespace BDfy.Controllers
                     Category = Dto.Category ?? [],
                     Status = Dto.Status,
                     Direction = Dto.Direction,
-                    AuctioneerId = auctioneer.Id,
+                    AuctioneerId = auctioneer.AuctioneerDetails.UserId,
                     Auctioneer = auctioneer.AuctioneerDetails
                 };
 
@@ -61,6 +61,122 @@ namespace BDfy.Controllers
                 return BadRequest($"Error inesperado al crear la subasta: {errorMessage}");
             }
 
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<AuctionDto>>> GetAllAuction()
+        {
+            try
+            {
+                var auctions = await _db.Auctions
+                    .Include(ad => ad.Auctioneer) // Re pensar y usar Dtos para la circularidad
+                    .ToListAsync();
+
+                var auctionDtos = auctions.Select(a => new AuctionDto
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    StartAt = a.StartAt,
+                    EndAt = a.EndAt,
+                    Category = a.Category ?? [],
+                    Status = a.Status,
+                    Direction = a.Direction,
+                    AuctioneerId = a.AuctioneerId,
+                    Lots = a.Lots.ToList(),
+                    Auctioneer = new AuctioneerDto
+                    {
+                        UserId = a.Auctioneer.UserId,
+                        Plate = a.Auctioneer.Plate
+                    }
+                }).ToList();
+
+                return Ok(auctionDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+        [HttpGet("{status}")]
+        public async Task<ActionResult<IEnumerable<AuctionDto>>> GetAucionByStatus([FromRoute] string status)
+        {
+            try
+            {
+
+                if (!Enum.TryParse(status, true, out AuctionStatus enumStatus)) // Convertimos el string a enum
+                    {
+                        return BadRequest($"Invalid status: {status}");
+                    }
+
+                var auctions = await _db.Auctions
+                        .Include(ad => ad.Auctioneer)
+                        .Where(a => a.Status == enumStatus)
+                        .ToListAsync();
+
+                var auctionDtos = auctions.Select(a => new AuctionDto
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    StartAt = a.StartAt,
+                    EndAt = a.EndAt,
+                    Category = a.Category ?? [],
+                    Status = a.Status,
+                    Direction = a.Direction,
+                    AuctioneerId = a.AuctioneerId,
+                    Lots = a.Lots.ToList(),
+                    Auctioneer = new AuctioneerDto
+                    {
+                        UserId = a.Auctioneer.UserId,
+                        Plate = a.Auctioneer.Plate
+                    }
+                }).ToList();
+
+                return Ok(auctionDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+        [HttpGet("specific/{auctionId}")]
+        public async Task<ActionResult<AuctionDto>> GetAuctionById([FromRoute] Guid auctionId)
+        {
+            try
+            {
+                var auctionById = await _db.Auctions
+                        .Include(ad => ad.Auctioneer)
+                        .FirstOrDefaultAsync(a => a.Id == auctionId);
+
+                if (auctionById == null) { return NotFound("Auction not found"); }
+
+                var auctionDto = new AuctionDto
+                {
+                    Id = auctionById.Id,
+                    Title = auctionById.Title,
+                    Description = auctionById.Description,
+                    StartAt = auctionById.StartAt,
+                    EndAt = auctionById.EndAt,
+                    Category = auctionById.Category ?? [],
+                    Status = auctionById.Status,
+                    Direction = auctionById.Direction,
+                    AuctioneerId = auctionById.AuctioneerId,
+                    Lots = auctionById.Lots.ToList(), // Arreglar
+                    Auctioneer = new AuctioneerDto
+                    {
+                        UserId = auctionById.Auctioneer.UserId,
+                        Plate = auctionById.Auctioneer.Plate
+                    }
+                };
+
+                return Ok(auctionDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
         }
     }
 }

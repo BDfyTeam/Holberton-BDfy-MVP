@@ -108,9 +108,9 @@ namespace BDfy.Data
             // Lot --> Auctioneer
             modelBuilder.Entity<Lot>(entity =>
             {
-                entity.HasOne(l => l.Auctioneer)
-                      .WithMany(ad => ad.Lots)
-                      .HasForeignKey(l => l.AuctioneerId)
+                entity.HasOne(l => l.Auction)
+                      .WithMany(a => a.Lots)
+                      .HasForeignKey(l => l.AuctionId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
         }

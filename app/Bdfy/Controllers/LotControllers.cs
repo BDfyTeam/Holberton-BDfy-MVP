@@ -2,16 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using BDfy.Dtos;
 using BDfy.Data;
 using BDfy.Models;
-using System.Text.Json;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Identity;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
-
 
 namespace BDfy.Controllers
 {
@@ -30,9 +22,9 @@ namespace BDfy.Controllers
 	{
 		public LotController(BDfyDbContext db) : base(db) { }
 
-	    [Authorize]
+		[Authorize]
 		[HttpPost]
-		public async Task<ActionResult> Register(Guid AuctioneerID, [FromBody] RegisterLot Dto)
+		public async Task<ActionResult> Register(Guid auctionID, [FromBody] RegisterLot Dto)
 		{
 			try
 			{
@@ -40,16 +32,18 @@ namespace BDfy.Controllers
 				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
 
-				if (AuctioneerID.ToString() != userIdFromToken) { return Unauthorized(""); }
+				var auction = await _db.Auctions
+					.Include(a => a.Auctioneer)
+					.Include(a => a.Lots)
+					.FirstOrDefaultAsync(a => a.Id == auctionID);
+
+				if (auction == null) { return NotFound("Auction not found"); }
+
+				if (auction.Auctioneer.UserId.ToString() != userIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
 				if (userRoleFromToken != UserRole.Auctioneer.ToString()) { return Unauthorized("Access Denied: Only Auctioneers can create Lots"); }
 
 				if (!ModelState.IsValid) { return BadRequest(ModelState); }
-
-				var auctioneer = await _db.Users
-						.Include(u => u.AuctioneerDetails)
-						.FirstOrDefaultAsync(u => u.Id == AuctioneerID);
-				if (auctioneer == null || auctioneer.AuctioneerDetails == null) { return NotFound(); }
 
 				var lot = new Lot
 				{
@@ -57,23 +51,77 @@ namespace BDfy.Controllers
 					Description = Dto.Description,
 					Details = Dto.Details,
 					StartingPrice = Dto.StartingPrice,
-					AuctioneerId = auctioneer.AuctioneerDetails.Id,
-    				Auctioneer = auctioneer.AuctioneerDetails	
+					AuctionId = auctionID,
+					Auction = auction,
+					Sold = false
 				};
 
-				var checkLot = await _db.Lots.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber);
+				var checkLot = await _db.Lots
+					.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber && l.AuctionId == auctionID);
 
-				if (checkLot == null) { return BadRequest("Lot already exists"); }
+				if (checkLot != null) { throw new InvalidOperationException("The Lot number on this Auction is already taken"); }
+
+				auction.Lots.Add(lot); // Arreglar
 
 				_db.Lots.Add(lot);
 				await _db.SaveChangesAsync();
 
-				return Ok(new { message = "Lot registered successfully." });
+				return Created();
 			}
 			catch (Exception ex)
 			{
-				return StatusCode(500, new { error = ex.Message });
+				return StatusCode(500, new { error = ex.Message }); // Entraba aca l.AuctionId
 			}
 		}
+
+		[HttpGet("{lotId}")]
+		public async Task<ActionResult<GetLotByIdDto>>GetLotById([FromRoute]Guid lotId)
+		{
+		 try
+            {
+				var lotById = await _db.Lots
+					.Include(l => l.Auction)
+						.ThenInclude(a => a.Auctioneer)
+					.FirstOrDefaultAsync(l => l.Id == lotId);
+
+				if (lotById == null) { return NotFound("Lot not found. Sorry");}
+
+
+				var lotDto = new GetLotByIdDto
+				{
+					Id = lotById.Id,
+					LotNumber = lotById.LotNumber,
+					Description = lotById.Description,
+					Details = lotById.Details,
+					StartingPrice = lotById.StartingPrice,
+					CurrentPrice = lotById.CurrentPrice ?? lotById.StartingPrice,
+					EndingPrice = lotById.EndingPrice ?? 0,
+					Sold = lotById.Sold,
+					Auction = new LotByIdAuctionDto
+					{
+						Id = lotById.Auction.Id,
+						Title = lotById.Auction.Title,
+						Description = lotById.Auction.Description,
+						StartAt = lotById.Auction.StartAt,
+						EndAt = lotById.Auction.EndAt,
+						Category = lotById.Auction.Category ?? [],
+						Status = lotById.Auction.Status,
+						AuctioneerId = lotById.Auction.AuctioneerId,
+						Auctioneer = new AuctioneerDto
+						{
+							UserId = lotById.Auction.Auctioneer.UserId,
+							Plate = lotById.Auction.Auctioneer.Plate
+						}
+					}
+				};
+				return Ok(lotDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+		
 	}
 }        
+	

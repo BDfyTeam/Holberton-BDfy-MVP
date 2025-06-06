@@ -104,13 +104,14 @@ def create_tables():
                 starting_price DECIMAL(19,4) NOT NULL CHECK (starting_price >= 0),
                 current_price DECIMAL(19,4) CHECK (current_price >= 0),
                 ending_price DECIMAL(19,4) CHECK (ending_price >= 0),
+                sold BOOLEAN NOT NULL,
 
-                auctioneer_id UUID NOT NULL,
+                auction_id UUID NOT NULL,
                 winner_id UUID,
 
                 created_at TIMESTAMP NOT NULL,
                 updated_at TIMESTAMP NOT NULL,
-                FOREIGN KEY (auctioneer_id) REFERENCES auctioneerdetails(id) ON DELETE CASCADE,
+                FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE,
                 FOREIGN KEY (winner_id) REFERENCES userdetails(id) ON DELETE SET NULL
             )
         """)
