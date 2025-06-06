@@ -45,7 +45,7 @@ namespace BDfy.Models
 
         [Required]
         [Column("auctioneer")]
-        [JsonIgnore]
+        //[JsonIgnore]
         public AuctioneerDetails Auctioneer { get; set; } = null!;
 
         [Required]
