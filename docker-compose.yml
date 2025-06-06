@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: app/Bdfy/Dockerfile
+    ports:
+      - "5015:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BDfyDatabase;Username=root;Password=1234
+    depends_on:
+      - db
+    networks:
+      - bidify-net
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: bdfy_db
+      POSTGRES_USER: bdfy_user
+      POSTGRES_PASSWORD: supersecure
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - bidify-net
+
+volumes:
+  pgdata:
+
+networks:
+  bidify-net:
