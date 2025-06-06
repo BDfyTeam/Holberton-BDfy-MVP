@@ -6,7 +6,7 @@ namespace BDfy.Models
 {
     public enum AuctionStatus
     {
-        Closed, Active, Draft
+        Closed, Active, Draft, Storage
     }
     public class Auction : Base // Clase Subasta
     {

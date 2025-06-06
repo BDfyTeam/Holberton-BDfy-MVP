@@ -52,11 +52,12 @@ namespace BDfy.Controllers
 					Details = Dto.Details,
 					StartingPrice = Dto.StartingPrice,
 					AuctionId = auctionID,
-					Auction = auction
+					Auction = auction,
+					Sold = false
 				};
 
 				var checkLot = await _db.Lots
-    					.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber && l.AuctionId == auctionID);
+    				.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber && l.AuctionId == auctionID);
 				
 				if (checkLot != null) {throw new InvalidOperationException("The Lot number on this Auction is already taken");}
 
