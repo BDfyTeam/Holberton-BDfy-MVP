@@ -105,14 +105,19 @@ namespace BDfy.Controllers
             {
 
                 if (!Enum.TryParse(status, true, out AuctionStatus enumStatus)) // Convertimos el string a enum
-                    {
-                        return BadRequest($"Invalid status: {status}");
-                    }
+                {
+                    return BadRequest($"Invalid status: {status}");
+                }
 
                 var auctions = await _db.Auctions
                         .Include(ad => ad.Auctioneer)
                         .Where(a => a.Status == enumStatus)
                         .ToListAsync();
+
+                if (enumStatus == AuctionStatus.Storage)
+                {
+                    return Unauthorized("Access Denied");
+                }
 
                 var auctionDtos = auctions.Select(a => new AuctionDto
                 {
