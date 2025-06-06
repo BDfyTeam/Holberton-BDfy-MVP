@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BDfy.Models
 {
@@ -28,7 +29,7 @@ namespace BDfy.Models
         public DateTime EndAt { get; set; }
 
         [Column("category")]
-        public List<int>? Category { get; set; } = [];
+        public  int[]? Category { get; set; } = [];
 
         [Required]
         [Column("status")]
@@ -44,6 +45,7 @@ namespace BDfy.Models
 
         [Required]
         [Column("auctioneer")]
+        //[JsonIgnore]
         public AuctioneerDetails Auctioneer { get; set; } = null!;
 
         [Required]
