@@ -34,6 +34,10 @@ namespace BDfy.Models
         public decimal? EndingPrice { get; set; }
 
         [Required]
+        [Column("sold")]
+        public bool Sold { get; set; }
+
+        [Required]
         // [Column("auctioneer_id")]
         [Column("auction_id")]
         public Guid AuctionId { get; set; } // AuctionId puede ser, auctioneerId
