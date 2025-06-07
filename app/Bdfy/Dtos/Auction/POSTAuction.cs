@@ -26,8 +26,6 @@ namespace BDfy.Dtos
 
         [Required(ErrorMessage = "The Direction is mandatory")]
         public Direction Direction { get; set; } = null!;
-
-        public AuctioneerDto Auctioneer { get; set; } = null!;
     }
 
     public class AuctioneerDto
