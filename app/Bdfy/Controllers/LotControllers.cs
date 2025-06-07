@@ -51,6 +51,7 @@ namespace BDfy.Controllers
 					Description = Dto.Description,
 					Details = Dto.Details,
 					StartingPrice = Dto.StartingPrice,
+					CurrentPrice = Dto.StartingPrice,
 					AuctionId = auctionID,
 					Auction = auction,
 					Sold = false
@@ -121,7 +122,106 @@ namespace BDfy.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+        [HttpGet]
+		public async Task<ActionResult<IEnumerable<LotGetDto>>> GetAllLots()
+		{
+			try
+			{
+				var lots = await _db.Lots.ToListAsync();
+
+				var lotsDto = lots.Select(l => new LotGetDto
+				{
+					Id = l.Id,
+					LotNumber = l.LotNumber,
+					Description = l.Description,
+					Details = l.Details,
+					StartingPrice = l.StartingPrice,
+					CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
+					EndingPrice = l.EndingPrice ?? 0,
+					Sold = l.Sold,
+					AuctionId = l.AuctionId
+				});
+
+				return Ok(lotsDto);
+			}
+			catch (Exception ex)
+			{
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+			}
+		}
+
+
+		[Authorize]
+        [HttpPost("/bid/{lotId}")]
+        public async Task<ActionResult<AuctionDto>> PostBid([FromBody] BidDto bid, [FromRoute] Guid lotId)
+        {
+			try
+			{
+				var userClaims = HttpContext.User;
+				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
+				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
+
+				var lot = await _db.Lots
+					.Include(l => l.Auction)
+						.ThenInclude(a => a.Auctioneer)
+					.Include(l => l.BiddingHistory)
+					.FirstOrDefaultAsync(l => l.Id == lotId);
+
+				if (lot == null) { return NotFound("Lot not found"); }
+
+				if (lot.Auction.Auctioneer.UserId.ToString() == userIdFromToken) { return Unauthorized("Access Denied: You cannot bid in your own Lot"); }
+
+				if (userRoleFromToken != UserRole.Buyer.ToString()) { return Unauthorized("Access Denied: Only Buyers can bid in Lots"); }
+
+				if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+				if (bid.LotId != lotId)
+				{
+					return BadRequest("LotId in the body does not match the LotId in the route");
+				}
+
+				if (!Guid.TryParse(userIdFromToken, out Guid parsedUserId))
+				{
+					return Unauthorized("Invalid User ID in token");
+				}
+
+				var user = await _db.Users
+					.Include(u => u.UserDetails)
+					.FirstOrDefaultAsync(u => u.Id == parsedUserId);
+				
+				if (user == null || user.UserDetails == null) { return BadRequest("User details not found for the current user"); }
+
+				var Bid = new Bid
+				{
+					Amount = bid.Amount,
+					Time = bid.Time,
+					LotId = bid.LotId,
+					BuyerId = parsedUserId,
+					Buyer = user.UserDetails
+				};
 		
+				if (bid.Amount > lot.CurrentPrice)
+				{
+					Console.WriteLine("Entro al if");
+					lot.CurrentPrice = Bid.Amount;
+				}
+
+				lot.BiddingHistory ??= new List<Bid>();
+				lot.BiddingHistory.Add(Bid);
+
+				_db.Bids.Add(Bid);
+				await _db.SaveChangesAsync();
+
+				// WebSocket aca <---- :D
+
+				return Created();
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, "Internal Server Error: " + ex.Message);
+			}
+
+		}
 	}
 }        
 	
