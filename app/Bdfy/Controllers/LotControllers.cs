@@ -13,9 +13,9 @@ namespace BDfy.Controllers
 	[Route("api/1.0/lots")]
 	public class BaseControllerLots(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
 	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext) : BaseControllerLots(db) // Heredamos la DB para poder usarla
-		{
-			private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
-        [Authorize]
+	{
+		private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
+		[Authorize]
 		[HttpPost]
 		public async Task<ActionResult> Register(Guid auctionID, [FromBody] RegisterLot Dto)
 		{
@@ -69,12 +69,6 @@ namespace BDfy.Controllers
 		}
 
 
-<<<<<<< HEAD
-		//Hoy sabado hacer GET LOTES POR AUCTIONEER ID!!!!!!, DALE RODRI!!!
-
-		[HttpGet("{lotId}")]
-		public async Task<ActionResult<GetLotByIdDto>> GetLotById([FromRoute] Guid lotId)
-=======
 		//Hoy sabado hacer GET LOTES POR AUCTIONEER ID!!!!!!
 		[HttpGet("{auctioneer_id}")]
 		public async Task<ActionResult<IEnumerable<GetLotByIdDto>>> GetLotByAuctioneerId([FromRoute] Guid auctioneer_id)
@@ -131,8 +125,7 @@ namespace BDfy.Controllers
 
 
 		[HttpGet("specific/{lotId}")]
-		public async Task<ActionResult<GetLotByIdDto>>GetLotById([FromRoute]Guid lotId)
->>>>>>> feature/validations
+		public async Task<ActionResult<GetLotByIdDto>> GetLotById([FromRoute] Guid lotId)
 		{
 			try
 			{
@@ -204,6 +197,86 @@ namespace BDfy.Controllers
 			{
 				return StatusCode(500, "Internal Server Error: " + ex.Message);
 			}
+		}
+		
+		[Authorize]
+		[HttpPost("bid/{lotId}")]
+		public async Task<ActionResult<AuctionDto>> PostBid([FromBody] BidDto bid, [FromRoute] Guid lotId)
+		{
+			try
+			{
+				var userClaims = HttpContext.User;
+				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
+				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
+
+				var lot = await _db.Lots
+					.Include(l => l.Auction)
+						.ThenInclude(a => a.Auctioneer)
+					.Include(l => l.BiddingHistory)
+					.FirstOrDefaultAsync(l => l.Id == lotId);
+
+				if (lot == null) { return NotFound("Lot not found"); }
+
+				if (lot.Auction.Auctioneer.UserId.ToString() == userIdFromToken) { return Unauthorized("Access Denied: You cannot bid in your own Lot"); }
+
+				if (userRoleFromToken != UserRole.Buyer.ToString()) { return Unauthorized("Access Denied: Only Buyers can bid in Lots"); }
+
+				if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+				if (bid.LotId != lotId)
+				{
+					return BadRequest("LotId in the body does not match the LotId in the route");
+				}
+
+				if (!Guid.TryParse(userIdFromToken, out Guid parsedUserId))
+				{
+					return Unauthorized("Invalid User ID in token");
+				}
+
+				var user = await _db.Users
+					.Include(u => u.UserDetails)
+					.FirstOrDefaultAsync(u => u.Id == parsedUserId);
+
+				if (user == null || user.UserDetails == null) { return BadRequest("User details not found for the current user"); }
+
+				var Bid = new Bid
+				{
+					Amount = bid.Amount,
+					Time = bid.Time,
+					LotId = bid.LotId,
+					BuyerId = parsedUserId,
+					Buyer = user.UserDetails
+				};
+
+				if (bid.Amount > lot.CurrentPrice)
+				{
+					lot.CurrentPrice = Bid.Amount;
+
+					var bidUpdate = new ReceiveBidDto
+					{
+						LotId = bid.LotId,
+						CurrentPrice = bid.Amount,
+						BuyerId = parsedUserId
+					};
+
+					lot.BiddingHistory ??= new List<Bid>();
+					lot.BiddingHistory.Add(Bid);
+
+					_db.Bids.Add(Bid);
+					await _db.SaveChangesAsync();
+
+					// WebSocket aca 
+					await _hubContext.Clients.Group($"auction_{bid.LotId}").ReceiveBid(bidUpdate); // <---- :D
+
+					return Created();
+				}
+				return BadRequest(new { message = "The bid must be grater than the current price" });
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, "Internal Server Error: " + ex.Message);
+			}
+
 		}
 
 	}
