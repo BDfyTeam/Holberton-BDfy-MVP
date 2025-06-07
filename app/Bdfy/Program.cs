@@ -6,42 +6,42 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Newtonsoft.Json;
 using Microsoft.OpenApi.Models;
-
+using BDfy.Configurations; // Asegúrate de incluir el espacio de nombres de AppSettings
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Agregar servicios al contenedor.
 builder.Services.AddScoped<Storage>();
 builder.Services.AddControllers();
-// .AddNewtonsoftJson(options =>
-// {
-//     options.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error; // Maneja casos de cuando pasan argumentos extras en el swagger
-// });
+
+// Configurar el acceso a la clave secreta
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+
 builder.Services.AddDbContext<BDfyDbContext>(options =>
-    options
-        // .UseLazyLoadingProxies() // LazyMode para BiddingHistory
-        .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
 builder.Services.AddCors(options =>
-   {
-       options.AddPolicy("AllowAll", builder =>
-       {
-           builder.AllowAnyOrigin(); 
-           builder.AllowAnyMethod(); 
-           builder.AllowAnyHeader(); 
-       });
-   });
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin();
+        builder.AllowAnyMethod();
+        builder.AllowAnyHeader();
+    });
+});
 
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "1.0",
         Title = "Bdfy API",
         Description = "API para Bdfy"
     });
-    // Esto asegura que Swagger reconoce las etiquetas
+
     c.DocInclusionPredicate((docName, apiDesc) =>
     {
         if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
@@ -57,7 +57,6 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    // Aplicar el esquema de seguridad globalmente
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
         {
@@ -77,21 +76,27 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-
+// Configurar la autenticación JWT
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
+    var secretKey = builder.Configuration.GetValue<string>("AppSettings:SecretKey");
+
+    if (string.IsNullOrEmpty(secretKey))
+    {
+        throw new InvalidOperationException("La clave secreta no está configurada en appsettings.json.");
+    }
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = false,
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)) // Usar la clave secreta de la configuración
     };
 });
 
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -101,6 +106,9 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bdfy API v1");
     });
 }
+
 app.UseCors("AllowAll");
+app.UseAuthentication(); // Asegúrate de usar la autenticación
+app.UseAuthorization();
 app.MapControllers();
 app.Run();

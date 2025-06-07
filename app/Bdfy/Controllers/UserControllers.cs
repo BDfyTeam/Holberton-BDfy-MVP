@@ -3,6 +3,8 @@ using BDfy.Dtos;
 using BDfy.Data;
 using BDfy.Models;
 using BDfy.Services;
+using BDfy.Configurations;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
@@ -23,10 +25,16 @@ namespace BDfy.Controllers
         protected readonly BDfyDbContext _db = db; // La db
     }
 
-    public class UsersController(BDfyDbContext db, Storage StorageService) : BaseController(db) // Heredamos la DB para poder usarla
+    public class UsersController : BaseController // Heredamos la DB para poder usarla
     {
-
-        private readonly Storage _StorageServices = StorageService;
+        private readonly Storage _StorageServices;
+        private readonly string _secretKey; // Clave secreta para tokens JWT
+        // Constructor explícito para recibir la inyección de dependencias
+        public UsersController(BDfyDbContext db, Storage storageService, IOptions<AppSettings> appSettings) : base(db)
+        {
+            _StorageServices = storageService;
+            _secretKey = appSettings.Value.SecretKey; // Asignar valor de configuración
+        }
 
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] RegisterDto Dto)
@@ -89,11 +97,14 @@ namespace BDfy.Controllers
                     new("email", user.Email)
                 };
 
-                string _secretKey = "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; //key secreta para el token para todos
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey)); // Usar la clave secreta de la configuración
+                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
-                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey)); //Paso la secret key que es un string a bytes
+                // string _secretKey = "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; //key secreta para el token para todos
 
-                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);//Genero las credencial con un algoritmo
+                // var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey)); //Paso la secret key que es un string a bytes
+
+                // var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);//Genero las credencial con un algoritmo
 
                 var tokeOptions = new JwtSecurityToken(//parametros que queremos guardar en el jwt token
                     issuer: "http://localhost:5015",
