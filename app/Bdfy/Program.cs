@@ -1,38 +1,42 @@
 using BDfy.Data;
 using BDfy.Services;
 using Microsoft.EntityFrameworkCore;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Newtonsoft.Json;
 using Microsoft.OpenApi.Models;
-using BDfy.Configurations; // Asegúrate de incluir el espacio de nombres de AppSettings
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using BDfy.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregar servicios al contenedor.
-builder.Services.AddScoped<Storage>();
-builder.Services.AddControllers();
-
-// Configurar el acceso a la clave secreta
+// 🔐 Configuración de AppSettings (para acceder a SecretKey desde IOptions)
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
+// 💾 DbContext
 builder.Services.AddDbContext<BDfyDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+// 🛠️ Servicios personalizados
+builder.Services.AddScoped<Storage>();
+
+// 🧱 Controllers
+builder.Services.AddControllers();
+
+// 🌐 CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        builder.AllowAnyOrigin();
-        builder.AllowAnyMethod();
-        builder.AllowAnyHeader();
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
+// 📈 Swagger + Bearer token
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -44,7 +48,8 @@ builder.Services.AddSwaggerGen(c =>
 
     c.DocInclusionPredicate((docName, apiDesc) =>
     {
-        if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
+        var actionDescriptor = apiDesc.ActionDescriptor as Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor;
+        if (actionDescriptor == null) return false;
         var groupName = apiDesc.GroupName ?? "v1";
         return docName == groupName;
     });
@@ -57,7 +62,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -76,15 +81,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configurar la autenticación JWT
+// 🔑 JWT Authentication
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
-    var secretKey = builder.Configuration.GetValue<string>("AppSettings:SecretKey");
-
-    if (string.IsNullOrEmpty(secretKey))
-    {
-        throw new InvalidOperationException("La clave secreta no está configurada en appsettings.json.");
-    }
+    var secret = builder.Configuration["AppSettings:SecretKey"]
+        ?? "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; // fallback para desarrollo
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -92,12 +93,37 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)) // Usar la clave secreta de la configuración
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret))
+    };
+});
+
+// 🚦 Rate Limiting con manejo personalizado cuando se supera el límite
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("register_policy", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,                      // ❗ 5 intentos por IP
+                Window = TimeSpan.FromMinutes(1),     // ❗ por cada 1 minuto
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 2
+            }));
+
+    // 👇 Respuesta personalizada cuando se supera el límite
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsync(
+            "{\"error\": \"Too many requests. Please try again later.\"}", token);
     };
 });
 
 var app = builder.Build();
 
+// 🧪 Swagger sólo en desarrollo
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -107,8 +133,12 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// 🧱 Middleware
 app.UseCors("AllowAll");
-app.UseAuthentication(); // Asegúrate de usar la autenticación
-app.UseAuthorization();
+
+app.UseRateLimiter();       // 👈 Activar Rate Limiter
+app.UseAuthentication();    // 👈 JWT auth
+app.UseAuthorization();     // 👈 Roles y claims
+
 app.MapControllers();
 app.Run();
