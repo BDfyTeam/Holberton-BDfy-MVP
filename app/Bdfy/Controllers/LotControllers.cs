@@ -75,6 +75,9 @@ namespace BDfy.Controllers
 			}
 		}
 
+
+		//Hoy sabado hacer GET LOTES POR AUCTIONEER ID!!!!!!
+
 		[HttpGet("{lotId}")]
 		public async Task<ActionResult<GetLotByIdDto>>GetLotById([FromRoute]Guid lotId)
 		{

@@ -7,7 +7,5 @@ namespace BDfy.Dtos
 	{
 		[Required]
 		public bool IsAdmin { get; set; } = false;
-		[Required]
-		public Guid UserId { get; set; }
 	}
 }
