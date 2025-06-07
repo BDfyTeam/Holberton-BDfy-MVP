@@ -19,22 +19,12 @@ namespace BDfy.Controllers
 {
     [ApiController]
     [Route("api/1.0/users")]
-    public class BaseController(BDfyDbContext db) : ControllerBase
-    {
-        protected readonly BDfyDbContext _db = db;
-    }
+    public class BaseController(BDfyDbContext db) : ControllerBase { protected readonly BDfyDbContext _db = db; }
 
-    public class UsersController : BaseController
+    public class UsersController(BDfyDbContext db, Storage storageService, IOptions<AppSettings> appSettings) : BaseController(db)
     {
-        private readonly Storage _storageService;
-        private readonly string _secretKey;
-
-        public UsersController(BDfyDbContext db, Storage storageService, IOptions<AppSettings> appSettings)
-            : base(db)
-        {
-            _storageService = storageService;
-            _secretKey = appSettings.Value.SecretKey;
-        }
+        private readonly Storage _storageService = storageService;
+        private readonly string _secretKey = appSettings.Value.SecretKey;
 
         [EnableRateLimiting("register_policy")]
         [HttpPost("register")]
@@ -85,12 +75,12 @@ namespace BDfy.Controllers
                     UserId = user.Id,
                     Plate = details.Plate
                 });
-                var storageAuction = await _storageService.CreateStorage(user.Id);
+                var storageAuction = await _storageService.CreateStorage(user.Id); // Storage para auctioneer
                 _db.Auctions.Add(storageAuction);
             }
             else
             {
-                return BadRequest("Missing user details for the specified role.");
+                return BadRequest("Missing user details for the specified role");
             }
 
             await _db.SaveChangesAsync();
@@ -111,13 +101,13 @@ namespace BDfy.Controllers
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
             if (user is null)
-                return Unauthorized("Invalid credentials.");
+                return NotFound("User not found");
 
             var passwordHasher = new PasswordHasher<User>();
             var result = passwordHasher.VerifyHashedPassword(user, user.Password, dto.Password);
 
             if (result == PasswordVerificationResult.Failed)
-                return Unauthorized("Invalid password.");
+                return Unauthorized("Invalid password");
 
             var token = GenerateJwt(user);
             return Ok(new { Token = token });
@@ -151,7 +141,7 @@ namespace BDfy.Controllers
             var claims = new List<Claim>
             {
                 new("Id", user.Id.ToString()),
-                new("email", user.Email),
+                new("Email", user.Email),
                 new("Role", user.Role.ToString())
             };
 

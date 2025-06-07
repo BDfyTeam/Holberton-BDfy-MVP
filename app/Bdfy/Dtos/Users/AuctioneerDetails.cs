@@ -7,8 +7,6 @@ namespace BDfy.Dtos
 	{
 		[Required]
 		public int Plate { get; set; }
-		[Required]
-        public Guid UserId { get; set; }
 	}
 
 }

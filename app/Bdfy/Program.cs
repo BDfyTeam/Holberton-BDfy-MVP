@@ -18,12 +18,9 @@ builder.Services.AddDbContext<BDfyDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-
 builder.Services.AddScoped<Storage>();
 
-
 builder.Services.AddControllers();
-
 
 builder.Services.AddCors(options =>
 {
