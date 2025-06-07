@@ -65,33 +65,32 @@ namespace BDfy.Controllers
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            if (dto.Role == UserRole.Buyer && dto.Details is JsonElement detailsJsonBuyer)
-            {
-                var details = detailsJsonBuyer.Deserialize<UserDetailsDto>();
-                if (details is null) return BadRequest("Missing buyer details.");
 
+            if (dto.Role == UserRole.Buyer && dto.UserDetails != null)
+            {
+                var details = dto.UserDetails; // No es necesario deserializar, ya que es un objeto específico
                 _db.UserDetails.Add(new UserDetails
                 {
                     UserId = user.Id,
                     IsAdmin = details.IsAdmin
                 });
             }
-            else if (dto.Role == UserRole.Auctioneer && dto.Details is JsonElement detailsJsonAuctioneer)
+            else if (dto.Role == UserRole.Auctioneer && dto.AuctioneerDetails != null)
             {
-                var details = detailsJsonAuctioneer.Deserialize<AuctioneerDetailsDto>();
-                if (details is null) return BadRequest("Missing auctioneer details.");
-
+                var details = dto.AuctioneerDetails; // No es necesario deserializar, ya que es un objeto específico
                 if (await _db.AuctioneerDetails.AnyAsync(ad => ad.Plate == details.Plate))
                     return BadRequest("Plate is already in use.");
-
                 _db.AuctioneerDetails.Add(new AuctioneerDetails
                 {
                     UserId = user.Id,
                     Plate = details.Plate
                 });
-
                 var storageAuction = await _storageService.CreateStorage(user.Id);
                 _db.Auctions.Add(storageAuction);
+            }
+            else
+            {
+                return BadRequest("Missing user details for the specified role.");
             }
 
             await _db.SaveChangesAsync();

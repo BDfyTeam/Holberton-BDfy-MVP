@@ -54,6 +54,8 @@ namespace BDfy.Dtos
         [Required(ErrorMessage = "The direction is mandatory")]
         public Direction Direction { get; set; } = null!;
 
-        public object? Details { get; set; }
+        public UserDetailsDto? UserDetails { get; set; }
+        public AuctioneerDetailsDto? AuctioneerDetails { get; set; }
+
     }
 }

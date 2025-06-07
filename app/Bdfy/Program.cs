@@ -10,21 +10,21 @@ using BDfy.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔐 Configuración de AppSettings (para acceder a SecretKey desde IOptions)
+//App settings config to access secret
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
-// 💾 DbContext
+
 builder.Services.AddDbContext<BDfyDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// 🛠️ Servicios personalizados
+
 builder.Services.AddScoped<Storage>();
 
-// 🧱 Controllers
+
 builder.Services.AddControllers();
 
-// 🌐 CORS
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -81,11 +81,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// 🔑 JWT Authentication
+//  JWT Authentication
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
     var secret = builder.Configuration["AppSettings:SecretKey"]
-        ?? "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; // fallback para desarrollo
+        ?? "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; // fallback for developing
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -97,7 +97,7 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
     };
 });
 
-// 🚦 Rate Limiting con manejo personalizado cuando se supera el límite
+//  Rate Limiting personalized
 builder.Services.AddRateLimiter(options =>
 {
     options.AddPolicy("register_policy", context =>
@@ -105,13 +105,13 @@ builder.Services.AddRateLimiter(options =>
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 5,                      // ❗ 5 intentos por IP
-                Window = TimeSpan.FromMinutes(1),     // ❗ por cada 1 minuto
+                PermitLimit = 5,                      // 5 trys per ip
+                Window = TimeSpan.FromMinutes(1),     //  for each minute
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                 QueueLimit = 2
             }));
 
-    // 👇 Respuesta personalizada cuando se supera el límite
+    // Json when request limits enters
     options.OnRejected = async (context, token) =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
@@ -123,7 +123,6 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
-// 🧪 Swagger sólo en desarrollo
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -133,12 +132,12 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// 🧱 Middleware
+// Middleware
 app.UseCors("AllowAll");
 
-app.UseRateLimiter();       // 👈 Activar Rate Limiter
-app.UseAuthentication();    // 👈 JWT auth
-app.UseAuthorization();     // 👈 Roles y claims
+app.UseRateLimiter();       // Activate the rate limiter
+app.UseAuthentication();    // Jwt
+app.UseAuthorization();     // Rols & claims
 
 app.MapControllers();
 app.Run();
