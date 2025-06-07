@@ -10,6 +10,8 @@ using BDfy.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSignalR();
+
 //App settings config to access secret
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
