@@ -76,8 +76,61 @@ namespace BDfy.Controllers
 
 
 		//Hoy sabado hacer GET LOTES POR AUCTIONEER ID!!!!!!
+		[HttpGet("{auctioneer_id}")]
+		public async Task<ActionResult<IEnumerable<GetLotByIdDto>>> GetLotByAuctioneerId([FromRoute] Guid auctioneer_id)
+		{
+			try
+			{
+				var lotsByAuctioneerId = await _db.Lots
+					.Include(l => l.Auction)
+						.ThenInclude(a => a.Auctioneer)
+					.Where(l => l.Auction.AuctioneerId == auctioneer_id)
+					.ToListAsync();
 
-		[HttpGet("{lotId}")]
+				if (lotsByAuctioneerId == null || !lotsByAuctioneerId.Any())
+				{
+					return NotFound("No lots found for this auctioneer.");
+				}
+
+				var lotDtos = lotsByAuctioneerId.Select(lotById => new GetLotByIdDto
+				{
+					Id = lotById.Id,
+					LotNumber = lotById.LotNumber,
+					Description = lotById.Description,
+					Details = lotById.Details,
+					StartingPrice = lotById.StartingPrice,
+					CurrentPrice = lotById.CurrentPrice ?? lotById.StartingPrice,
+					EndingPrice = lotById.EndingPrice ?? 0,
+					Sold = lotById.Sold,
+					Auction = new LotByIdAuctionDto
+					{
+						Id = lotById.Auction.Id,
+						Title = lotById.Auction.Title,
+						Description = lotById.Auction.Description,
+						StartAt = lotById.Auction.StartAt,
+						EndAt = lotById.Auction.EndAt,
+						Category = lotById.Auction.Category ?? [],
+						Status = lotById.Auction.Status,
+						AuctioneerId = lotById.Auction.AuctioneerId,
+						Auctioneer = new AuctioneerDto
+						{
+							UserId = lotById.Auction.Auctioneer.UserId,
+							Plate = lotById.Auction.Auctioneer.Plate
+						}
+					}
+				}).ToList();
+
+				return Ok(lotDtos);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, "Internal Server Error: " + ex.Message);
+			}
+		}
+
+
+
+		[HttpGet("specific/{lotId}")]
 		public async Task<ActionResult<GetLotByIdDto>>GetLotById([FromRoute]Guid lotId)
 		{
 		 try
