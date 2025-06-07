@@ -83,3 +83,29 @@ export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
     throw error;
   }
 }
+
+// ENTRAR EN UNA SUBASTA (GET all auctions)
+export async function getAllAuctions() {
+  try {
+    const response = await fetch("http://127.0.0.1:5015/api/1.0/auctions", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error al obtener las subastas.');
+    }
+
+    const data = await response.json();
+    console.log("Respuesta del backend:", data);
+
+    return data;
+
+  } catch (error) {
+    console.error("Error al obtener las subastas:", error);
+    throw error;
+  } 
+}

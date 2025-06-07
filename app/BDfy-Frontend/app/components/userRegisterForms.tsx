@@ -1,29 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { isPasswordValid, isEmailValid, isDocumentValid } from '../services/validations'
-import type { RegisterUserPayload } from '../services/types';
-import { registerUser } from '~/services/fetchService';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  isPasswordValid,
+  isEmailValid,
+  isDocumentValid,
+} from "../services/validations";
+import type { RegisterUserPayload } from "../services/types";
+import { registerUser } from "~/services/fetchService";
 
 function UserRegisterForm() {
   const navigate = useNavigate();
   const [validated, setValidated] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [reputation] = useState(75);
-  const [phone, setPhone] = useState('');
-  const [documentNumber, setDocumentNumber] = useState('');
+  const [phone, setPhone] = useState("");
+  const [documentNumber, setDocumentNumber] = useState("");
   const [role] = useState(0);
-  const [street, setStreet] = useState('');
-  const [streetNumber, setStreetNumber] = useState('');
-  const [zipCode, setZipCode] = useState('');
-  const [department, setDepartment] = useState('');
+  const [street, setStreet] = useState("");
+  const [streetNumber, setStreetNumber] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const [department, setDepartment] = useState("");
   const [isAdmin] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
-
-
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -37,9 +39,9 @@ function UserRegisterForm() {
       !isDocumentValid(documentNumber) ||
       !/^09\d{7}$/.test(phone) ||
       !/^\d{5}$/.test(zipCode) ||
-      street.trim() === '' ||
+      street.trim() === "" ||
       !/^\d{1,4}$/.test(streetNumber.trim()) ||
-      department.trim() === ''
+      department.trim() === ""
     ) {
       event.preventDefault();
       event.stopPropagation();
@@ -65,17 +67,17 @@ function UserRegisterForm() {
           street,
           streetNumber: parseInt(streetNumber),
           zipCode: parseInt(zipCode),
-          department
+          department,
         },
         details: {
-          IsAdmin: isAdmin
-        }
+          IsAdmin: isAdmin,
+        },
       };
 
       try {
         const token = await registerUser(payload);
         localStorage.setItem("token", token);
-        navigate('/');
+        navigate("/");
       } catch (error: any) {
         console.error("Error al registrar el usuario:", error);
         alert(error.message || "Error al registrar el usuario");
@@ -89,11 +91,14 @@ function UserRegisterForm() {
 
   return (
     <form
-      className={`needs-validation ${validated ? 'was-validated' : ''} border-2 border-gray-300 rounded-lg p-6`}
-      style={{ backgroundColor: 'rgb(60, 63, 96)' }}
+      className={`needs-validation ${
+        validated ? "was-validated" : ""
+      } border-2 border-gray-300 rounded-lg p-6`}
+      style={{ backgroundColor: "rgb(60, 63, 96)" }}
       noValidate
       onSubmit={handleSubmit}
     >
+      <h1>Registrarme como usuario</h1>
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 min-w-[200px]">
           <label htmlFor="firstName">Nombre</label>
@@ -101,9 +106,13 @@ function UserRegisterForm() {
             type="text"
             className={`
               form-control border-2 rounded-lg p-1 w-full text-black
-              ${validated && firstName.trim() === '' ? 'border-red-500' : 'border-gray-300'}
+              ${
+                validated && firstName.trim() === ""
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }
             `}
-            style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+            style={{ backgroundColor: "rgb(168, 175, 234)" }}
             id="firstName"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
@@ -111,14 +120,12 @@ function UserRegisterForm() {
             pattern="^[a-zA-Z]+$"
             required
           />
-          {validated && firstName.trim() === '' ? (
+          {validated && firstName.trim() === "" ? (
             <div className="text-red-500 text-sm mt-1">
               Por favor ingrese un nombre ❌
             </div>
-          ) : validated && firstName.trim() !== '' ? (
-            <div className="text-green-500 text-sm mt-1">
-              Nombre valido ✅
-            </div>
+          ) : validated && firstName.trim() !== "" ? (
+            <div className="text-green-500 text-sm mt-1">Nombre valido ✅</div>
           ) : null}
         </div>
 
@@ -128,9 +135,13 @@ function UserRegisterForm() {
             type="text"
             className={`
               form-control border-2 rounded-lg p-1 w-full text-black
-              ${validated && lastName.trim() === '' ? 'border-red-500' : 'border-gray-300'}
+              ${
+                validated && lastName.trim() === ""
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }
             `}
-            style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+            style={{ backgroundColor: "rgb(168, 175, 234)" }}
             id="lastName"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
@@ -138,11 +149,11 @@ function UserRegisterForm() {
             pattern="^[a-zA-Z]+$"
             required
           />
-          {validated && lastName.trim() === '' ? (
+          {validated && lastName.trim() === "" ? (
             <div className="text-red-500 text-sm mt-1">
               Por favor ingrese un apellido ❌
             </div>
-          ) : validated && lastName.trim() !== '' ? (
+          ) : validated && lastName.trim() !== "" ? (
             <div className="text-green-500 text-sm mt-1">
               Apellido valido ✅
             </div>
@@ -150,14 +161,20 @@ function UserRegisterForm() {
         </div>
 
         <div className="flex-1 min-w-[200px]">
-          <label htmlFor="email" className="block text-white mb-1">Email</label>
+          <label htmlFor="email" className="block text-white mb-1">
+            Email
+          </label>
           <input
             type="email"
             className={`
               form-control border-2 rounded-lg p-1 w-full text-black
-              ${validated && email.trim() === '' ? 'border-red-500' : 'border-gray-300'}
+              ${
+                validated && email.trim() === ""
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }
             `}
-            style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+            style={{ backgroundColor: "rgb(168, 175, 234)" }}
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -170,9 +187,7 @@ function UserRegisterForm() {
               Por favor ingrese un email válido ❌
             </div>
           ) : validated && isEmailValid(email) ? (
-            <div className="text-green-500 text-sm mt-1">
-              Email válido ✅
-            </div>
+            <div className="text-green-500 text-sm mt-1">Email válido ✅</div>
           ) : null}
         </div>
       </div>
@@ -184,16 +199,20 @@ function UserRegisterForm() {
             type="password"
             className={`
               form-control border-2 rounded-lg p-1 w-full text-black
-              ${validated && !isPasswordValid(password) ? 'border-red-500' : 'border-gray-300'}
+              ${
+                validated && !isPasswordValid(password)
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }
             `}
-            style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+            style={{ backgroundColor: "rgb(168, 175, 234)" }}
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="MotoCompacto123"
             required
           />
-          {validated && password.trim() !== '' && (
+          {validated && password.trim() !== "" && (
             <>
               {!isPasswordValid(password) ? (
                 <div className="text-red-500 text-sm mt-1">
@@ -211,7 +230,10 @@ function UserRegisterForm() {
         </div>
 
         <div className="flex-1 min-w-[200px]">
-          <label htmlFor="document" className="text-white">Documento</label> <br />
+          <label htmlFor="document" className="text-white">
+            Documento
+          </label>{" "}
+          <br />
           <div className="flex space-x-2">
             {/* <select
               className={
@@ -234,9 +256,13 @@ function UserRegisterForm() {
               type="text"
               className={`
                 flex form-control border-2 rounded-lg p-1 text-black
-                ${validated && !isDocumentValid(documentNumber) ? 'border-red-500' : 'border-gray-300'}
+                ${
+                  validated && !isDocumentValid(documentNumber)
+                    ? "border-red-500"
+                    : "border-gray-300"
+                }
               `}
-              style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+              style={{ backgroundColor: "rgb(168, 175, 234)" }}
               id="document"
               placeholder="1.234.567-8"
               required
@@ -265,9 +291,13 @@ function UserRegisterForm() {
             type="text"
             className={`
               flex form-control border-2 rounded-lg p-1 text-black
-              ${validated && !/^09\d{7}$/.test(phone) ? 'border-red-500' : 'border-gray-300'}
+              ${
+                validated && !/^09\d{7}$/.test(phone)
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }
             `}
-            style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+            style={{ backgroundColor: "rgb(168, 175, 234)" }}
             id="phone"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -288,16 +318,20 @@ function UserRegisterForm() {
         </div>
       </div>
 
-      <div className='flex flex-wrap gap-4'>
+      <div className="flex flex-wrap gap-4">
         <div className="flex-1 min-w-[200px]">
           <label htmlFor="departament">Departamento</label>
           <input
             type="text"
             className={`
               flex form-control border-2 border-gray-300 rounded-lg p-1 text-black
-              ${validated && department.trim() === '' ? 'border-red-500' : 'border-gray-300'}
+              ${
+                validated && department.trim() === ""
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }
             `}
-            style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+            style={{ backgroundColor: "rgb(168, 175, 234)" }}
             id="department"
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
@@ -305,26 +339,32 @@ function UserRegisterForm() {
             required
           />
         </div>
-        {validated && department.trim() === '' && (
+        {validated && department.trim() === "" && (
           <div className="invalid-feedback w-full text-red-500 mt-1">
             Por favor ingrese un departamento válido ❌
           </div>
         )}
-        {validated && department.trim() !== '' && (
+        {validated && department.trim() !== "" && (
           <div className="valid-feedback w-full text-green-600 mt-1">
             Departamento válido ✅
           </div>
         )}
 
         <div className="flex-1 min-w-[200px]">
-          <label htmlFor='zipCode'>Codigo Postal</label>
+          <label htmlFor="zipCode">Codigo Postal</label>
           <input
             type="text"
             className={`
               flex form-control border-2 rounded-lg p-1 text-black
-              ${validated && !/^\d{5}$/.test(zipCode) ? 'border-red-500' : validated && /^\d{5}$/.test(zipCode) ? 'border-green-500' : 'border-gray-300'}
+              ${
+                validated && !/^\d{5}$/.test(zipCode)
+                  ? "border-red-500"
+                  : validated && /^\d{5}$/.test(zipCode)
+                  ? "border-green-500"
+                  : "border-gray-300"
+              }
             `}
-            style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+            style={{ backgroundColor: "rgb(168, 175, 234)" }}
             id="zipCode"
             value={zipCode}
             onChange={(e) => setZipCode(e.target.value)}
@@ -350,21 +390,25 @@ function UserRegisterForm() {
             type="text"
             className={`
               flex form-control border-2 border-gray-300 rounded-lg p-1 text-black
-              ${validated && street.trim() === '' ? 'border-red-500' : 'border-gray-300'}
+              ${
+                validated && street.trim() === ""
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }
             `}
-            style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+            style={{ backgroundColor: "rgb(168, 175, 234)" }}
             id="street"
             value={street}
             onChange={(e) => setStreet(e.target.value)}
             placeholder="Av. CuloRoto"
             required
           />
-          {validated && street.trim() === '' && (
+          {validated && street.trim() === "" && (
             <div className="invalid-feedback text-red-500 mt-1">
               Por favor ingrese una calle válida ❌
             </div>
           )}
-          {validated && street.trim() !== '' && (
+          {validated && street.trim() !== "" && (
             <div className="valid-feedback text-green-600 mt-1">
               Calle válida ✅
             </div>
@@ -377,9 +421,14 @@ function UserRegisterForm() {
             type="text"
             className={`
               flex form-control border-2 rounded-lg p-1 text-black
-              ${validated && (!/^\d{1,4}$/.test(streetNumber.trim()) ? 'border-red-500' : 'border-green-500')}
+              ${
+                validated &&
+                (!/^\d{1,4}$/.test(streetNumber.trim())
+                  ? "border-red-500"
+                  : "border-green-500")
+              }
             `}
-            style={{ backgroundColor: 'rgb(168, 175, 234)' }}
+            style={{ backgroundColor: "rgb(168, 175, 234)" }}
             id="streetNumber"
             value={streetNumber}
             onChange={(e) => setStreetNumber(e.target.value)}
@@ -387,11 +436,14 @@ function UserRegisterForm() {
             pattern="^\d+$"
             required
           />
-          {validated && streetNumber.trim() === '' && !/^\d{1,4}$/.test(streetNumber.trim()) && parseInt(streetNumber.trim()) >= 9999 && (
-            <div className="invalid-feedback text-red-500 mt-1">
-              El número de calle no puede tener más de 4 dígitos ❌
-            </div>
-          )}
+          {validated &&
+            streetNumber.trim() === "" &&
+            !/^\d{1,4}$/.test(streetNumber.trim()) &&
+            parseInt(streetNumber.trim()) >= 9999 && (
+              <div className="invalid-feedback text-red-500 mt-1">
+                El número de calle no puede tener más de 4 dígitos ❌
+              </div>
+            )}
           {validated && /^\d{1,4}$/.test(streetNumber.trim()) && (
             <div className="valid-feedback text-green-600 mt-1">
               Número de calle válido ✅
@@ -403,7 +455,9 @@ function UserRegisterForm() {
       <div className="form-group flex justify-center items-center mt-4">
         <div className="form-check">
           <input
-            className={`form-check-input ${validated && !acceptedTerms ? 'is-invalid' : ''}`}
+            className={`form-check-input ${
+              validated && !acceptedTerms ? "is-invalid" : ""
+            }`}
             type="checkbox"
             id="invalidCheck"
             checked={acceptedTerms}
@@ -421,7 +475,7 @@ function UserRegisterForm() {
         </div>
       </div>
 
-      <div className='flex justify-center mt-4'>
+      <div className="flex justify-center mt-4">
         <button
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 text-center"
           type="submit"

@@ -1,6 +1,6 @@
 
 
-
+// REGISTRO DE USARIO Y SUBASTADOR
 export type RegisterUserPayload = {
     firstName: string;
     lastName: string;
@@ -39,6 +39,25 @@ export type RegisterAuctioneerPayload = {
     details: {
         plate: number;
     };
+};
+
+// MODELO DE LA AUCTIONCARD
+export type AuctionCard = {
+  id: string
+  title: string;
+  description: string;
+  startAt: string;
+  endAt?: string;
+  category: string[];
+  status: number;
+  direction: {
+    street: string;
+    streetNumber: number;
+    corner: string;
+    zipCode: number;
+    department: string
+  };
+  details: string;
 };
 
 // Type para lot y tipar correctamente el useState

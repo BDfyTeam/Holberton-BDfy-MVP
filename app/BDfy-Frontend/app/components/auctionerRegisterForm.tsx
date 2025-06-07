@@ -11,10 +11,10 @@ function AuctionerRegisterFrom() {
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [reputation] = useState(75);
+    const [reputation] = useState(100);
     const [phone, setPhone] = useState('');
     const [documentNumber, setDocumentNumber] = useState('');
-    const [role] = useState(0);
+    const [role] = useState(1);
     const [street, setStreet] = useState('');
     const [streetNumber, setStreetNumber] = useState('');
     const [zipCode, setZipCode] = useState('');
@@ -94,6 +94,7 @@ function AuctionerRegisterFrom() {
             noValidate
             onSubmit={handleSubmit}
         >
+            <h1 className=''>Registrarme como Subastador</h1>
             <div className="flex flex-wrap gap-4">
                 <div className="flex-1 min-w-[200px]">
                     <label htmlFor="firstName">Nombre</label>
