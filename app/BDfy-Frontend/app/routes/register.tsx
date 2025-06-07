@@ -4,6 +4,7 @@ import AuctionerRegisterFrom from "~/components/auctionerRegisterForm";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import CreateAuctionButton from "~/components/auctionForm";
 
 export function meta({}: Route.MetaArgs) {
   return [

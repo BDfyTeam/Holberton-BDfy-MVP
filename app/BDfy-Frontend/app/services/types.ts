@@ -43,7 +43,7 @@ export type RegisterAuctioneerPayload = {
 
 // MODELO DE LA AUCTIONCARD
 export type AuctionCard = {
-  id: string
+  id?: string
   title: string;
   description: string;
   startAt: string;

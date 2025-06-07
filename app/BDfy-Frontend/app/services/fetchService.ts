@@ -1,4 +1,5 @@
-import type { RegisterUserPayload } from "./types";
+import { getUserIdFromToken } from "./handleToken";
+import type { AuctionCard, RegisterUserPayload } from "./types";
 import type { RegisterAuctioneerPayload } from "./types";
 
 // LOGUEAR UN USUARIO
@@ -28,7 +29,7 @@ export async function loginUser(email: string, password: string) {
   } catch (error) {
     throw error;
   }
-}
+};
 
 // REGISTRAR UN USUARIO
 export async function registerUser(payload: RegisterUserPayload) {
@@ -55,7 +56,7 @@ export async function registerUser(payload: RegisterUserPayload) {
     console.error("Error al registrar el usuario:", error);
     throw error; // Re-lanzamos el error para que pueda ser manejado por quien llame a esta función
   }
-}
+};
 
 // REGISTRAR UN SUBASTADORREGISTRAR SUBASTADOR
 export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
@@ -82,7 +83,7 @@ export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
     console.error("Error al registrar el subastador:", error);
     throw error;
   }
-}
+};
 
 // ENTRAR EN UNA SUBASTA (GET all auctions)
 export async function getAllAuctions() {
@@ -108,4 +109,35 @@ export async function getAllAuctions() {
     console.error("Error al obtener las subastas:", error);
     throw error;
   } 
-}
+};
+
+// CREAR UNA SUBASTA
+export async function createAuction(payload: AuctionCard) {
+  try {
+    const userId = getUserIdFromToken(); // Obtenemos el ID del usuario desde el token
+    if (!userId) {
+      throw new Error("No se pudo obtener el ID del usuario desde el token.");
+    }
+
+    const response = await fetch(`/api/v1.0/auctions/${userId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error al crear la subasta.');
+    }
+
+    const data = await response.json();
+    console.log("Respuesta del backend:", data);
+
+    return "Subasta creada con éxito";
+
+  } catch (error) {
+    console.error("Error al crear la subasta:", error);
+    return false;
+  }
+};

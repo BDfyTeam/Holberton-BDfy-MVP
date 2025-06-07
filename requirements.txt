@@ -17,8 +17,7 @@ dotnet add package Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
 
 # FRONTEND REQUIREMENTS
-swiper: npm install swiper
-lucide-react: npm install lucide-react
-
-
-splide.js: npm install @splidejs/react-splide
+swiper: npm install swiper # Clase carrousel Swiper
+splide.js: npm install @splidejs/react-splide # Clase carrousel Splide
+lucide-react: npm install lucide-react # Iconos
+npm install jwt-decode # Decodificar JWT
