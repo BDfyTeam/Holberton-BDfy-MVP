@@ -78,7 +78,7 @@ namespace BDfy.Controllers
 				var lotsByAuctioneerId = await _db.Lots
 					.Include(l => l.Auction)
 						.ThenInclude(a => a.Auctioneer)
-					.Where(l => l.Auction.AuctioneerId == auctioneer_id)
+					.Where(l => l.Auction.Auctioneer.UserId == auctioneer_id) // Auction.AuctioneerId ----> La id de la tabla AuctioneerDetails no el UserId
 					.ToListAsync();
 
 				if (lotsByAuctioneerId == null || !lotsByAuctioneerId.Any())
@@ -86,7 +86,7 @@ namespace BDfy.Controllers
 					return NotFound("No lots found for this auctioneer.");
 				}
 
-				var lotDtos = lotsByAuctioneerId.Select(lotById => new GetLotByIdDto
+				var lotDtos = lotsByAuctioneerId.Select(lotById => new GetLotByIdDto // Cpz cambiar por tener menos info a la vista
 				{
 					Id = lotById.Id,
 					LotNumber = lotById.LotNumber,
@@ -121,8 +121,6 @@ namespace BDfy.Controllers
 				return StatusCode(500, "Internal Server Error: " + ex.Message);
 			}
 		}
-
-
 
 		[HttpGet("specific/{lotId}")]
 		public async Task<ActionResult<GetLotByIdDto>> GetLotById([FromRoute] Guid lotId)
