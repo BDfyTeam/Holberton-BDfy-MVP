@@ -48,7 +48,7 @@ export type AuctionCard = {
   description: string;
   startAt: string;
   endAt?: string;
-  category: string[];
+  category: number[];
   status: number;
   direction: {
     street: string;

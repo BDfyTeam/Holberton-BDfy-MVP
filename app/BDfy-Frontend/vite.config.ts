@@ -6,7 +6,14 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
   server: {
-    host: '127.0.0.1',  // Dirección IP local
-    port: 5015          // Puerto donde quieres que inicie
+    host: '127.0.0.1',   // Dirección IP local
+    port: 5015,          // Puerto del frontend
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:5016', // Puerto del backend
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   }
 });

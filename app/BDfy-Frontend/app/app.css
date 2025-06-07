@@ -18,5 +18,5 @@ body {
 }
 
 input::placeholder {
-  color: rgb(26, 27, 36);
+  color: rgba(67, 68, 78, 0.836);
 }

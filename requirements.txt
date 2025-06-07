@@ -21,3 +21,9 @@ swiper: npm install swiper # Clase carrousel Swiper
 splide.js: npm install @splidejs/react-splide # Clase carrousel Splide
 lucide-react: npm install lucide-react # Iconos
 npm install jwt-decode # Decodificar JWT
+
+npm install react-datepicker --save # Selector de fecha
+npm install @types/react-datepicker --save-dev # Tipos para TypeScript (para el selector de fecha)
+
+
+npm install @heroicons/react
