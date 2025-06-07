@@ -104,6 +104,7 @@ def create_tables():
                 starting_price DECIMAL(19,4) NOT NULL CHECK (starting_price >= 0),
                 current_price DECIMAL(19,4) CHECK (current_price >= 0),
                 ending_price DECIMAL(19,4) CHECK (ending_price >= 0),
+                sold BOOLEAN NOT NULL,
 
                 auction_id UUID NOT NULL,
                 winner_id UUID,

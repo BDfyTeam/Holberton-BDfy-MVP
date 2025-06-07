@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using BDfy.Dtos;
 using BDfy.Data;
 using BDfy.Models;
+using BDfy.Services;
 using System.Text.Json;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
@@ -21,8 +22,12 @@ namespace BDfy.Controllers
     {
         protected readonly BDfyDbContext _db = db; // La db
     }
-    public class UsersController(BDfyDbContext db) : BaseController(db) // Heredamos la DB para poder usarla
+
+    public class UsersController(BDfyDbContext db, Storage StorageService) : BaseController(db) // Heredamos la DB para poder usarla
     {
+
+        private readonly Storage _StorageServices = StorageService;
+
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] RegisterDto Dto)
         {
@@ -156,9 +161,14 @@ namespace BDfy.Controllers
                                 Plate = DetailsDto.Plate
                             };
 
-                            await transaction.CommitAsync();
+                            
+
                             _db.AuctioneerDetails.Add(detailsAuctioneer);
+                            var TheStorage = await _StorageServices.CreateStorage(user.Id);
+                            _db.Auctions.Add(TheStorage);
+                            await transaction.CommitAsync();
                             await _db.SaveChangesAsync();
+
 
                             return Ok(new { Token = tokenString });
                         }
@@ -200,8 +210,6 @@ namespace BDfy.Controllers
                 {
                     return Unauthorized("Invalid password");
                 }
-
-                Console.WriteLine($"Mi Rol: {user.Role.ToString()}");
 
                 var claims = new List<Claim> //genera los claims mapeados a los de user
                 {
@@ -270,7 +278,7 @@ namespace BDfy.Controllers
 
         // }
 
-    // Get User by ID
+        // Get User by ID
         [HttpGet("{userId}")]
         public async Task<ActionResult<User>> GetUserById(Guid userId)
         {
@@ -289,13 +297,13 @@ namespace BDfy.Controllers
             }
             catch (Exception ex)
             {
-                
+
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
 
         // GET all users
-        [HttpGet ("_internal")]
+        [HttpGet("_internal")]
         public async Task<ActionResult<IEnumerable<User>>> GetAllUsers()
         {
             try
@@ -303,21 +311,21 @@ namespace BDfy.Controllers
                 var users = await _db.Users
                     .Include(ud => ud.UserDetails)
                     .ToListAsync();
-                
+
                 return Ok(users);
             }
             catch (Exception ex)
             {
-                
+
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
-    }
+        }
 
-    private ActionResult<IEnumerable<User>> Ok(List<User> users, List<User> auctioneers)
-    {
-      throw new NotImplementedException();
+        private ActionResult<IEnumerable<User>> Ok(List<User> users, List<User> auctioneers)
+        {
+            throw new NotImplementedException();
+        }
     }
-  }
 
         
 

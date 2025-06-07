@@ -1,4 +1,5 @@
 using BDfy.Data;
+using BDfy.Services;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +9,7 @@ using Microsoft.OpenApi.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddScoped<Storage>();
 builder.Services.AddControllers();
 // .AddNewtonsoftJson(options =>
 // {

@@ -6,6 +6,7 @@ namespace BDfy.Models
     public class Bid : Base // Clase Bid, para poder pujar en los lotes
     {
         [Required]
+        [Range(0.01, double.MaxValue, ErrorMessage = "The amount must be greater than zero")]
         [Column("amount")]
         public decimal Amount { get; set; }
         

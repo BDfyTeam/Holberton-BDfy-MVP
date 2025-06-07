@@ -6,7 +6,7 @@ namespace BDfy.Models
 {
     public enum AuctionStatus
     {
-        Closed, Active, Draft
+        Closed, Active, Draft, Storage
     }
     public class Auction : Base // Clase Subasta
     {
@@ -49,7 +49,6 @@ namespace BDfy.Models
         public AuctioneerDetails Auctioneer { get; set; } = null!;
 
         [Required]
-        [Column("lots")]
         public List<Lot> Lots { get; set; } = [];
 
         public Auction() { } // EF
