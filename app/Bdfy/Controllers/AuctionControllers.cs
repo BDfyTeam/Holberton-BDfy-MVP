@@ -62,7 +62,6 @@ namespace BDfy.Controllers
             }
 
         }
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AuctionDto>>> GetAllAuction()
         {
@@ -147,7 +146,7 @@ namespace BDfy.Controllers
         }
 
         [HttpGet("specific/{auctionId}")]
-        public async Task<ActionResult<Auction>> GetAuctionById([FromRoute] Guid auctionId)
+        public async Task<ActionResult<AuctionDto>> GetAuctionById([FromRoute] Guid auctionId)
         {
             try
             {
@@ -183,5 +182,59 @@ namespace BDfy.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+        [Authorize]
+        [HttpGet("{status}/{auctioneerId}")]
+        public async Task<ActionResult<AuctionDto>> GetStorageById([FromRoute] Guid auctioneerId, [FromRoute] string status)
+        {
+            try
+            {
+                if (!Enum.TryParse(status, true, out AuctionStatus enumStatus)) // Convertimos el string a enum
+                {
+                    return BadRequest($"Invalid status: {status}");
+                }
+
+                if (enumStatus != AuctionStatus.Storage)
+                {
+                    return BadRequest("Access Denied: This route is only for Storage");
+                }
+
+                var auctioneerClaims = HttpContext.User;
+                var auctioneerIdToken = auctioneerClaims.FindFirst("Id")?.Value;
+                var auctioneerRoleToken = auctioneerClaims.FindFirst("Role")?.Value;
+
+                if (auctioneerId.ToString() != auctioneerIdToken) { return Unauthorized("Access Denied: Diffrent Auctioneer as the login"); }
+
+                if (auctioneerRoleToken != UserRole.Auctioneer.ToString()) { return Unauthorized("Access Denied: Only Auctioneers can use Storage option"); }
+
+                var auctioneer = await _db.Users
+                    .Include(u => u.AuctioneerDetails)
+                    .FirstOrDefaultAsync(u => u.Id == auctioneerId);
+
+                if (auctioneer == null) { return NotFound("Auctioneer not found"); }
+
+                var lotsInStorage = await _db.Lots
+                    .Where(l => l.Auction.AuctioneerId == auctioneerId
+                        && l.Auction.Status == AuctionStatus.Storage // El lote ya estaria en el Storage
+                        && l.Sold == false)
+                    .Select(l => new LotsDto
+                    {
+                        Id = l.Id,
+                        LotNumber = l.LotNumber,
+                        Description = l.Description,
+                        Details = l.Details,
+                        StartingPrice = l.StartingPrice,
+                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
+                        EndingPrice = l.EndingPrice ?? 0,
+                        Sold = l.Sold
+                    }).ToListAsync();
+
+                return Ok(lotsInStorage);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+        
     }
 }

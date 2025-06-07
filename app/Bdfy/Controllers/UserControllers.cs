@@ -201,8 +201,6 @@ namespace BDfy.Controllers
                     return Unauthorized("Invalid password");
                 }
 
-                Console.WriteLine($"Mi Rol: {user.Role.ToString()}");
-
                 var claims = new List<Claim> //genera los claims mapeados a los de user
                 {
                     new("Id", user.Id.ToString()),

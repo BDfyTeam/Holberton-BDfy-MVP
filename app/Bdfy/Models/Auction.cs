@@ -49,7 +49,6 @@ namespace BDfy.Models
         public AuctioneerDetails Auctioneer { get; set; } = null!;
 
         [Required]
-        [Column("lots")]
         public List<Lot> Lots { get; set; } = [];
 
         public Auction() { } // EF
