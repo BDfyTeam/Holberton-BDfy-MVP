@@ -1,27 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using BDfy.Dtos;
 using BDfy.Data;
+using BDfy.Hub;
 using BDfy.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BDfy.Controllers
 {
 	[ApiController]
 	[Route("api/1.0/lots")]
-	public class BaseControllerLots : Controller // Para no tener que instanciar la db en los endpoints
+	public class BaseControllerLots(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
+	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext) : BaseControllerLots(db) // Heredamos la DB para poder usarla
 	{
-		protected readonly BDfyDbContext _db;
-		public BaseControllerLots(BDfyDbContext db)
-		{
-			_db = db;
-		}
-	}
-
-	public class LotController : BaseControllerLots // Heredamos la DB para poder usarla
-	{
-		public LotController(BDfyDbContext db) : base(db) { }
-
+		private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
 		[Authorize]
 		[HttpPost]
 		public async Task<ActionResult> Register(Guid auctionID, [FromBody] RegisterLot Dto)
@@ -75,17 +68,71 @@ namespace BDfy.Controllers
 			}
 		}
 
-		[HttpGet("{lotId}")]
-		public async Task<ActionResult<GetLotByIdDto>>GetLotById([FromRoute]Guid lotId)
+
+		//Hoy sabado hacer GET LOTES POR AUCTIONEER ID!!!!!!
+		[HttpGet("{auctioneer_id}")]
+		public async Task<ActionResult<IEnumerable<GetLotByIdDto>>> GetLotByAuctioneerId([FromRoute] Guid auctioneer_id)
 		{
-		 try
-            {
+			try
+			{
+				var lotsByAuctioneerId = await _db.Lots
+					.Include(l => l.Auction)
+						.ThenInclude(a => a.Auctioneer)
+					.Where(l => l.Auction.Auctioneer.UserId == auctioneer_id) // Auction.AuctioneerId ----> La id de la tabla AuctioneerDetails no el UserId
+					.ToListAsync();
+
+				if (lotsByAuctioneerId == null || !lotsByAuctioneerId.Any())
+				{
+					return NotFound("No lots found for this auctioneer.");
+				}
+
+				var lotDtos = lotsByAuctioneerId.Select(lotById => new GetLotByIdDto // Cpz cambiar por tener menos info a la vista
+				{
+					Id = lotById.Id,
+					LotNumber = lotById.LotNumber,
+					Description = lotById.Description,
+					Details = lotById.Details,
+					StartingPrice = lotById.StartingPrice,
+					CurrentPrice = lotById.CurrentPrice ?? lotById.StartingPrice,
+					EndingPrice = lotById.EndingPrice ?? 0,
+					Sold = lotById.Sold,
+					Auction = new LotByIdAuctionDto
+					{
+						Id = lotById.Auction.Id,
+						Title = lotById.Auction.Title,
+						Description = lotById.Auction.Description,
+						StartAt = lotById.Auction.StartAt,
+						EndAt = lotById.Auction.EndAt,
+						Category = lotById.Auction.Category ?? [],
+						Status = lotById.Auction.Status,
+						AuctioneerId = lotById.Auction.AuctioneerId,
+						Auctioneer = new AuctioneerDto
+						{
+							UserId = lotById.Auction.Auctioneer.UserId,
+							Plate = lotById.Auction.Auctioneer.Plate
+						}
+					}
+				}).ToList();
+
+				return Ok(lotDtos);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, "Internal Server Error: " + ex.Message);
+			}
+		}
+
+		[HttpGet("specific/{lotId}")]
+		public async Task<ActionResult<GetLotByIdDto>> GetLotById([FromRoute] Guid lotId)
+		{
+			try
+			{
 				var lotById = await _db.Lots
 					.Include(l => l.Auction)
 						.ThenInclude(a => a.Auctioneer)
 					.FirstOrDefaultAsync(l => l.Id == lotId);
 
-				if (lotById == null) { return NotFound("Lot not found. Sorry");}
+				if (lotById == null) { return NotFound("Lot not found. Sorry"); }
 
 
 				var lotDto = new GetLotByIdDto
@@ -116,13 +163,13 @@ namespace BDfy.Controllers
 					}
 				};
 				return Ok(lotDto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal Server Error: " + ex.Message);
-            }
-        }
-        [HttpGet]
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, "Internal Server Error: " + ex.Message);
+			}
+		}
+		[HttpGet]
 		public async Task<ActionResult<IEnumerable<LotGetDto>>> GetAllLots()
 		{
 			try
@@ -146,15 +193,14 @@ namespace BDfy.Controllers
 			}
 			catch (Exception ex)
 			{
-                return StatusCode(500, "Internal Server Error: " + ex.Message);
+				return StatusCode(500, "Internal Server Error: " + ex.Message);
 			}
 		}
-
-
+		
 		[Authorize]
-        [HttpPost("/bid/{lotId}")]
-        public async Task<ActionResult<AuctionDto>> PostBid([FromBody] BidDto bid, [FromRoute] Guid lotId)
-        {
+		[HttpPost("bid/{lotId}")]
+		public async Task<ActionResult<AuctionDto>> PostBid([FromBody] BidDto bid, [FromRoute] Guid lotId)
+		{
 			try
 			{
 				var userClaims = HttpContext.User;
@@ -188,7 +234,7 @@ namespace BDfy.Controllers
 				var user = await _db.Users
 					.Include(u => u.UserDetails)
 					.FirstOrDefaultAsync(u => u.Id == parsedUserId);
-				
+
 				if (user == null || user.UserDetails == null) { return BadRequest("User details not found for the current user"); }
 
 				var Bid = new Bid
@@ -199,22 +245,30 @@ namespace BDfy.Controllers
 					BuyerId = parsedUserId,
 					Buyer = user.UserDetails
 				};
-		
+
 				if (bid.Amount > lot.CurrentPrice)
 				{
-					Console.WriteLine("Entro al if");
 					lot.CurrentPrice = Bid.Amount;
+
+					var bidUpdate = new ReceiveBidDto
+					{
+						LotId = bid.LotId,
+						CurrentPrice = bid.Amount,
+						BuyerId = parsedUserId
+					};
+
+					lot.BiddingHistory ??= new List<Bid>();
+					lot.BiddingHistory.Add(Bid);
+
+					_db.Bids.Add(Bid);
+					await _db.SaveChangesAsync();
+
+					// WebSocket aca 
+					await _hubContext.Clients.Group($"auction_{bid.LotId}").ReceiveBid(bidUpdate); // <---- :D
+
+					return Created();
 				}
-
-				lot.BiddingHistory ??= new List<Bid>();
-				lot.BiddingHistory.Add(Bid);
-
-				_db.Bids.Add(Bid);
-				await _db.SaveChangesAsync();
-
-				// WebSocket aca <---- :D
-
-				return Created();
+				return BadRequest(new { message = "The bid must be grater than the current price" });
 			}
 			catch (Exception ex)
 			{
@@ -222,6 +276,7 @@ namespace BDfy.Controllers
 			}
 
 		}
+
 	}
 }        
 	

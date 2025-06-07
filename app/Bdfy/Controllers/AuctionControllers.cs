@@ -68,7 +68,8 @@ namespace BDfy.Controllers
             try
             {
                 var auctions = await _db.Auctions
-                    .Include(ad => ad.Auctioneer) // Re pensar y usar Dtos para la circularidad
+                    .Include(ad => ad.Auctioneer)
+                    .Where(a => a.Status != AuctionStatus.Storage)
                     .ToListAsync();
 
                 var auctionDtos = auctions.Select(a => new AuctionDto

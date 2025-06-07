@@ -27,3 +27,4 @@ npm install @types/react-datepicker --save-dev # Tipos para TypeScript (para el 
 
 
 npm install @heroicons/react
+dotnet add package Microsoft.AspNetCore.RateLimiting

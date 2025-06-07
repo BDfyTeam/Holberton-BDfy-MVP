@@ -1,50 +1,54 @@
 using BDfy.Data;
 using BDfy.Services;
 using Microsoft.EntityFrameworkCore;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Newtonsoft.Json;
 using Microsoft.OpenApi.Models;
-
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using BDfy.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddScoped<Storage>();
-builder.Services.AddControllers();
-// .AddNewtonsoftJson(options =>
-// {
-//     options.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error; // Maneja casos de cuando pasan argumentos extras en el swagger
-// });
+
+builder.Services.AddSignalR();
+
+//App settings config to access secret
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+
+
 builder.Services.AddDbContext<BDfyDbContext>(options =>
-    options
-        // .UseLazyLoadingProxies() // LazyMode para BiddingHistory
-        .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+builder.Services.AddScoped<Storage>();
+
+builder.Services.AddControllers();
+
 builder.Services.AddCors(options =>
-   {
-       options.AddPolicy("AllowAll", builder =>
-       {
-           builder.AllowAnyOrigin(); 
-           builder.AllowAnyMethod(); 
-           builder.AllowAnyHeader(); 
-       });
-   });
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
+// 📈 Swagger + Bearer token
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "1.0",
         Title = "Bdfy API",
         Description = "API para Bdfy"
     });
-    // Esto asegura que Swagger reconoce las etiquetas
+
     c.DocInclusionPredicate((docName, apiDesc) =>
     {
-        if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
+        var actionDescriptor = apiDesc.ActionDescriptor as Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor;
+        if (actionDescriptor == null) return false;
         var groupName = apiDesc.GroupName ?? "v1";
         return docName == groupName;
     });
@@ -57,8 +61,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    // Aplicar el esquema de seguridad globalmente
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -77,21 +80,47 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-
+//  JWT Authentication
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
+    var secret = builder.Configuration["AppSettings:SecretKey"]
+        ?? "iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; // fallback for developing
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = false,
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("iMpoSIblePASSword!!!8932!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret))
+    };
+});
+
+//  Rate Limiting personalized
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("register_policy", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,                      // 5 trys per ip
+                Window = TimeSpan.FromMinutes(1),     //  for each minute
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 2
+            }));
+
+    // Json when request limits enters
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsync(
+            "{\"error\": \"Too many requests. Please try again later.\"}", token);
     };
 });
 
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -101,6 +130,13 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bdfy API v1");
     });
 }
+
+// Middleware
 app.UseCors("AllowAll");
+
+app.UseRateLimiter();       // Activate the rate limiter
+app.UseAuthentication();    // Jwt
+app.UseAuthorization();     // Rols & claims
+
 app.MapControllers();
 app.Run();
