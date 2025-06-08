@@ -169,7 +169,7 @@ namespace BDfy.Controllers
 				return StatusCode(500, "Internal Server Error: " + ex.Message);
 			}
 		}
-		[HttpGet]
+		[HttpGet("_internal")]
 		public async Task<ActionResult<IEnumerable<LotGetDto>>> GetAllLots()
 		{
 			try
