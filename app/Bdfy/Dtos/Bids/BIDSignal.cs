@@ -8,10 +8,13 @@ namespace BDfy.Dtos
         public Guid LotId { get; set; }
 
         [Required]
-        public decimal CurrentPrice { get; set; }
+        public decimal? CurrentPrice { get; set; }
 
         [Required]
         public Guid BuyerId { get; set; }
+
+        [Required]
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         
     }
 

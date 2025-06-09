@@ -5,14 +5,23 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
 using BDfy.Configurations;
+using BDfy.Hub;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSignalR();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
-//App settings config to access secret
+builder.Services.AddSignalR(options =>
+{
+    options.KeepAliveInterval = TimeSpan.FromSeconds(30);      // Ping cada 30 segundos
+    options.ClientTimeoutInterval = TimeSpan.FromMinutes(1);  // Timeout: 1 minuto
+    options.HandshakeTimeout = TimeSpan.FromSeconds(30);       // 30 segundos para handshake
+    options.EnableDetailedErrors = true;                       // Errores detallados
+});
+
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
 
@@ -28,13 +37,16 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy
+            .SetIsOriginAllowed(options => true)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
 
-// 📈 Swagger + Bearer token
+// Swagger + Bearer token
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -133,10 +145,12 @@ if (app.Environment.IsDevelopment())
 
 // Middleware
 app.UseCors("AllowAll");
+app.UseRouting();
 
 app.UseRateLimiter();       // Activate the rate limiter
 app.UseAuthentication();    // Jwt
 app.UseAuthorization();     // Rols & claims
+app.MapHub<BdfyHub>("/BidHub");
 
 app.MapControllers();
 app.Run();
