@@ -5,8 +5,8 @@ import type { AuctionCard } from "../services/types";
 import CarouselAuctionCard from "~/components/auctionCard";
 import { getAllAuctions } from "~/services/fetchService";
 import CreateAuctionButton from "~/components/auctionForm";
-import { getUserIdFromToken } from "~/services/handleToken";
 import { fetchRole } from "~/services/fetchService";
+import CreateLotButton from "~/components/lotForm";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -79,7 +79,10 @@ export default function Home() {
         </div>
         <div className="">
           {isAuthenticated && role === 1 && (
-            <CreateAuctionButton />
+            <>
+              <CreateAuctionButton />
+              <CreateLotButton />
+            </>
           )}
         </div>
       </div>
