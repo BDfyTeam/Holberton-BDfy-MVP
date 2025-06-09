@@ -196,7 +196,7 @@ namespace BDfy.Controllers
 				return StatusCode(500, "Internal Server Error: " + ex.Message);
 			}
 		}
-		
+
 		[Authorize]
 		[HttpPost("bid/{lotId}")]
 		public async Task<ActionResult<AuctionDto>> PostBid([FromBody] BidDto bid, [FromRoute] Guid lotId)
@@ -276,7 +276,102 @@ namespace BDfy.Controllers
 			}
 
 		}
+		[Authorize]
+		[HttpPut("{lotId}/edit")]
+		public async Task<ActionResult> EditLot([FromRoute] Guid lotId, [FromBody] EditLotDto editLotDto)
+		{
+			try
+			{
+				var userClaims = HttpContext.User;
+				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
+				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
 
+				if (userRoleFromToken != UserRole.Auctioneer.ToString())
+				{
+					return Unauthorized("Access Denied: Only Auctioneers can edit Lots");
+				}
+
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(ModelState);
+				}
+
+				var lot = await _db.Lots
+					.Include(l => l.Auction)
+						.ThenInclude(a => a.Auctioneer)
+					.Include(l => l.BiddingHistory)
+					.FirstOrDefaultAsync(l => l.Id == lotId);
+
+				if (lot == null)
+				{
+					return NotFound("Lot not found");
+				}
+
+				if (lot.Auction.Auctioneer.UserId.ToString() != userIdFromToken)
+				{
+					return Unauthorized("Access Denied: You can only edit your own lots");
+				}
+
+				if (lot.BiddingHistory != null && lot.BiddingHistory.Any())
+				{
+					return BadRequest("Cannot edit lot that already has bids");
+				}
+
+
+
+				if (lot.AuctionId != editLotDto.AuctionId)
+				{
+					var existingAuction = await _db.Auctions
+						.FirstOrDefaultAsync(a => a.Id == editLotDto.AuctionId
+									&& Guid.Parse(userIdFromToken) == a.Auctioneer.UserId
+									&& a.Status != AuctionStatus.Storage);
+
+					if (existingAuction == null)
+					{
+						return BadRequest("You cannot assign an auction that is not yours. Sorry.");
+					}
+				}
+
+				if (editLotDto.LotNumber != lot.LotNumber)
+				{
+					var existingLot = await _db.Lots
+						.FirstOrDefaultAsync(l => l.LotNumber == editLotDto.LotNumber &&
+										l.AuctionId == lot.AuctionId &&
+										l.Id != lotId);
+
+					if (existingLot != null)
+					{
+						return BadRequest("The Lot number is already taken in this auction");
+					}
+				}
+
+				var finalAuction = await _db.Auctions.FindAsync(editLotDto.AuctionId);
+
+				if (finalAuction == null) { return BadRequest("Auction not found. Sorry"); }
+
+				lot.LotNumber = editLotDto.LotNumber;
+				lot.Description = editLotDto.Description;
+				lot.Details = editLotDto.Details;
+				lot.StartingPrice = editLotDto.StartingPrice;
+				lot.AuctionId = editLotDto.AuctionId;
+				lot.Auction = finalAuction;
+
+				if (lot.BiddingHistory == null || !lot.BiddingHistory.Any())
+				{
+					lot.CurrentPrice = editLotDto.StartingPrice;
+				}
+
+				await _db.SaveChangesAsync();
+
+				return Ok(new { message = "Lot updated successfully" });
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { error = ex.Message });
+			}
+}
+		
+		
 	}
 }        
 	
