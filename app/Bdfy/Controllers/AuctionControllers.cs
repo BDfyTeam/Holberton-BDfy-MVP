@@ -98,6 +98,58 @@ namespace BDfy.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+        [Authorize]
+        [HttpGet("auctioneer/{auctioneerId}")]
+        public async Task<ActionResult<IEnumerable<AuctionDtoId>>> GetAuctionsByAuctioneerId([FromRoute] Guid auctioneerId)
+        {
+            try
+            {
+                var auctioneerClaims = HttpContext.User;
+                var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
+                var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+
+                if (auctioneerId.ToString() != auctioneerIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
+
+                if (auctioneerRoleFromToken != UserRole.Auctioneer.ToString()) { return Unauthorized("Access Denied: Only Auctioneers can see his specific Auctions"); }
+
+                var auctions = await _db.Auctions
+                    .Include(a => a.Auctioneer)
+                    .Include(a => a.Lots)
+                    .Where(a => a.Auctioneer.UserId == auctioneerId)
+                    .ToListAsync();
+
+                var auctionsDto = auctions.Select(a => new AuctionDtoId
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    StartAt = a.StartAt,
+                    EndAt = a.EndAt,
+                    Category = a.Category,
+                    Status = a.Status,
+                    Direction = a.Direction,
+                    AuctioneerId = a.Auctioneer.UserId,
+                    Lots = a.Lots.Select(l => new LotGetDto
+                    {
+                        Id = l.Id,
+                        StartingPrice = l.StartingPrice,
+                        CurrentPrice = l.CurrentPrice,
+                        Description = l.Description,
+                        Details = l.Details,
+                        LotNumber = l.LotNumber,
+                        Sold = l.Sold,
+                        EndingPrice = l.EndingPrice,
+                        WinnerId = l.WinnerId
+                    }).ToList()
+                });
+                return Ok(auctionsDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+
+            }
+        }
         [HttpGet("{status}")]
         public async Task<ActionResult<IEnumerable<AuctionDto>>> GetAucionByStatus([FromRoute] string status)
         {
