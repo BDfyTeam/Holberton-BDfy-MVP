@@ -70,6 +70,8 @@ namespace BDfy.Dtos
 
         [Required]
         public Guid AuctionId { get; set; }
+        
+        public Guid? WinnerId { get; set; }
     }
 }
 
