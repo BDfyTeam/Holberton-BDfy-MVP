@@ -288,6 +288,55 @@ namespace BDfy.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
-        
+        [Authorize]
+        [HttpPut("{auctionId}")]
+        public async Task<ActionResult> UpdateAuctionById([FromRoute] Guid auctionId, [FromBody] EditAuctionDto dto)
+        {
+            try
+            {
+                var auctioneerClaims = HttpContext.User;
+                var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
+                var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+
+                if (string.IsNullOrEmpty(auctioneerIdFromToken) || !Guid.TryParse(auctioneerIdFromToken, out var auctioneerId)) { return Unauthorized("Invalid user token"); }
+
+                if (string.IsNullOrEmpty(auctioneerRoleFromToken) || auctioneerRoleFromToken != UserRole.Auctioneer.ToString()) { return Forbid("Access denied: Only auctioneers can update auctions"); }
+
+                if (dto.StartAt >= dto.EndAt) { return BadRequest("Start date must be before end date"); }
+
+                if (dto.StartAt < DateTime.UtcNow.AddMinutes(-5)) { return BadRequest("Start date cannot be in the past"); }
+
+                if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+                var auction = await _db.Auctions
+                    .Include(a => a.Auctioneer)
+                    .FirstOrDefaultAsync(a => a.Id == auctionId && a.Auctioneer.UserId == auctioneerId);
+
+                if (auction == null) { return NotFound("Auction not found"); }
+
+                if (auction.Status == AuctionStatus.Active)
+                {
+                    return BadRequest("Cannot modify an active auction");
+                }
+
+                auction.Title = dto.Title;
+                auction.Description = dto.Description;
+                auction.StartAt = dto.StartAt;
+                auction.EndAt = dto.EndAt;
+                auction.Category = dto.Category;
+                auction.Status = dto.Status;
+                auction.Direction = dto.Direction;
+                auction.UpdatedAt = DateTime.UtcNow;
+
+                await _db.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
     }
 }
