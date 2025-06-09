@@ -57,7 +57,15 @@ export type AuctionCard = {
     zipCode: number;
     department: string
   };
+};
+
+// MODELOS PARA LOTES
+export type LotCard = {
+  lotNumber: number;
+  description: string;
+  startingPrice: number;
   details: string;
+  auctionId: string
 };
 
 // Type para lot y tipar correctamente el useState

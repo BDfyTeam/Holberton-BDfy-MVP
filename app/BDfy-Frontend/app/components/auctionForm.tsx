@@ -18,7 +18,6 @@ export default function CreateAuctionButton() {
   const [corner, setCorner] = useState("");
   const [zipCode, setZipCode] = useState(0);
   const [department, setDepartment] = useState("");
-  const [details, setDetails] = useState("");
 
   const openForm = () => {
     setShowForm(true);
@@ -44,7 +43,6 @@ export default function CreateAuctionButton() {
         zipCode,
         department,
       },
-      details,
     };
 
     const success = await createAuction(payload);
@@ -270,18 +268,6 @@ export default function CreateAuctionButton() {
               <option value="Treinta y Tres">Treinta y Tres</option>
             </select>
             </div>
-
-            {/* Detalles */}
-            <label htmlFor="details" className="block text-sm font-medium text-gray-900">
-              Detalles
-            </label>
-            <textarea
-              name="details"
-              id="details"
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              className="border border-gray-300 p-2 mb-4 w-full text-black"
-            ></textarea>
 
             {/* Botones de acción */}
             <div className="flex justify-end mb-4">

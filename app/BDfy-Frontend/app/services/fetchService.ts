@@ -1,5 +1,5 @@
 import { getUserIdFromToken } from "./handleToken";
-import type { AuctionCard, RegisterUserPayload } from "./types";
+import type { AuctionCard, RegisterUserPayload, LotCard } from "./types";
 import type { RegisterAuctioneerPayload } from "./types";
 
 // LOGUEAR UN USUARIO
@@ -115,9 +115,7 @@ export async function getAllAuctions() {
 export async function createAuction(payload: AuctionCard) {
   try {
     const userId = getUserIdFromToken(); // Obtenemos el ID del usuario desde el token
-    console.log("ID del usuario:", userId);
     const token = localStorage.getItem("token");
-    console.log("Token de autenticación:", token);
     if (!userId) {
       throw new Error("No se pudo obtener el ID del usuario desde el token.");
     }
@@ -143,6 +141,35 @@ export async function createAuction(payload: AuctionCard) {
   }
 };
 
+// CREAT UN LOTE
+export async function createLot(payload: LotCard) {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No se encontró el token de autenticación.");
+    }
+    
+    const response = await fetch(`http://127.0.0.1:5015/api/1.0/lots`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, // Enviamos el token de autenticación
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error al crear el lote.');
+    }
+
+    return "Lote creado con éxito";
+
+  } catch (error) {
+    console.error("Error al crear el lote:", error);
+    return false;
+  }
+}
+
 // OBTENER EL ROL SEGUN EL ID DE UN USUARIO
 export async function fetchRole() {
   try {
@@ -161,4 +188,34 @@ export async function fetchRole() {
   } catch (err) {
     console.error("Error al obtener el rol del usuario:", err);
     throw new Error("Error al obtener el rol del usuario");}
+}
+
+// GET AL STORAG
+export default async function getStorage() {
+  try {
+    const userId = getUserIdFromToken();
+    if (!userId) {
+      throw new Error("No se pudo obtener el ID del usuario desde el token.");
+    }
+
+    const response = await fetch(`http://127.0.0.1:5015/api/1.0/auctions/Storage/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error al obtener el almacenamiento.');
+    }
+    
+    const data = await response.json();
+
+    return data;
+
+  } catch (error) {
+    console.error("Error al obtener el almacenamiento:", error);
+    throw error; // Re-lanzamos el error para que pueda ser manejado por quien llame a esta función
+  }
 }
