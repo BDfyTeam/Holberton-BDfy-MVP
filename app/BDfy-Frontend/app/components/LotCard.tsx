@@ -13,7 +13,7 @@ export default function LotCard({ lot }: LotCardProps) {
     e.preventDefault();
 
     try {
-      const response = await fetch(`/api/v1.0/lots/${lot.id}/bid`, {
+      const response = await fetch(`/api/v1.0/lots/bid/${lot.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -21,7 +21,6 @@ export default function LotCard({ lot }: LotCardProps) {
         },
         body: JSON.stringify({
           amount: bid,
-          user_id: 1, // ⚠️ por ahora hardcodeado, deberías traer el ID del usuario logueado desde contexto o estado
         }),
       });
 
@@ -39,7 +38,7 @@ export default function LotCard({ lot }: LotCardProps) {
     <div className="bg-white text-black p-4 rounded-lg shadow space-y-2">
       <p className="font-semibold text-lg">{lot.description}</p>
       <p className="text-sm text-gray-600">{lot.details}</p>
-      <p className="text-blue-700">Precio actual: €{lot.current_price ?? lot.starting_price}</p>
+      <p className="text-blue-700">Precio actual: {lot.current_price ?? lot.starting_price}</p>
 
       <form onSubmit={handleSubmit} className="space-y-2">
         <input
