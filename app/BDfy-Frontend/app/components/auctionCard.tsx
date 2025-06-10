@@ -1,5 +1,5 @@
 import { Splide, SplideSlide } from "@splidejs/react-splide";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import type { AuctionCard } from "~/services/types";
 import { useEffect, useRef } from "react";
 

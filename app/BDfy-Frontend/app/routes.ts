@@ -11,7 +11,7 @@ export default [
   // Rutas protegidas
   route("/", "routes/protectedlayout.tsx", [
     route("profile", "routes/profile.tsx"),
-    route("auction/:id", "routes/auction.tsx"),
+    route("auctions/specific/:id", "routes/auction.tsx"),
     route("my-auctions", "routes/myAuctions.tsx"),
   ]),
 ] satisfies RouteConfig;
