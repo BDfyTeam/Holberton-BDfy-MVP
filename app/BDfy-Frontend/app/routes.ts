@@ -4,7 +4,8 @@ export default [
   // Rutas públicas
   route("/", "routes/layout.tsx", [
     index("routes/home.tsx"),            // / (home público)
-    route("login", "routes/login.tsx"),  // /login
+    route("login", "routes/login.tsx"),
+    route("register", "routes/register.tsx"),  // /login
   ]),
 
   // Rutas protegidas

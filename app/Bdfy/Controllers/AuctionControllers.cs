@@ -62,14 +62,14 @@ namespace BDfy.Controllers
             }
 
         }
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AuctionDto>>> GetAllAuction()
         {
             try
             {
                 var auctions = await _db.Auctions
-                    .Include(ad => ad.Auctioneer) // Re pensar y usar Dtos para la circularidad
+                    .Include(ad => ad.Auctioneer)
+                    .Where(a => a.Status != AuctionStatus.Storage)
                     .ToListAsync();
 
                 var auctionDtos = auctions.Select(a => new AuctionDto
@@ -98,6 +98,58 @@ namespace BDfy.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+        [Authorize]
+        [HttpGet("auctioneer/{auctioneerId}")]
+        public async Task<ActionResult<IEnumerable<AuctionDtoId>>> GetAuctionsByAuctioneerId([FromRoute] Guid auctioneerId)
+        {
+            try
+            {
+                var auctioneerClaims = HttpContext.User;
+                var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
+                var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+
+                if (auctioneerId.ToString() != auctioneerIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
+
+                if (auctioneerRoleFromToken != UserRole.Auctioneer.ToString()) { return Unauthorized("Access Denied: Only Auctioneers can see his specific Auctions"); }
+
+                var auctions = await _db.Auctions
+                    .Include(a => a.Auctioneer)
+                    .Include(a => a.Lots)
+                    .Where(a => a.Auctioneer.UserId == auctioneerId)
+                    .ToListAsync();
+
+                var auctionsDto = auctions.Select(a => new AuctionDtoId
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    StartAt = a.StartAt,
+                    EndAt = a.EndAt,
+                    Category = a.Category,
+                    Status = a.Status,
+                    Direction = a.Direction,
+                    AuctioneerId = a.Auctioneer.UserId,
+                    Lots = a.Lots.Select(l => new LotGetDto
+                    {
+                        Id = l.Id,
+                        StartingPrice = l.StartingPrice,
+                        CurrentPrice = l.CurrentPrice,
+                        Description = l.Description,
+                        Details = l.Details,
+                        LotNumber = l.LotNumber,
+                        Sold = l.Sold,
+                        EndingPrice = l.EndingPrice,
+                        WinnerId = l.WinnerId
+                    }).ToList()
+                });
+                return Ok(auctionsDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+
+            }
+        }
         [HttpGet("{status}")]
         public async Task<ActionResult<IEnumerable<AuctionDto>>> GetAucionByStatus([FromRoute] string status)
         {
@@ -105,14 +157,19 @@ namespace BDfy.Controllers
             {
 
                 if (!Enum.TryParse(status, true, out AuctionStatus enumStatus)) // Convertimos el string a enum
-                    {
-                        return BadRequest($"Invalid status: {status}");
-                    }
+                {
+                    return BadRequest($"Invalid status: {status}");
+                }
 
                 var auctions = await _db.Auctions
                         .Include(ad => ad.Auctioneer)
                         .Where(a => a.Status == enumStatus)
                         .ToListAsync();
+
+                if (enumStatus == AuctionStatus.Storage)
+                {
+                    return Unauthorized("Access Denied");
+                }
 
                 var auctionDtos = auctions.Select(a => new AuctionDto
                 {
@@ -142,7 +199,7 @@ namespace BDfy.Controllers
         }
 
         [HttpGet("specific/{auctionId}")]
-        public async Task<ActionResult<Auction>> GetAuctionById([FromRoute] Guid auctionId)
+        public async Task<ActionResult<AuctionDto>> GetAuctionById([FromRoute] Guid auctionId)
         {
             try
             {
@@ -178,5 +235,108 @@ namespace BDfy.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+        [Authorize]
+        [HttpGet("{status}/{auctioneerId}")]
+        public async Task<ActionResult<AuctionDto>> GetStorageById([FromRoute] Guid auctioneerId, [FromRoute] string status)
+        {
+            try
+            {
+                if (!Enum.TryParse(status, true, out AuctionStatus enumStatus)) // Convertimos el string a enum
+                {
+                    return BadRequest($"Invalid status: {status}");
+                }
+
+                if (enumStatus != AuctionStatus.Storage)
+                {
+                    return BadRequest("Access Denied: This route is only for Storage");
+                }
+
+                var auctioneerClaims = HttpContext.User;
+                var auctioneerIdToken = auctioneerClaims.FindFirst("Id")?.Value;
+                var auctioneerRoleToken = auctioneerClaims.FindFirst("Role")?.Value;
+
+                if (auctioneerId.ToString() != auctioneerIdToken) { return Unauthorized("Access Denied: Diffrent Auctioneer as the login"); }
+
+                if (auctioneerRoleToken != UserRole.Auctioneer.ToString()) { return Unauthorized("Access Denied: Only Auctioneers can use Storage option"); }
+
+                var auctioneer = await _db.Users
+                    .Include(u => u.AuctioneerDetails)
+                    .FirstOrDefaultAsync(u => u.Id == auctioneerId);
+
+                if (auctioneer == null) { return NotFound("Auctioneer not found"); }
+
+                var lotsInStorage = await _db.Lots
+                    .Where(l => l.Auction.AuctioneerId == auctioneerId
+                        && l.Auction.Status == AuctionStatus.Storage // El lote ya estaria en el Storage
+                        && l.Sold == false)
+                    .Select(l => new LotsDto
+                    {
+                        Id = l.Id,
+                        LotNumber = l.LotNumber,
+                        Description = l.Description,
+                        Details = l.Details,
+                        StartingPrice = l.StartingPrice,
+                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
+                        EndingPrice = l.EndingPrice ?? 0,
+                        Sold = l.Sold
+                    }).ToListAsync();
+
+                return Ok(lotsInStorage);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+        [Authorize]
+        [HttpPut("{auctionId}")]
+        public async Task<ActionResult> UpdateAuctionById([FromRoute] Guid auctionId, [FromBody] EditAuctionDto dto)
+        {
+            try
+            {
+                var auctioneerClaims = HttpContext.User;
+                var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
+                var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+
+                if (string.IsNullOrEmpty(auctioneerIdFromToken) || !Guid.TryParse(auctioneerIdFromToken, out var auctioneerId)) { return Unauthorized("Invalid user token"); }
+
+                if (string.IsNullOrEmpty(auctioneerRoleFromToken) || auctioneerRoleFromToken != UserRole.Auctioneer.ToString()) { return Forbid("Access denied: Only auctioneers can update auctions"); }
+
+                if (dto.StartAt >= dto.EndAt) { return BadRequest("Start date must be before end date"); }
+
+                if (dto.StartAt < DateTime.UtcNow.AddMinutes(-5)) { return BadRequest("Start date cannot be in the past"); }
+
+                if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+                var auction = await _db.Auctions
+                    .Include(a => a.Auctioneer)
+                    .FirstOrDefaultAsync(a => a.Id == auctionId && a.Auctioneer.UserId == auctioneerId);
+
+                if (auction == null) { return NotFound("Auction not found"); }
+
+                if (auction.Status == AuctionStatus.Active)
+                {
+                    return BadRequest("Cannot modify an active auction");
+                }
+
+                auction.Title = dto.Title;
+                auction.Description = dto.Description;
+                auction.StartAt = dto.StartAt;
+                auction.EndAt = dto.EndAt;
+                auction.Category = dto.Category;
+                auction.Status = dto.Status;
+                auction.Direction = dto.Direction;
+                auction.UpdatedAt = DateTime.UtcNow;
+
+                await _db.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
     }
 }

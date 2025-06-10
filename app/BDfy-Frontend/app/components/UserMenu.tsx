@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   User,
@@ -12,12 +12,19 @@ import {
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false); // 👈 nuevo
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setIsClient(true); // 👈 asegura que esto solo pasa en el cliente
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
+
+  if (!isClient) return null; // 👈 evita renderizar en SSR
 
   return (
     <div className="relative">

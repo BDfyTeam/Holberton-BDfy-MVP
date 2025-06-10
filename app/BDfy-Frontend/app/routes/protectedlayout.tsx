@@ -3,14 +3,14 @@ import { Outlet, useNavigate } from "react-router";
 import { useEffect } from "react";
 
 export default function ProtectedLayout() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (!token) {
-      navigate("/login");
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  //   if (!token) {
+  //     navigate("/login");
+  //   }
+  // }, [navigate]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[rgb(60,63,96)] to-[rgb(28,148,180)]">

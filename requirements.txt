@@ -14,3 +14,17 @@ dotnet add package System.IdentityModel.Tokens.Jwt
 dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.5
 pip install psycopg2-binary --break-system-packages //script crear database
 dotnet add package Microsoft.AspNetCore.Mvc.NewtonsoftJson
+
+
+# FRONTEND REQUIREMENTS
+swiper: npm install swiper # Clase carrousel Swiper
+splide.js: npm install @splidejs/react-splide # Clase carrousel Splide
+lucide-react: npm install lucide-react # Iconos
+npm install jwt-decode # Decodificar JWT
+
+npm install react-datepicker --save # Selector de fecha
+npm install @types/react-datepicker --save-dev # Tipos para TypeScript (para el selector de fecha)
+
+
+npm install @heroicons/react
+dotnet add package Microsoft.AspNetCore.RateLimiting

@@ -1,51 +1,91 @@
 import type { Route } from "./+types/home";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import "@splidejs/react-splide/css";
+import type { AuctionCard } from "../services/types";
+import CarouselAuctionCard from "~/components/auctionCard";
+import { getAllAuctions } from "~/services/fetchService";
+import CreateAuctionButton from "~/components/auctionForm";
+import { fetchRole } from "~/services/fetchService";
+import CreateLotButton from "~/components/lotForm";
 
-export function meta({ }: Route.MetaArgs) {
+export function meta({}: Route.MetaArgs) {
   return [
     { title: "New React Router App" },
     { name: "description", content: "Welcome to React Router!" },
   ];
 }
 
-// listar subastas falsas y probar el flujo de enrar a la subasta
-const mockAuctions = [
-  {
-    id: 1,
-    title: "Subasta de autos de lujo",
-    description: "Ferrari, Lamborghini y más...",
-  },
-  {
-    id: 2,
-    title: "Tecnología premium",
-    description: "MacBooks, iPhones, y dispositivos top",
-  },
-  {
-    id: 3,
-    title: "Obras de arte",
-    description: "Pinturas originales y esculturas únicas",
-  },
-];
-
 export default function Home() {
-  return (
-    <div className="p-6 text-white">
-      <h1 className="text-3xl font-bold mb-6">Subastas disponibles</h1>
+  const [auctions, setAuctions] = useState<AuctionCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [role, setRole] = useState<number | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {mockAuctions.map((auction) => (
-          <div key={auction.id} className="bg-white text-black p-4 rounded shadow">
-            <h2 className="text-xl font-semibold">{auction.title}</h2>
-            <p className="text-sm text-gray-700 mb-3">{auction.description}</p>
-            <Link
-              to={`/auction/${auction.id}`}
-              className="text-blue-600 hover:underline"
-            >
-              Ver subasta
-            </Link>
-          </div>
-        ))}
+  useEffect(() => {
+    // Si el usuario está autenticado, intenta obtener el rol
+    const fetchUserRole = async () => {
+      try {
+        const data = await fetchRole(); // Llamamos a la función asíncrona
+
+        if (data) {
+          setIsAuthenticated(true); // Si la respuesta es válida, marcamos al usuario como autenticado
+          setRole(data.role); // Establecemos el rol del usuario
+        }
+      } catch (error) {
+        console.error("Error al obtener el rol del usuario:", error);
+        setIsAuthenticated(false); // En caso de error, no está autenticado
+      }
+    };
+    
+    fetchUserRole();
+
+    // Fetch de subastas
+    async function fetchAuctions() {
+      try {
+        const data = await getAllAuctions();
+        const activeAuctions = data.filter(
+          (auction: AuctionCard) => auction.status === 1
+        );
+        setAuctions(activeAuctions);
+        setLoading(false);
+      } catch (err) {
+        <div></div>
+        console.error("Error al cargar las subastas:", err);
+        setError("Error al cargar las subastas");
+        setLoading(false);
+      }
+    }
+
+    fetchAuctions();
+  }, []);
+
+  if (loading) {
+    return <div className="p-6 text-white">Cargando subastas...</div>;
+  }
+  // if (error) {
+  //   return console.error("No se pudieron cargar las subastas:", error);
+  // }
+
+  return (
+    <main>
+      <div className="p-6 text-white">
+        <h1 className="text-3xl font-bold mb-6 flex flex-col text-center">
+          Subastas disponibles
+        </h1>
+
+        <div>
+          <CarouselAuctionCard auction={auctions} />
+        </div>
+        <div className="">
+          {isAuthenticated && role === 1 && (
+            <>
+              <CreateAuctionButton />
+              <CreateLotButton />
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

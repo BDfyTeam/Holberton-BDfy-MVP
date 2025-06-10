@@ -47,7 +47,7 @@ namespace BDfy.Models
         public Guid? WinnerId { get; set; }
         public UserDetails? Winner { get; set; }
 
-        public List<Bid> BiddingHistory { get; set; } = null!;
+        public List<Bid> BiddingHistory { get; set; } = [];
 
         public Lot() { } // EF
     }
