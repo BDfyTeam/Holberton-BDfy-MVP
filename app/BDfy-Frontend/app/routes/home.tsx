@@ -8,7 +8,7 @@ import CreateAuctionButton from "~/components/auctionForm";
 import { fetchRole } from "~/services/fetchService";
 import CreateLotButton from "~/components/lotForm";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ }: Route.MetaArgs) {
   return [
     { title: "New React Router App" },
     { name: "description", content: "Welcome to React Router!" },
@@ -24,6 +24,11 @@ export default function Home() {
 
   useEffect(() => {
     // Si el usuario está autenticado, intenta obtener el rol
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsAuthenticated(true); // Si hay un token, el usuario está autenticado
+    }
+
     const fetchUserRole = async () => {
       try {
         const data = await fetchRole(); // Llamamos a la función asíncrona
@@ -37,7 +42,7 @@ export default function Home() {
         setIsAuthenticated(false); // En caso de error, no está autenticado
       }
     };
-    
+
     fetchUserRole();
 
     // Fetch de subastas
@@ -73,18 +78,17 @@ export default function Home() {
         <h1 className="text-3xl font-bold mb-6 flex flex-col text-center">
           Subastas disponibles
         </h1>
-
         <div>
           <CarouselAuctionCard auction={auctions} />
         </div>
-        <div className="">
-          {isAuthenticated && role === 1 && (
-            <>
-              <CreateAuctionButton />
-              <CreateLotButton />
-            </>
-          )}
-        </div>
+      </div>
+      <div className="">
+        {isAuthenticated && role === 1 && (
+          <>
+            <CreateAuctionButton />
+            <CreateLotButton />
+          </>
+        )}
       </div>
     </main>
   );

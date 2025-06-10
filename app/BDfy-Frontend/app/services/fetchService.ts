@@ -41,6 +41,7 @@ export async function registerUser(payload: RegisterUserPayload) {
       },
       body: JSON.stringify(payload),
     });
+    console.log("Cuerpo de la solicitud:", JSON.stringify(payload));
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -174,12 +175,15 @@ export async function createLot(payload: LotCard) {
 export async function fetchRole() {
   try {
     const userId = getUserIdFromToken(); // Obtenemos el ID del usuario desde el token
+    console.log("ID del usuario:", userId); // Para depuración
     if (!userId) {
       throw new Error("No se pudo obtener el ID del usuario desde el token.");
     }
 
-    const response = await fetch(`http://127.0.0.1:5015/api/1.0/users//${userId}`);
+    const response = await fetch(`http://127.0.0.1:5015/api/1.0/users/${userId}`);
     const data = await response.json();
+
+    console.log("Respuesta del backend:", data); // Para depuración
 
     if (response.ok) {
       return data;

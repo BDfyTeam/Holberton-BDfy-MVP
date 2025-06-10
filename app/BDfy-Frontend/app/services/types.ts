@@ -16,7 +16,7 @@ export type RegisterUserPayload = {
         zipCode: number;
         department: string;
     };
-    details: {
+    userDetails: {
         IsAdmin: boolean;
     };
 };
@@ -36,7 +36,7 @@ export type RegisterAuctioneerPayload = {
         zipCode: number;
         department: string;
     };
-    details: {
+    auctioneerDetails: {
         plate: number;
     };
 };
