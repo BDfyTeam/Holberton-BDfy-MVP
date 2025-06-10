@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { isPasswordValid, isEmailValid, isDocumentValid } from '../services/validations'
 import type { RegisterAuctioneerPayload } from '../services/types';
 import { registerAuctioner } from '~/services/fetchService';

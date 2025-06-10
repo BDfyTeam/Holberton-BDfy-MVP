@@ -1,7 +1,7 @@
 import { NavBar } from "./navBar";
 import DynamicButton from "./navegationButton";
 import UserMenu from "./UserMenu";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 
 export default function Header() {
   const isAuthenticated =

@@ -219,3 +219,22 @@ export default async function getStorage() {
     throw error; // Re-lanzamos el error para que pueda ser manejado por quien llame a esta función
   }
 }
+
+export async function getAuctionById(id: string) {
+  try {
+    const response = await fetch(`http://127.0.0.1:5015/api/1.0/auctions/specific/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Error al obtener la subasta.");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error al obtener la subasta:", error);
+    throw error;
+  }
+}
