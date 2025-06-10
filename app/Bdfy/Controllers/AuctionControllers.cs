@@ -69,6 +69,7 @@ namespace BDfy.Controllers
             {
                 var auctions = await _db.Auctions
                     .Include(ad => ad.Auctioneer)
+                    .Include(a => a.Lots)
                     .Where(a => a.Status != AuctionStatus.Storage)
                     .ToListAsync();
 
@@ -83,7 +84,18 @@ namespace BDfy.Controllers
                     Status = a.Status,
                     Direction = a.Direction,
                     AuctioneerId = a.AuctioneerId,
-                    Lots = a.Lots.ToList(),
+                    Lots = a.Lots.Select(l => new LotsDto
+                    {
+                        Id = l.Id,
+                        LotNumber = l.LotNumber,
+                        Description = l.Description,
+                        Details = l.Details,
+                        StartingPrice = l.StartingPrice,
+                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
+                        EndingPrice = l.EndingPrice ?? 0,
+                        Sold = l.Sold
+                        
+                    }).ToList() ?? new List<LotsDto>(), 
                     Auctioneer = new AuctioneerDto
                     {
                         UserId = a.Auctioneer.UserId,
@@ -133,12 +145,12 @@ namespace BDfy.Controllers
                     {
                         Id = l.Id,
                         StartingPrice = l.StartingPrice,
-                        CurrentPrice = l.CurrentPrice,
+                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
                         Description = l.Description,
                         Details = l.Details,
                         LotNumber = l.LotNumber,
                         Sold = l.Sold,
-                        EndingPrice = l.EndingPrice,
+                        EndingPrice = l.EndingPrice ?? 0,
                         WinnerId = l.WinnerId
                     }).ToList()
                 });
@@ -163,6 +175,7 @@ namespace BDfy.Controllers
 
                 var auctions = await _db.Auctions
                         .Include(ad => ad.Auctioneer)
+                        .Include(a => a.Lots)
                         .Where(a => a.Status == enumStatus)
                         .ToListAsync();
 
@@ -182,7 +195,18 @@ namespace BDfy.Controllers
                     Status = a.Status,
                     Direction = a.Direction,
                     AuctioneerId = a.AuctioneerId,
-                    Lots = a.Lots.ToList(),
+                    Lots = a.Lots.Select(l => new LotsDto
+                    {
+                        Id = l.Id,
+                        LotNumber = l.LotNumber,
+                        Description = l.Description,
+                        Details = l.Details,
+                        StartingPrice = l.StartingPrice,
+                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
+                        EndingPrice = l.EndingPrice ?? 0,
+                        Sold = l.Sold
+                        
+                    }).ToList() ?? new List<LotsDto>(), 
                     Auctioneer = new AuctioneerDto
                     {
                         UserId = a.Auctioneer.UserId,
@@ -205,6 +229,7 @@ namespace BDfy.Controllers
             {
                 var auctionById = await _db.Auctions
                         .Include(ad => ad.Auctioneer)
+                        .Include(a => a.Lots)
                         .FirstOrDefaultAsync(a => a.Id == auctionId);
 
                 if (auctionById == null) { return NotFound("Auction not found"); }
@@ -220,7 +245,18 @@ namespace BDfy.Controllers
                     Status = auctionById.Status,
                     Direction = auctionById.Direction,
                     AuctioneerId = auctionById.AuctioneerId,
-                    Lots = auctionById.Lots.ToList(), // Arreglar
+                    Lots = auctionById.Lots.Select(l => new LotsDto
+                    {
+                        Id = l.Id,
+                        LotNumber = l.LotNumber,
+                        Description = l.Description,
+                        Details = l.Details,
+                        StartingPrice = l.StartingPrice,
+                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
+                        EndingPrice = l.EndingPrice ?? 0,
+                        Sold = l.Sold
+                        
+                    }).ToList() ?? new List<LotsDto>(), 
                     Auctioneer = new AuctioneerDto
                     {
                         UserId = auctionById.Auctioneer.UserId,

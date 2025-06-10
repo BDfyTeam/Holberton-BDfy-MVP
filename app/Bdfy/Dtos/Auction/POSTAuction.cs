@@ -71,7 +71,7 @@ namespace BDfy.Dtos
         public AuctioneerDto Auctioneer { get; set; } = null!;
 
         [Required]
-        public List<Lot> Lots { get; set; } = [];
+        public List<LotsDto> Lots { get; set; } = [];
 
     }
     public class LotByIdAuctionDto
