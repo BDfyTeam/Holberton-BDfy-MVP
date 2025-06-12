@@ -69,7 +69,7 @@ function UserRegisterForm() {
           zipCode: parseInt(zipCode),
           department,
         },
-        details: {
+        userDetails: {
           IsAdmin: isAdmin,
         },
       };

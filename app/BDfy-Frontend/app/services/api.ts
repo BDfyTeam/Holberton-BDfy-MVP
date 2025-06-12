@@ -1,9 +1,9 @@
 import type { Auction } from "./types";
 
-export async function getAuctionById(id: number): Promise<Auction> {
-  const mockData: Record<number, Auction> = {
+export async function getAuctionById(id: string): Promise<Auction> {
+  const mockData: Record<string, Auction> = {
     1: {
-      id: 1,
+      id:"1",
       title: "Subasta de autos deportivos",
       description: "Ferrari, Lamborghini y más...",
       category: ["Autos", "Lujo"],
@@ -18,7 +18,7 @@ export async function getAuctionById(id: number): Promise<Auction> {
       },
       lots: [
         {
-          id: 11,
+          id: "11",
           lot_number: 1,
           description: "Ferrari F8 Tributo",
           details: "V8, año 2020, rojo italiano.",
@@ -28,7 +28,7 @@ export async function getAuctionById(id: number): Promise<Auction> {
           winner: null,
         },
         {
-          id: 12,
+          id: "12",
           lot_number: 2,
           description: "Porsche 911 Turbo S",
           details: "Año 2022, 6.000 km.",
@@ -40,7 +40,7 @@ export async function getAuctionById(id: number): Promise<Auction> {
       ],
     },
     2: {
-      id: 2,
+      id:"2",
       title: "Subasta de tecnología premium",
       description: "MacBooks, iPhones y más",
       category: ["Electrónica"],
@@ -55,7 +55,7 @@ export async function getAuctionById(id: number): Promise<Auction> {
       },
       lots: [
         {
-          id: 21,
+          id: "21",
           lot_number: 1,
           description: "MacBook Pro M2",
           details: "16”, 32GB RAM, 1TB SSD.",
@@ -65,7 +65,7 @@ export async function getAuctionById(id: number): Promise<Auction> {
           winner: null,
         },
         {
-          id: 22,
+          id: "22",
           lot_number: 2,
           description: "iPhone 15 Pro Max",
           details: "256GB, titanio natural.",
@@ -77,7 +77,7 @@ export async function getAuctionById(id: number): Promise<Auction> {
       ],
     },
     3: {
-      id: 3,
+      id:"3",
       title: "Obras de arte",
       description: "Esculturas y pinturas originales",
       category: ["Arte"],
@@ -92,7 +92,7 @@ export async function getAuctionById(id: number): Promise<Auction> {
       },
       lots: [
         {
-          id: 31,
+          id: "31",
           lot_number: 1,
           description: "“Atardecer en el río”",
           details: "Óleo sobre lienzo, 90x70 cm, autor: M. Valdés.",
@@ -102,7 +102,7 @@ export async function getAuctionById(id: number): Promise<Auction> {
           winner: null,
         },
         {
-          id: 32,
+          id: "32",
           lot_number: 2,
           description: "Escultura 'El vuelo'",
           details: "Bronce fundido, 50 cm de alto.",

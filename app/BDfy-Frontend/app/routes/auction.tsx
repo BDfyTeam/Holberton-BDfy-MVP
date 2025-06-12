@@ -13,7 +13,7 @@ export default function AuctionPage() {
     const fetchAuction = async () => {
       try {
         console.log("Solicitando subasta con ID:", id);
-        const data = await getAuctionById(Number(id));
+        const data = await getAuctionById(id as string);
         console.log("Datos de la subasta recibidos:", data);
         setAuction(data);
       } catch (err) {

@@ -54,9 +54,6 @@ export default function CarouselAuctionCard({ auction }: { auction: AuctionCard[
               <p className="text-sm text-gray-500 mb-3">
                 Dirección: {auction.direction.street} {auction.direction.streetNumber}, {auction.direction.corner}, {auction.direction.zipCode}, {auction.direction.department}
               </p>
-              <p className="text-sm text-gray-500 mb-3">
-                Detalles: {auction.details}
-              </p>
               <p className="text-sm text-gray-500">
               Inicio: 
               {auction.startAt 

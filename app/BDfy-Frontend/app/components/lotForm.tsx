@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import getStorage, { createLot, getAllAuctions } from "~/services/fetchService";
+import { createLot } from "~/services/fetchService";
+import getAuctionsByAuctioneer from "~/services/fetchService";
 import type { LotCard } from "~/services/types";
 import "../app.css"
 import "react-datepicker/dist/react-datepicker.css";
@@ -7,7 +8,7 @@ import { getUserIdFromToken } from "~/services/handleToken";
 
 export default function CreateLotButton() {
   const [auctionOptions, setAuctionOptions] = useState<{ id: number; title: string }[]>([]);
-  const [selectedAuctionId, setSelectedAuctionId] = useState<number | null>(null);
+  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [lotNumber, setLotNumber] = useState("");
   const [description, setDescription] = useState("");
@@ -26,14 +27,11 @@ export default function CreateLotButton() {
     if (showForm) {
       const fetchAuctions = async () => {
         try {
-          const userId = getUserIdFromToken();
-          const auctions = await getAllAuctions();
-          const storage = await getStorage();
+          const auctions = await getAuctionsByAuctioneer();
 
           const combined = [
             ...auctions.map((auction: { id: number; title: string }) => ({
-              id: auction.id, title: auction.title })),
-            { id: storage.id, title: "Storage" }
+              id: auction.id, title: auction.title }))
           ];
           setAuctionOptions(combined);
         } catch (error) {
@@ -93,7 +91,7 @@ export default function CreateLotButton() {
               value={lotNumber}
               onChange={(e) => setLotNumber(e.target.value)}
               className="border border-gray-300 p-2 mb-4 w-full text-black"
-              placeholder="Título de la subasta"
+              placeholder="Numero del lote"
               required
             />
 
@@ -107,7 +105,7 @@ export default function CreateLotButton() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="border border-gray-300 p-2 mb-4 w-full text-black"
-              placeholder="Descipciones y detalles importantes de la subasta"
+              placeholder="Descipciones y detalles importantes del lote"
               required
             ></textarea>
 
@@ -122,7 +120,6 @@ export default function CreateLotButton() {
                 value={startingPrice}
                 onChange={(e) => setStartingPrice(parseInt(e.target.value))}
                 className="border border-gray-300 p-2 mb-4 w-full text-black"
-                placeholder="Código Postal"
                 required
               />
 
@@ -146,7 +143,7 @@ export default function CreateLotButton() {
               id="auctionId"
               name="auctionId"
               value={selectedAuctionId ?? ""}
-              onChange={(e) => setSelectedAuctionId(parseInt(e.target.value))}
+              onChange={(e) => setSelectedAuctionId(e.target.value)}
               className="border border-gray-300 p-2 mb-4 w-full text-black"
               required
             >
