@@ -29,7 +29,11 @@ namespace BDfy.Controllers
 
                 if (userRoleFromToken != UserRole.Auctioneer.ToString()) { return Unauthorized("Access Denied: Only Auctioneers can create Auctions"); }
 
-                if (!ModelState.IsValid) { return BadRequest(ModelState); } // Valido el body
+                if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+                if (Dto.StartAt >= Dto.EndAt) { return BadRequest("Start date must be before end date"); }
+
+                if (Dto.StartAt < DateTime.UtcNow.AddMinutes(-5)) { return BadRequest("Start date cannot be in the past"); }
 
                 var auctioneer = await _db.Users
                     .Include(u => u.AuctioneerDetails)
@@ -350,10 +354,10 @@ namespace BDfy.Controllers
 
                 if (auction == null) { return NotFound("Auction not found"); }
 
-                if (auction.Status == AuctionStatus.Active)
-                {
-                    return BadRequest("Cannot modify an active auction");
-                }
+                if (auction.Status == AuctionStatus.Active) { return BadRequest("Cannot modify an active auction"); }
+
+                if (auction.Status == AuctionStatus.Closed) { return BadRequest("Cannot modify an closed auction"); }
+
 
                 auction.Title = dto.Title;
                 auction.Description = dto.Description;
