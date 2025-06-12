@@ -70,7 +70,7 @@ export type LotCard = {
 
 // Type para lot y tipar correctamente el useState
 export interface Lot {
-  id: number;
+  id: string;
   lot_number: number;
   description: string;
   details: string;
@@ -82,7 +82,7 @@ export interface Lot {
 
 // Type para auction y tipar correctamente el useState
 export interface Auction {
-  id: number;
+  id: string;
   title: string;
   description: string;
   category: string[];
