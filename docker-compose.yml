@@ -19,9 +19,9 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_DB: bdfy_db
-      POSTGRES_USER: bdfy_user
-      POSTGRES_PASSWORD: supersecure
+      POSTGRES_DB: BDfyDatabase
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: "1234"
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
