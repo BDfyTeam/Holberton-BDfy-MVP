@@ -132,6 +132,8 @@ builder.Services.AddRateLimiter(options =>
     };
 });
 
+builder.Services.AddHostedService<AuctionCloserService>(); // Services para determinar cuando una auction termina
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
