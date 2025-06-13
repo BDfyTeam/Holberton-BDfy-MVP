@@ -5,14 +5,12 @@ using BDfy.Models;
 using BDfy.Services;
 using BDfy.Configurations;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace BDfy.Controllers
@@ -38,7 +36,8 @@ namespace BDfy.Controllers
             if (await _db.Users.AnyAsync(u => u.Ci == dto.Ci))
                 return BadRequest($"CI {dto.Ci} is already registered.");
 
-            var passwordHasher = new PasswordHasher<User>();
+            // var passwordHasher = new PasswordHasher<User>();
+            var PasswordHashed = PasswordHasher.Hash(dto.Password);
             var user = new User
             {
                 FirstName = dto.FirstName,
@@ -49,7 +48,7 @@ namespace BDfy.Controllers
                 Role = dto.Role,
                 Reputation = dto.Reputation,
                 Direction = dto.Direction,
-                Password = passwordHasher.HashPassword(null!, dto.Password)
+                Password = PasswordHashed
             };
 
             _db.Users.Add(user);
@@ -103,11 +102,9 @@ namespace BDfy.Controllers
             if (user is null)
                 return NotFound("User not found");
 
-            var passwordHasher = new PasswordHasher<User>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.Password, dto.Password);
+            var result = PasswordHasher.Verify(dto.Password, user.Password);
 
-            if (result == PasswordVerificationResult.Failed)
-                return Unauthorized("Invalid password");
+            if (!result) { return Unauthorized("Invalid password"); }
 
             var token = GenerateJwt(user);
             return Ok(new { Token = token });
