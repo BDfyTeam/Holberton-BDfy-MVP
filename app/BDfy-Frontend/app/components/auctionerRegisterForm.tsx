@@ -67,7 +67,7 @@ function AuctionerRegisterFrom() {
                     zipCode: parseInt(zipCode),
                     department
                 },
-                details: {
+                auctioneerDetails: {
                     plate: parseInt(plate)
                 }
             };
