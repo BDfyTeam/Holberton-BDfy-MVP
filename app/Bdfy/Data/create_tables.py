@@ -3,7 +3,7 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-DB_HOST = "localhost"
+DB_HOST = "db"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"
 DB_USER = "root"
