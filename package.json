@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@splidejs/react-splide": "^0.7.12",
-    "jwt-decode": "^4.0.0",
-    "lucide-react": "^0.513.0"
-  }
-}
