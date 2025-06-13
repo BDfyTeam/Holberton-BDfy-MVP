@@ -30,6 +30,9 @@ namespace BDfy.Dtos
         public decimal? EndingPrice { get; set; }
 
         [Required]
+        public Guid AuctionId { get; set; }
+
+        [Required]
         public bool Sold { get; set; }
     }
 }
