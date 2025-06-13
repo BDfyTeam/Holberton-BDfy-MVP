@@ -3,10 +3,10 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-DB_HOST = "db"
+DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"
-DB_USER = "root"
+DB_USER = "moto"
 DB_PASSWORD = "1234"
 
 def create_tables():
@@ -40,8 +40,8 @@ def create_tables():
                 direction_zip_code INT NOT NULL,
                 direction_department TEXT NOT NULL,
 
-                created_at TIMESTAMP NOT NULL,
-                updated_at TIMESTAMP NOT NULL
+                created_at TIMESTAMPTZ NOT NULL,
+                updated_at TIMESTAMPTZ NOT NULL
             )
         """)
 
@@ -51,8 +51,8 @@ def create_tables():
                 id UUID PRIMARY KEY,
                 user_id UUID UNIQUE NOT NULL,
                 is_admin BOOLEAN NOT NULL,
-                created_at TIMESTAMP NOT NULL,
-                updated_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL,
+                updated_at TIMESTAMPTZ NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         """)
@@ -63,8 +63,8 @@ def create_tables():
                 id UUID PRIMARY KEY,
                 user_id UUID UNIQUE NOT NULL,
                 plate INT NOT NULL,
-                created_at TIMESTAMP NOT NULL,
-                updated_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL,
+                updated_at TIMESTAMPTZ NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         """)
@@ -75,8 +75,8 @@ def create_tables():
                 id UUID PRIMARY KEY,
                 title TEXT NOT NULL,
                 description TEXT NOT NULL,
-                start_at TIMESTAMP NOT NULL,
-                end_at TIMESTAMP NOT NULL,
+                start_at TIMESTAMPTZ NOT NULL,
+                end_at TIMESTAMPTZ NOT NULL,
                 category INTEGER[],
                 status INT NOT NULL, -- AuctionStatus: Closed=0, Active=1, Draft=2
 
@@ -88,8 +88,8 @@ def create_tables():
                 direction_department TEXT NOT NULL,
 
                 auctioneer_id UUID NOT NULL,
-                created_at TIMESTAMP NOT NULL,
-                updated_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL,
+                updated_at TIMESTAMPTZ NOT NULL,
                 FOREIGN KEY (auctioneer_id) REFERENCES auctioneerdetails(id) ON DELETE RESTRICT
             )
         """)
@@ -109,8 +109,8 @@ def create_tables():
                 auction_id UUID NOT NULL,
                 winner_id UUID,
 
-                created_at TIMESTAMP NOT NULL,
-                updated_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL,
+                updated_at TIMESTAMPTZ NOT NULL,
                 FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE,
                 FOREIGN KEY (winner_id) REFERENCES userdetails(id) ON DELETE SET NULL
             )
@@ -121,13 +121,13 @@ def create_tables():
             CREATE TABLE IF NOT EXISTS bids (
                 id UUID PRIMARY KEY,
                 amount DECIMAL(19,4) NOT NULL CHECK (amount >= 0),
-                time TIMESTAMP NOT NULL,
+                time TIMESTAMPTZ NOT NULL,
 
                 lot_id UUID NOT NULL,
                 buyer_id UUID NOT NULL,
 
-                created_at TIMESTAMP NOT NULL,
-                updated_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL,
+                updated_at TIMESTAMPTZ NOT NULL,
 
                 FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE,
                 FOREIGN KEY (buyer_id) REFERENCES userdetails(id) ON DELETE CASCADE

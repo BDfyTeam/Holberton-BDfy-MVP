@@ -16,8 +16,8 @@ namespace BDfy.Controllers
 	{
 		private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
 		[Authorize]
-		[HttpPost]
-		public async Task<ActionResult> Register(Guid auctionID, [FromBody] RegisterLot Dto)
+		[HttpPost("{auctionId}")]
+		public async Task<ActionResult> Register([FromRoute] Guid auctionId, [FromBody] RegisterLot Dto)
 		{
 			try
 			{
@@ -28,9 +28,14 @@ namespace BDfy.Controllers
 				var auction = await _db.Auctions
 					.Include(a => a.Auctioneer)
 					.Include(a => a.Lots)
-					.FirstOrDefaultAsync(a => a.Id == auctionID);
+					.FirstOrDefaultAsync(a => a.Id == auctionId);
 
 				if (auction == null) { return NotFound("Auction not found"); }
+
+				if (auction.Status != AuctionStatus.Draft || auction.Status != AuctionStatus.Storage)
+				{
+					return BadRequest("Lot registration is only permitted for draft auctions or the auctioneer's storage");
+				}
 
 				if (auction.Auctioneer.UserId.ToString() != userIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
@@ -45,13 +50,13 @@ namespace BDfy.Controllers
 					Details = Dto.Details,
 					StartingPrice = Dto.StartingPrice,
 					CurrentPrice = Dto.StartingPrice,
-					AuctionId = auctionID,
+					AuctionId = auctionId,
 					Auction = auction,
 					Sold = false
 				};
 
 				var checkLot = await _db.Lots
-					.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber && l.AuctionId == auctionID);
+					.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber && l.AuctionId == auctionId);
 
 				if (checkLot != null) { throw new InvalidOperationException("The Lot number on this Auction is already taken"); }
 
