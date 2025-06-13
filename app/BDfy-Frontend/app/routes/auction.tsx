@@ -1,6 +1,6 @@
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
-import { getAuctionById } from "~/services/api";
+import { getAuctionById } from "~/services/fetchService";
 import type { Auction } from "~/services/types";
 import LotCard from "~/components/LotCard";
 
@@ -13,7 +13,7 @@ export default function AuctionPage() {
     const fetchAuction = async () => {
       try {
         console.log("Solicitando subasta con ID:", id);
-        const data = await getAuctionById(id as string);
+        const data = await getAuctionById(String(id));
         console.log("Datos de la subasta recibidos:", data);
         setAuction(data);
       } catch (err) {

@@ -1,5 +1,5 @@
 import { Splide, SplideSlide } from "@splidejs/react-splide";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import type { AuctionCard } from "~/services/types";
 import { useEffect, useRef } from "react";
 
@@ -67,8 +67,8 @@ export default function CarouselAuctionCard({ auction }: { auction: AuctionCard[
                   : " Fin de la subasta aún no definido."}
               </p>
               <Link
-                to={`/auction/${auction.id}`}
-                className="text-blue-600 mt-3 inline-block flex justify-center items-center text-center bg-blue-100 text-blue-800 font-semibold py-2 px-4 rounded"
+                to={`/auctions/specific/${auction.id}`}
+                className="text-blue-600 mt-3 inline-block justify-center items-center text-center bg-blue-100 font-semibold py-2 px-4 rounded"
               >
                 Ver subasta
               </Link>
