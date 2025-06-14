@@ -96,12 +96,12 @@ export type CompleteLot = {
 // Type para lot y tipar correctamente el useState
 export interface Lot {
   id: string;
-  lot_number: number;
+  lotNumber: number;
   description: string;
   details: string;
-  starting_price: number;
-  ending_price: number;
-  current_price?: number; // opcional si lo calculás en tiempo real
+  startingPrice: number;
+  endingPrice: number;
+  currentPrice?: number; // opcional si lo calculás en tiempo real
   winner: string | null;
 }
 
