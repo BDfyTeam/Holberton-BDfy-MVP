@@ -17,7 +17,7 @@ namespace BDfy.Controllers
     {
         [Authorize]
         [HttpPost("{userId}")]
-        public async Task<ActionResult> Register(Guid userId, [FromBody] RegisterAuctionDto Dto)
+        public async Task<ActionResult> Register([FromRoute] Guid userId, [FromBody] RegisterAuctionDto Dto)
         {
             try
             {
@@ -33,7 +33,7 @@ namespace BDfy.Controllers
 
                 if (Dto.StartAt >= Dto.EndAt) { return BadRequest("Start date must be before end date"); }
 
-                if (Dto.StartAt < DateTime.UtcNow.AddMinutes(-5)) { return BadRequest("Start date cannot be in the past"); }
+                if (Dto.StartAt < DateTime.UtcNow.AddMinutes(-5).ToUniversalTime()) { return BadRequest("Start date cannot be in the past"); }
 
                 var auctioneer = await _db.Users
                     .Include(u => u.AuctioneerDetails)
@@ -45,8 +45,8 @@ namespace BDfy.Controllers
                 {
                     Title = Dto.Title,
                     Description = Dto.Description,
-                    StartAt = Dto.StartAt,
-                    EndAt = Dto.EndAt,
+                    StartAt = Dto.StartAt.ToUniversalTime(),
+                    EndAt = Dto.EndAt.ToUniversalTime(),
                     Category = Dto.Category ?? [],
                     Status = Dto.Status,
                     Direction = Dto.Direction,
@@ -82,8 +82,8 @@ namespace BDfy.Controllers
                     Id = a.Id,
                     Title = a.Title,
                     Description = a.Description,
-                    StartAt = a.StartAt,
-                    EndAt = a.EndAt,
+                    StartAt = a.StartAt.ToUniversalTime(),
+                    EndAt = a.EndAt.ToUniversalTime(),
                     Category = a.Category ?? [],
                     Status = a.Status,
                     Direction = a.Direction,
@@ -94,6 +94,7 @@ namespace BDfy.Controllers
                         LotNumber = l.LotNumber,
                         Description = l.Description,
                         Details = l.Details,
+                        AuctionId = l.AuctionId,
                         StartingPrice = l.StartingPrice,
                         CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
                         EndingPrice = l.EndingPrice ?? 0,
@@ -139,8 +140,8 @@ namespace BDfy.Controllers
                     Id = a.Id,
                     Title = a.Title,
                     Description = a.Description,
-                    StartAt = a.StartAt,
-                    EndAt = a.EndAt,
+                    StartAt = a.StartAt.ToUniversalTime(),
+                    EndAt = a.EndAt.ToUniversalTime(),
                     Category = a.Category,
                     Status = a.Status,
                     Direction = a.Direction,
@@ -152,6 +153,7 @@ namespace BDfy.Controllers
                         CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
                         Description = l.Description,
                         Details = l.Details,
+                        AuctionId = l.AuctionId,
                         LotNumber = l.LotNumber,
                         Sold = l.Sold,
                         EndingPrice = l.EndingPrice ?? 0,
@@ -193,7 +195,7 @@ namespace BDfy.Controllers
                     Id = a.Id,
                     Title = a.Title,
                     Description = a.Description,
-                    StartAt = a.StartAt,
+                    StartAt = a.StartAt.ToUniversalTime(),
                     EndAt = a.EndAt,
                     Category = a.Category ?? [],
                     Status = a.Status,
@@ -205,6 +207,7 @@ namespace BDfy.Controllers
                         LotNumber = l.LotNumber,
                         Description = l.Description,
                         Details = l.Details,
+                        AuctionId = l.AuctionId,
                         StartingPrice = l.StartingPrice,
                         CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
                         EndingPrice = l.EndingPrice ?? 0,
@@ -255,6 +258,7 @@ namespace BDfy.Controllers
                         LotNumber = l.LotNumber,
                         Description = l.Description,
                         Details = l.Details,
+                        AuctionId = l.AuctionId,
                         StartingPrice = l.StartingPrice,
                         CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
                         EndingPrice = l.EndingPrice ?? 0,
@@ -315,6 +319,7 @@ namespace BDfy.Controllers
                         LotNumber = l.LotNumber,
                         Description = l.Description,
                         Details = l.Details,
+                        AuctionId = l.AuctionId,
                         StartingPrice = l.StartingPrice,
                         CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
                         EndingPrice = l.EndingPrice ?? 0,
@@ -344,7 +349,7 @@ namespace BDfy.Controllers
 
                 if (dto.StartAt >= dto.EndAt) { return BadRequest("Start date must be before end date"); }
 
-                if (dto.StartAt < DateTime.UtcNow.AddMinutes(-5)) { return BadRequest("Start date cannot be in the past"); }
+                if (dto.StartAt < DateTime.UtcNow.AddMinutes(-5).ToUniversalTime()) { return BadRequest("Start date cannot be in the past"); }
 
                 if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
@@ -361,12 +366,12 @@ namespace BDfy.Controllers
 
                 auction.Title = dto.Title;
                 auction.Description = dto.Description;
-                auction.StartAt = dto.StartAt;
-                auction.EndAt = dto.EndAt;
+                auction.StartAt = dto.StartAt.ToUniversalTime();
+                auction.EndAt = dto.EndAt.ToUniversalTime();
                 auction.Category = dto.Category;
                 auction.Status = dto.Status;
                 auction.Direction = dto.Direction;
-                auction.UpdatedAt = DateTime.UtcNow;
+                auction.UpdatedAt = DateTime.UtcNow.ToUniversalTime();
 
                 await _db.SaveChangesAsync();
 
