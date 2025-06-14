@@ -23,7 +23,7 @@ namespace BDfy.Hub
 
         public override async Task OnDisconnectedAsync(Exception? exception) // Para ver si se desconecta del HUB
         {
-            if (exception != null) { Console.WriteLine($"   Razon: {exception.Message}"); }
+            if (exception != null) { Console.WriteLine($"   Razon: {exception.Message}"); Console.WriteLine($"[HUB] Stack trace: {exception.StackTrace}");}
 
             _userGroups.TryRemove(Context.ConnectionId, out _);
 
