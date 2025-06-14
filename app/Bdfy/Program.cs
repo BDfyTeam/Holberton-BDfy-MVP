@@ -16,11 +16,29 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 builder.Services.AddSignalR(options =>
 {
-    options.KeepAliveInterval = TimeSpan.FromSeconds(30);      // Ping cada 30 segundos
-    options.ClientTimeoutInterval = TimeSpan.FromMinutes(1);  // Timeout: 1 minuto
-    options.HandshakeTimeout = TimeSpan.FromSeconds(30);       // 30 segundos para handshake
-    options.EnableDetailedErrors = true;                       // Errores detallados
+    // Configuraciones más estables para producción
+    options.KeepAliveInterval = TimeSpan.FromSeconds(30);     // Ping cada 30 segundos (no 10)
+    options.ClientTimeoutInterval = TimeSpan.FromMinutes(5);  // Timeout: 5 minutos
+    options.HandshakeTimeout = TimeSpan.FromSeconds(15);      // 15 segundos para handshake
+    options.MaximumReceiveMessageSize = 64 * 1024;           // 64KB límite de mensaje
+    options.StreamBufferCapacity = 10;
+    options.MaximumParallelInvocationsPerClient = 5;         // Reducido de 10 a 5
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment(); // Solo en desarrollo
+})
+.AddJsonProtocol(options =>
+{
+    options.PayloadSerializerOptions.PropertyNameCaseInsensitive = true;
+    options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+    // Mejorar la configuración JSON
+    options.PayloadSerializerOptions.WriteIndented = false;
+    options.PayloadSerializerOptions.DefaultIgnoreCondition = 
+        System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
 });
+
+// void AddJsonProtocol(Action<object> value)
+// {
+//     throw new NotImplementedException();
+// }
 
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
@@ -35,10 +53,10 @@ builder.Services.AddControllers();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("SignalRCorsPolicy", policy =>
     {
         policy
-            .SetIsOriginAllowed(options => true)
+            .WithOrigins("http://localhost:5016", "http://127.0.0.1:5016") // Específicos
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
@@ -136,15 +154,42 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bdfy API v1");
     });
 }
+app.Use(async (context, next) =>
+{
+    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+    
+    if (context.Request.Path.StartsWithSegments("/BidHub"))
+    {
+        logger.LogInformation("SignalR Request: {Method} {Path} from {RemoteIp} at {Timestamp}", 
+            context.Request.Method, 
+            context.Request.Path, 
+            context.Connection.RemoteIpAddress,
+            DateTime.UtcNow);
+            
+        // Log headers importantes para debugging
+        var connection = context.Request.Headers["Connection"].ToString();
+        var upgrade = context.Request.Headers["Upgrade"].ToString();
+        var origin = context.Request.Headers["Origin"].ToString();
+        
+        if (!string.IsNullOrEmpty(connection) || !string.IsNullOrEmpty(upgrade))
+        {
+            logger.LogInformation("SignalR Headers: Connection={Connection}, Upgrade={Upgrade}, Origin={Origin}",
+                connection, upgrade, origin);
+        }
+    }
+    
+    await next();
+});
 
 // Middleware
-app.UseCors("AllowAll");
+app.UseCors("SignalRCorsPolicy");
 app.UseRouting();
 
 app.UseRateLimiter();       // Activate the rate limiter
