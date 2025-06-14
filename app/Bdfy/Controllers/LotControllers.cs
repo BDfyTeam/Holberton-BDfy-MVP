@@ -266,7 +266,7 @@ namespace BDfy.Controllers
 					// WebSocket aca 
 					await _hubContext.Clients.Group($"auction_{bid.LotId}").ReceiveBid(bidUpdate); // <---- :D
 
-					return Created();
+					return Created("", new { message = "Bid created successfully" });
 				}
 				return BadRequest(new { message = "The bid must be grater than the current price" });
 			}

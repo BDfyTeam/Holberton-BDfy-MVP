@@ -36,6 +36,8 @@ namespace BDfy.Hub
         {
             try
             {
+                Console.WriteLine($"Intentando unirse al grupo del lote {lotId} - {Context.ConnectionId}");
+
                 var lot = await _db.Lots.FindAsync(lotId);
                 if (lot == null) { await Clients.Caller.ReceiveMessage("error", $"Lote {lotId} no encontrado"); return; }
 
@@ -61,6 +63,7 @@ namespace BDfy.Hub
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ERROR JoinAuctionGroup] {ex.Message}");
                 await Clients.Caller.ReceiveMessage("error", $"Error al unirse al grupo: {ex.Message}");
             }
         }
