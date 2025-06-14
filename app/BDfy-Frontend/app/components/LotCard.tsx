@@ -6,14 +6,15 @@ interface LotCardProps {
 }
 
 export default function LotCard({ lot }: LotCardProps) {
-  const [bid, setBid] = useState<number>(lot.current_price || lot.starting_price);
+  const [bid, setBid] = useState<number>(lot.currentPrice || lot.startingPrice);
   const [message, setMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`/api/v1.0/lots/bid/${lot.id}`, {
+      const dateNow = new Date();
+      const response = await fetch(`http://127.0.0.1:5016/api/1.0/lots/bid/${lot.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -21,12 +22,10 @@ export default function LotCard({ lot }: LotCardProps) {
         },
         body: JSON.stringify({
           amount: bid,
+          time: dateNow,
+          lotId: lot.id
         }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || "Error al pujar");
 
       setMessage("✅ Puja realizada con éxito");
     } catch (err: any) {
@@ -38,12 +37,12 @@ export default function LotCard({ lot }: LotCardProps) {
     <div className="bg-white text-black p-4 rounded-lg shadow space-y-2">
       <p className="font-semibold text-lg">{lot.description}</p>
       <p className="text-sm text-gray-600">{lot.details}</p>
-      <p className="text-blue-700">Precio actual: {lot.current_price ?? lot.starting_price}</p>
+      <p className="text-blue-700">Precio actual: {lot.currentPrice ?? lot.startingPrice}</p>
 
       <form onSubmit={handleSubmit} className="space-y-2">
         <input
           type="number"
-          min={(lot.current_price ?? lot.starting_price) + 1}
+          min={(lot.currentPrice ?? lot.startingPrice) + 1}
           value={bid}
           onChange={(e) => setBid(Number(e.target.value))}
           className="w-full border border-gray-300 rounded p-1"

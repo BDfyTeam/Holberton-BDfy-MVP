@@ -3,28 +3,90 @@ import { useEffect, useState } from "react";
 import { getAuctionById } from "~/services/fetchService";
 import type { Auction } from "~/services/types";
 import LotCard from "~/components/LotCard";
+import * as signalR from "@microsoft/signalr";
 
 export default function AuctionPage() {
   const { id } = useParams();
   const [auction, setAuction] = useState<Auction | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchAuction = async () => {
-      try {
-        console.log("Solicitando subasta con ID:", id);
-        const data = await getAuctionById(String(id));
-        console.log("Datos de la subasta recibidos:", data);
-        setAuction(data);
-      } catch (err) {
-        console.error("Error al cargar la subasta:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+useEffect(() => {
+  const fetchAuction = async () => {
+    try {
+      const data = await getAuctionById(String(id));
+      console.log("Datos de la subasta recibidos:", data);
+      setAuction(data);
+    } catch (err) {
+      console.error("Error al cargar la subasta:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (id) fetchAuction();
-  }, [id]);
+  if (id) fetchAuction();
+}, [id]);
+
+
+useEffect(() => {
+  if (!auction) return;
+
+  const connection = new signalR.HubConnectionBuilder()
+    .withUrl("http://localhost:5015/BidHub", {
+      accessTokenFactory: () => localStorage.getItem("token") || "",
+    })
+    .withAutomaticReconnect()
+    .build();
+
+connection.start()
+  .then(async () => {
+    console.log("Conectado a SignalR");
+    for (const lot of auction.lots) {
+      try {
+        await connection.invoke("JoinAuctionGroup", lot.id);
+        console.log("Unido a grupo del lote", lot.id);
+      } catch (err) {
+        console.error("Error al unirse al grupo del lote:", lot.id, err);
+      }
+    }
+  })
+  .catch(err => {
+    console.error("Fallo al conectar con SignalR:", err);
+  });
+
+  connection.on("ReceiveBid", (bidUpdate: { lotId: string; currentPrice: number; buyerId: string}) => {
+    console.log("Nueva puja recibida:", bidUpdate);
+    setAuction((prev) => {
+      if (!prev) return prev;
+      const updatedLots = prev.lots.map((lot) =>
+        lot.id === bidUpdate.lotId
+          ? { ...lot, currentPrice: bidUpdate.currentPrice }
+          : lot
+      );
+      return { ...prev, lots: updatedLots };
+    });
+  });
+
+connection.on("ReceiveMessage", (type: string, message: string) => {
+  console.log(`[${type.toUpperCase()}] ${message}`);
+});
+
+connection.onclose((error) => {
+  console.error("Conexión cerrada:", error);
+});
+
+connection.onreconnecting((error) => {
+  console.warn("Reconectando a SignalR:", error);
+});
+
+connection.onreconnected((connectionId) => {
+  console.log("Reconectado con ID:", connectionId);
+});
+
+  return () => {
+    connection.stop();
+  };
+}, [auction]);
+
 
   if (loading) return <p className="text-center text-white">Cargando subasta...</p>;
   if (!auction) return <p className="text-center text-red-500">Subasta no encontrada.</p>;
