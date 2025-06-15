@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { isPasswordValid, isEmailValid, isDocumentValid } from '../services/validations'
 import type { RegisterAuctioneerPayload } from '../services/types';
 import { registerAuctioner } from '~/services/fetchService';
+import { useAuth } from '~/context/authContext';
 
 function AuctionerRegisterFrom() {
     const navigate = useNavigate();
@@ -72,9 +73,11 @@ function AuctionerRegisterFrom() {
                 }
             };
 
+            const { login } = useAuth();
+
             try {
                 const token = await registerAuctioner(payload);
-                localStorage.setItem("token", token);
+                login(token);
                 navigate('/');
             } catch (error: any) {
                 console.error("Error al registrar el usuario:", error);
@@ -105,7 +108,7 @@ function AuctionerRegisterFrom() {
                   ${validated && firstName.trim() === '' ? 'border-red-500' : 'border-gray-300'}
                 `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="firstName"
+                        id="firstName-auctioneer"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         placeholder="Compacto"
@@ -132,7 +135,7 @@ function AuctionerRegisterFrom() {
                   ${validated && lastName.trim() === '' ? 'border-red-500' : 'border-gray-300'}
                 `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="lastName"
+                        id="lastName-auctioneer"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         placeholder="Andrada"
@@ -159,10 +162,10 @@ function AuctionerRegisterFrom() {
                   ${validated && email.trim() === '' ? 'border-red-500' : 'border-gray-300'}
                 `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="email"
+                        id="email-auctioneer"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                        pattern="[a-z0-9._%+\\-]+@[a-z0-9.-]+\\.[a-z]{2,}$"
                         placeholder="mail@example.com"
                         required
                     />
@@ -188,7 +191,7 @@ function AuctionerRegisterFrom() {
                   ${validated && !isPasswordValid(password) ? 'border-red-500' : 'border-gray-300'}
                 `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="password"
+                        id="password-auctioneer"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="MotoCompacto123"
@@ -238,7 +241,7 @@ function AuctionerRegisterFrom() {
                     ${validated && !isDocumentValid(documentNumber) ? 'border-red-500' : 'border-gray-300'}
                   `}
                             style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                            id="document"
+                            id="document-auctioneer"
                             placeholder="1.234.567-8"
                             required
                             value={documentNumber}
@@ -269,7 +272,7 @@ function AuctionerRegisterFrom() {
                   ${validated && !/^09\d{7}$/.test(phone) ? 'border-red-500' : 'border-gray-300'}
                 `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="phone"
+                        id="phone-auctioneer"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="09xxxxxxx"
@@ -297,7 +300,7 @@ function AuctionerRegisterFrom() {
                         ${validated && (!/^\d{1,4}$/.test(streetNumber.trim()) ? 'border-red-500' : 'border-green-500')}
                     `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="plate"
+                        id="plate-auctioneer"
                         value={plate}
                         onChange={(e) => setPlate(e.target.value)}
                         placeholder="1234"
@@ -327,7 +330,7 @@ function AuctionerRegisterFrom() {
                   ${validated && department.trim() === '' ? 'border-red-500' : 'border-gray-300'}
                 `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="department"
+                        id="department-auctioneer"
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
                         placeholder="Montevideo"
@@ -354,7 +357,7 @@ function AuctionerRegisterFrom() {
                   ${validated && !/^\d{5}$/.test(zipCode) ? 'border-red-500' : validated && /^\d{5}$/.test(zipCode) ? 'border-green-500' : 'border-gray-300'}
                 `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="zipCode"
+                        id="zipCode-auctioneer"
                         value={zipCode}
                         onChange={(e) => setZipCode(e.target.value)}
                         placeholder="11200"
@@ -382,7 +385,7 @@ function AuctionerRegisterFrom() {
                   ${validated && street.trim() === '' ? 'border-red-500' : 'border-gray-300'}
                 `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="street"
+                        id="street-auctioneer"
                         value={street}
                         onChange={(e) => setStreet(e.target.value)}
                         placeholder="Av. CuloRoto"
@@ -409,7 +412,7 @@ function AuctionerRegisterFrom() {
                   ${validated && (!/^\d{1,4}$/.test(streetNumber.trim()) ? 'border-red-500' : 'border-green-500')}
                 `}
                         style={{ backgroundColor: 'rgb(168, 175, 234)' }}
-                        id="streetNumber"
+                        id="streetNumber-auctioneer"
                         value={streetNumber}
                         onChange={(e) => setStreetNumber(e.target.value)}
                         placeholder="1234"
@@ -434,7 +437,7 @@ function AuctionerRegisterFrom() {
                     <input
                         className={`form-check-input ${validated && !acceptedTerms ? 'is-invalid' : ''}`}
                         type="checkbox"
-                        id="invalidCheck"
+                        id="invalidCheck-auctioneer"
                         checked={acceptedTerms}
                         onChange={(e) => setAcceptedTerms(e.target.checked)}
                         required

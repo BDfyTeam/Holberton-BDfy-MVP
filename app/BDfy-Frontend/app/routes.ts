@@ -5,12 +5,13 @@ export default [
   route("/", "routes/layout.tsx", [
     index("routes/home.tsx"),            // / (home público)
     route("login", "routes/login.tsx"),
-    route("register", "routes/register.tsx"),  // /login
+    route("register", "routes/register.tsx"),
   ]),
 
   // Rutas protegidas
   route("/", "routes/protectedlayout.tsx", [
     route("profile", "routes/profile.tsx"),
-    route("auction/:id", "routes/auction.tsx")
+    route("auction/:id", "routes/auction.tsx"),
+    route("my-auctions", "routes/myAuctions.tsx"),
   ]),
 ] satisfies RouteConfig;

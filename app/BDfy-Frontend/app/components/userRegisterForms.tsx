@@ -7,6 +7,7 @@ import {
 } from "../services/validations";
 import type { RegisterUserPayload } from "../services/types";
 import { registerUser } from "~/services/fetchService";
+import { useAuth } from "~/context/authContext";
 
 function UserRegisterForm() {
   const navigate = useNavigate();
@@ -74,9 +75,11 @@ function UserRegisterForm() {
         },
       };
 
+      const { login } = useAuth();
+
       try {
         const token = await registerUser(payload);
-        localStorage.setItem("token", token);
+        login(token);
         navigate("/");
       } catch (error: any) {
         console.error("Error al registrar el usuario:", error);
@@ -113,7 +116,7 @@ function UserRegisterForm() {
               }
             `}
             style={{ backgroundColor: "rgb(168, 175, 234)" }}
-            id="firstName"
+            id="firstName-user"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             placeholder="Compacto"
@@ -142,7 +145,7 @@ function UserRegisterForm() {
               }
             `}
             style={{ backgroundColor: "rgb(168, 175, 234)" }}
-            id="lastName"
+            id="lastName-user"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             placeholder="Andrada"
@@ -175,10 +178,10 @@ function UserRegisterForm() {
               }
             `}
             style={{ backgroundColor: "rgb(168, 175, 234)" }}
-            id="email"
+            id="email-user"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+            pattern="[a-z0-9._%+\\-]+@[a-z0-9.-]+\\.[a-z]{2,}$"
             placeholder="mail@example.com"
             required
           />
@@ -206,7 +209,7 @@ function UserRegisterForm() {
               }
             `}
             style={{ backgroundColor: "rgb(168, 175, 234)" }}
-            id="password"
+            id="password-user"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="MotoCompacto123"
@@ -263,7 +266,7 @@ function UserRegisterForm() {
                 }
               `}
               style={{ backgroundColor: "rgb(168, 175, 234)" }}
-              id="document"
+              id="document-user"
               placeholder="1.234.567-8"
               required
               value={documentNumber}
@@ -298,7 +301,7 @@ function UserRegisterForm() {
               }
             `}
             style={{ backgroundColor: "rgb(168, 175, 234)" }}
-            id="phone"
+            id="phone-user"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="09xxxxxxx"
@@ -332,7 +335,7 @@ function UserRegisterForm() {
               }
             `}
             style={{ backgroundColor: "rgb(168, 175, 234)" }}
-            id="department"
+            id="department-user"
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
             placeholder="Montevideo"
@@ -365,7 +368,7 @@ function UserRegisterForm() {
               }
             `}
             style={{ backgroundColor: "rgb(168, 175, 234)" }}
-            id="zipCode"
+            id="zipCode-user"
             value={zipCode}
             onChange={(e) => setZipCode(e.target.value)}
             placeholder="11200"
@@ -397,7 +400,7 @@ function UserRegisterForm() {
               }
             `}
             style={{ backgroundColor: "rgb(168, 175, 234)" }}
-            id="street"
+            id="street-user"
             value={street}
             onChange={(e) => setStreet(e.target.value)}
             placeholder="Av. CuloRoto"
@@ -429,7 +432,7 @@ function UserRegisterForm() {
               }
             `}
             style={{ backgroundColor: "rgb(168, 175, 234)" }}
-            id="streetNumber"
+            id="streetNumber-user"
             value={streetNumber}
             onChange={(e) => setStreetNumber(e.target.value)}
             placeholder="1234"
@@ -459,7 +462,7 @@ function UserRegisterForm() {
               validated && !acceptedTerms ? "is-invalid" : ""
             }`}
             type="checkbox"
-            id="invalidCheck"
+            id="invalidCheck-user"
             checked={acceptedTerms}
             onChange={(e) => setAcceptedTerms(e.target.checked)}
             required

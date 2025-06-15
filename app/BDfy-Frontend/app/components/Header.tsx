@@ -1,13 +1,12 @@
+import { useLocation } from "react-router-dom";
 import { NavBar } from "./navBar";
 import DynamicButton from "./navegationButton";
 import UserMenu from "./UserMenu";
-import { useLocation } from "react-router-dom";
+import { useAuth } from "~/context/authContext";
 
 export default function Header() {
-  const isAuthenticated =
-    typeof window !== "undefined" && !!localStorage.getItem("token");
+  const { isAuthenticated, logout } = useAuth();
 
-  // SACAMOS LA RUTA ACTUAL PARA VALIDAR LA RUTA ACTUAL DEL USUARIO
   const location = useLocation();
   const path = location.pathname;
 
@@ -17,19 +16,18 @@ export default function Header() {
       <div className="flex items-center space-x-4">
         <span className="text-white text-2xl">🔨</span>
         <div className="text-white text-2xl font-bold">
-        <DynamicButton to="/" children="BDfy" />
+          <DynamicButton to="/" children="BDfy" />
         </div>
       </div>
+
       {!isAuthenticated && (
         <div className="hidden md:flex space-x-4">
-          <div className="hidden md:flex space-x-4">
-            {(path === "/" || path === "/login") && (
-              <NavBar to="/register">Registrarme</NavBar>
-            )}
-            {(path === "/" || path === "/register") && (
-              <NavBar to="/login">Iniciar Sesión</NavBar>
-            )}
-          </div>
+          {(path === "/" || path === "/login") && (
+            <NavBar to="/register">Registrarme</NavBar>
+          )}
+          {(path === "/" || path === "/register") && (
+            <NavBar to="/login">Iniciar Sesión</NavBar>
+          )}
         </div>
       )}
 

@@ -9,22 +9,41 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { fetchRole } from "~/services/fetchService";
+import { useAuth } from "~/context/authContext";
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
   const [isClient, setIsClient] = useState(false); // 👈 nuevo
+  const [role, setRole] = useState<number | null>(null);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
     setIsClient(true); // 👈 asegura que esto solo pasa en el cliente
+
+    const fetchUserRole = async () => {
+      try {
+        const data = await fetchRole();
+  
+        if (data) {
+          setRole(data.role);
+        }
+      } catch (error) {
+        console.error("Error al obtener el rol del usuario:", error);
+      }
+    };
+  
+    fetchUserRole();
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    logout();
     navigate("/login");
   };
 
   if (!isClient) return null; // 👈 evita renderizar en SSR
+
 
   return (
     <div className="relative">
@@ -49,12 +68,31 @@ export default function UserMenu() {
           {/* Lista de opciones */}
           <ul className="divide-y divide-gray-100 text-gray-700">
             <MenuItem icon={<User size={18} />} text="Mi Perfil" />
-            <MenuItem icon={<Gavel size={18} />} text="Mis Subastas" />
-            <MenuItem icon={<Trophy size={18} />} text="Subastas Ganadas" />
-            <MenuItem icon={<Boxes size={18} />} text="Mis Lotes" />
-            <MenuItem icon={<Bell size={18} />} text="Notificaciones" badge={3} />
+            {role === 1 && (
+              <>
+                <MenuItem 
+                  icon={<Gavel 
+                  size={18} />} 
+                  text="Mis Subastas" 
+                  onClick={() => navigate("/my-auctions")}
+                  />
+                <MenuItem icon={<Boxes size={18} />} text="Mis Lotes" />
+              </>
+            )}
+            {role === 0 && (
+              <MenuItem icon={<Trophy size={18} />} text="Subastas Ganadas" />
+            )}
+            <MenuItem
+              icon={<Bell size={18} />}
+              text="Notificaciones"
+              badge={3}
+            />
             <MenuItem icon={<Settings size={18} />} text="Configuración" />
-            <MenuItem icon={<LogOut size={18} />} text="Cerrar sesión" onClick={handleLogout} />
+            <MenuItem
+              icon={<LogOut size={18} />}
+              text="Cerrar sesión"
+              onClick={handleLogout}
+            />
           </ul>
         </div>
       )}

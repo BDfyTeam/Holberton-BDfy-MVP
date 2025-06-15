@@ -1,6 +1,7 @@
-import { getUserIdFromToken } from "./handleToken";
+import { getToken, getUserIdFromToken } from "./handleToken";
 import type { AuctionCard, RegisterUserPayload, LotCard } from "./types";
 import type { RegisterAuctioneerPayload } from "./types";
+import { useAuth } from "~/context/authContext";
 
 // LOGUEAR UN USUARIO
 export async function loginUser(email: string, password: string) {
@@ -27,59 +28,63 @@ export async function loginUser(email: string, password: string) {
   } catch (error) {
     throw error;
   }
-};
+}
 
 // REGISTRAR UN USUARIO
 export async function registerUser(payload: RegisterUserPayload) {
   try {
-    const response = await fetch("http://127.0.0.1:5015/api/1.0/users/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    const response = await fetch(
+      "http://127.0.0.1:5015/api/1.0/users/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Error al registrar el usuario.');
-    };
+      throw new Error(errorData.message || "Error al registrar el usuario.");
+    }
 
     const data = await response.json();
 
     return data.token;
-
   } catch (error) {
     console.error("Error al registrar el usuario:", error);
     throw error; // Re-lanzamos el error para que pueda ser manejado por quien llame a esta función
   }
-};
+}
 
 // REGISTRAR UN SUBASTADORREGISTRAR SUBASTADOR
 export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
   try {
-    const response = await fetch("http://127.0.0.1:5015/api/1.0/users/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload)
-    });
+    const response = await fetch(
+      "http://127.0.0.1:5015/api/1.0/users/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Error al registrar el subastador.');
-    };
+      throw new Error(errorData.message || "Error al registrar el subastador.");
+    }
 
     const data = await response.json();
 
     return data.token;
-
   } catch (error) {
     console.error("Error al registrar el subastador:", error);
     throw error;
   }
-};
+}
 
 // ENTRAR EN UNA SUBASTA (GET all auctions)
 export async function getAllAuctions() {
@@ -88,76 +93,82 @@ export async function getAllAuctions() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-      }
+      },
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Error al obtener las subastas.');
+      throw new Error(errorData.message || "Error al obtener las subastas.");
     }
 
     const data = await response.json();
 
     return data;
-
   } catch (error) {
     console.error("Error al obtener las subastas:", error);
     throw error;
-  } 
-};
+  }
+}
 
 // CREAR UNA SUBASTA
 export async function createAuction(payload: AuctionCard) {
   try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("No se encontró el token de autenticación.");
+    }
     const userId = getUserIdFromToken(); // Obtenemos el ID del usuario desde el token
-    const token = localStorage.getItem("token");
     if (!userId) {
       throw new Error("No se pudo obtener el ID del usuario desde el token.");
     }
 
-    const response = await fetch(`http://127.0.0.1:5015/api/1.0/auctions/${userId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // Enviamos el token de autenticación
-      },
-      body: JSON.stringify(payload),
-    });
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/auctions/${userId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Enviamos el token de autenticación
+        },
+        body: JSON.stringify(payload),
+      }
+    );
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Error al crear la subasta.');
+      throw new Error(errorData.message || "Error al crear la subasta.");
     }
 
     return "Subasta creada con éxito";
-
   } catch (error) {
     console.error("Error al crear la subasta:", error);
     return false;
   }
-};
+}
 
 // CREAT UN LOTE
 export async function createLot(payload: LotCard) {
   try {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       throw new Error("No se encontró el token de autenticación.");
     }
-    const response = await fetch(`http://127.0.0.1:5015/api/1.0/lots?auctionID=${payload.auctionId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // Enviamos el token de autenticación
-      },
-      body: JSON.stringify(payload)
-    });
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/lots?auctionID=${payload.auctionId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Enviamos el token de autenticación
+        },
+        body: JSON.stringify(payload),
+      }
+    );
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Error al crear el lote.');
+      throw new Error(errorData.message || "Error al crear el lote.");
     }
 
     return "Lote creado con éxito";
-
   } catch (error) {
     console.error("Error al crear el lote:", error);
     return false;
@@ -172,9 +183,10 @@ export async function fetchRole() {
       throw new Error("No se pudo obtener el ID del usuario desde el token.");
     }
 
-    const response = await fetch(`http://127.0.0.1:5015/api/1.0/users/${userId}`);
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/users/${userId}`
+    );
     const data = await response.json();
-
 
     if (response.ok) {
       return data;
@@ -182,13 +194,14 @@ export async function fetchRole() {
     throw new Error("Error al obtener el rol del usuario.");
   } catch (err) {
     console.error("Error al obtener el rol del usuario:", err);
-    throw new Error("Error al obtener el rol del usuario");}
+    throw new Error("Error al obtener el rol del usuario");
+  }
 }
 
 // GET TODAS LAS SUBASTAS DE UN USUARIO
-export default async function getAuctionsByAuctioneer() {
+export async function getAuctionsByAuctioneer() {
   try {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       throw new Error("No se encontró el token de autenticación.");
     }
@@ -197,25 +210,96 @@ export default async function getAuctionsByAuctioneer() {
       throw new Error("No se pudo obtener el ID del usuario desde el token.");
     }
 
-    const response = await fetch(`http://127.0.0.1:5015/api/1.0/auctions/auctioneer/${userId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // Enviamos el token de autenticación
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/auctions/auctioneer/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Enviamos el token de autenticación
+        },
       }
-    });
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Error al obtener el almacenamiento.');
+      throw new Error(
+        errorData.message || "Error al obtener el almacenamiento."
+      );
     }
-    
+
     const data = await response.json();
 
     return data;
-
   } catch (error) {
     console.error("Error al obtener el almacenamiento:", error);
     throw error; // Re-lanzamos el error para que pueda ser manejado por quien llame a esta función
+  }
+}
+
+// ACTUALIZAR SUBASTA
+export async function updateAuction(payload: AuctionCard) {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("No se encontró el token de autenticación.");
+    }
+    const auctionId = payload.id;
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/auctions/${auctionId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Error al actualizar subasta");
+    }
+  } catch (err) {
+    console.error("Error al actualizar la subasta:", err);
+    throw err;
+  }
+}
+
+// TRAER TODOS LOS LOTES DEL STORAGE
+export async function getAllStorageLots() {
+  const token = getToken();
+  if (!token) {
+    throw new Error("No se encontró el token de autenticación.");
+  }
+  const auctioneerId = getUserIdFromToken();
+  if (!auctioneerId) {
+    throw new Error("No se pudo obtener el ID del usuario desde el token.");
+  }
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/auctions/Storage/${auctioneerId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Error al obtener el almacenamiento."
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error al obtener el almacenamiento:", error);
+    throw error;
   }
 }

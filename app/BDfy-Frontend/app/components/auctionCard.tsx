@@ -3,10 +3,16 @@ import { Link } from "react-router-dom";
 import type { AuctionCard } from "~/services/types";
 import { useEffect, useRef } from "react";
 
-export default function CarouselAuctionCard({ auction }: { auction: AuctionCard[] }) {
+type CarouselAuctionCardProps = {
+  auction: AuctionCard[];
+  renderAction?: (auction: AuctionCard) => React.ReactNode;
+};
+
+export default function CarouselAuctionCard({ auction, renderAction }: CarouselAuctionCardProps) {
+  const promptButton = "Ver Subasta";
   // Esto es para que "breakpoints" funcione correctamente en Splide
   const splideRef = useRef<any>(null); // Referencia para Splide
-
+  
   useEffect(() => {
     // Este efecto se ejecuta cuando el componente se monta
     if (splideRef.current) {
@@ -17,7 +23,9 @@ export default function CarouselAuctionCard({ auction }: { auction: AuctionCard[
   if (!auction || auction.length === 0) {
     return (
       <div className="max-w-screen-xl mx-auto">
-        <p className="text-center text-gray-500">No hay subastas disponibles en este momento.</p>
+        <p className="text-center text-gray-500">
+          No hay subastas disponibles en este momento.
+        </p>
       </div>
     );
   }
@@ -39,43 +47,53 @@ export default function CarouselAuctionCard({ auction }: { auction: AuctionCard[
           },
         }}
       >
-        {auction.map((auction) => (
-          <SplideSlide key={auction.id}>
-            <div className="bg-white text-black p-4 rounded shadow-lg h-95 w-full flex flex-col justify-between">
-              <h2 className="text-xl font-semibold mb-2 flex flex-col justify-center text-center">
-                {auction.title}
-              </h2>
-              <p className="text-sm text-gray-700 mb-3">
-                {auction.description}
-              </p>
-              <p className="text-sm text-gray-500 mb-3">
-                Categorias: {auction.category.join(", ")}
-              </p>
-              <p className="text-sm text-gray-500 mb-3">
-                Dirección: {auction.direction.street} {auction.direction.streetNumber}, {auction.direction.corner}, {auction.direction.zipCode}, {auction.direction.department}
-              </p>
-              <p className="text-sm text-gray-500">
-              Inicio: 
-              {auction.startAt 
-                ? new Date(auction.startAt).toLocaleString() 
-                : " Fecha de inicio no definida"}
-              </p>
-              <p className="text-sm text-gray-500">
-                Fin:{" "}
-                {auction.endAt
-                  ? new Date(auction.endAt).toLocaleString()
-                  : " Fin de la subasta aún no definido."}
-              </p>
-              <Link
-                to={`/auction/${auction.id}`}
-                className="text-blue-600 mt-3 inline-block flex justify-center items-center text-center bg-blue-100 text-blue-800 font-semibold py-2 px-4 rounded"
-              >
-                Ver subasta
-              </Link>
-            </div>
-          </SplideSlide>
-        ))}
+        {auction.map((auction) => {
+          const url = `/auction/${auction.id}`;
+          return (
+            <SplideSlide key={auction.id}>
+              <div className="bg-white text-black p-4 rounded shadow-lg h-95 w-full flex flex-col justify-between">
+                <h2 className="text-xl font-semibold mb-2 flex justify-center text-center">
+                  {auction.title}
+                </h2>
+                <p className="text-sm text-gray-700 mb-3">{auction.description}</p>
+                <p className="text-sm text-gray-500 mb-3">
+                  Categorías: {auction.category.join(", ")}
+                </p>
+                <p className="text-sm text-gray-500 mb-3">
+                  Dirección: {auction.direction.street} {auction.direction.streetNumber},{" "}
+                  {auction.direction.corner}, {auction.direction.zipCode},{" "}
+                  {auction.direction.department}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Inicio:{" "}
+                  {auction.startAt
+                    ? new Date(auction.startAt).toLocaleString()
+                    : "Fecha de inicio no definida"}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Fin:{" "}
+                  {auction.endAt
+                    ? new Date(auction.endAt).toLocaleString()
+                    : "Fin de la subasta aún no definido"}
+                </p>
+
+                <div className="mt-3 flex justify-center">
+                  {renderAction ? (
+                    renderAction(auction)
+                  ) : (
+                    <Link
+                      to={url}
+                      className="bg-blue-100 text-blue-800 font-semibold py-2 px-4 rounded"
+                    >
+                      {promptButton}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </SplideSlide>
+          );
+        })}
       </Splide>
     </div>
-  ); 
+  );
 }
