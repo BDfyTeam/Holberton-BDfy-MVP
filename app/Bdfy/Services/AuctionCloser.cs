@@ -21,7 +21,7 @@ namespace BDfy.Services
                     .Include(a => a.Lots)
                         .ThenInclude(l => l.BiddingHistory)
                             .ThenInclude(b => b.Buyer)
-                    .AsSplitQuery()
+                    .AsSplitQuery() // Rendimiento
                     .Where(a => a.Status == AuctionStatus.Active && a.EndAt <= DateTime.UtcNow)
                     .ToListAsync(cancellationToken: stoppingToken);
 
