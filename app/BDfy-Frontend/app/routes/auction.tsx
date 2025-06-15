@@ -121,7 +121,7 @@ export default function AuctionPage() {
         skipNegotiation: false,
       })
       .withAutomaticReconnect({
-        nextRetryDelayInMilliseconds: (retryContext) => {
+        nextRetryDelayInMilliseconds: (retryContext) => { // Ping al cliente
           if (retryContext.previousRetryCount === 0) return 0;
           if (retryContext.previousRetryCount === 1) return 2000;
           if (retryContext.previousRetryCount === 2) return 10000;

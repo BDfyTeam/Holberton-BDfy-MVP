@@ -32,9 +32,9 @@ namespace BDfy.Controllers
 
 				if (auction == null) { return NotFound("Auction not found"); }
 
-				if (auction.Status != AuctionStatus.Draft || auction.Status != AuctionStatus.Storage)
+				if (auction.Status == AuctionStatus.Active || auction.Status == AuctionStatus.Closed)
 				{
-					return BadRequest("Lot registration is only permitted for draft auctions or the auctioneer's storage");
+					return BadRequest("Lot registration is only permitted for draft auctions or the auctioneer Storage");
 				}
 
 				if (auction.Auctioneer.UserId.ToString() != userIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
