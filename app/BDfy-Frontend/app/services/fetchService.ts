@@ -146,24 +146,22 @@ export async function createAuction(payload: AuctionCard) {
   }
 }
 
-// CREAT UN LOTE
+// CREAR UN LOTE
 export async function createLot(payload: LotCard) {
   try {
     const token = getToken();
     if (!token) {
       throw new Error("No se encontró el token de autenticación.");
     }
-    const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/lots?auctionID=${payload.auctionId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Enviamos el token de autenticación
-        },
-        body: JSON.stringify(payload),
-      }
-    );
+    const auctionId = payload.auctionId;
+    const response = await fetch(`http://127.0.0.1:5015/api/1.0/lots/${auctionId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, // Enviamos el token de autenticación
+      },
+      body: JSON.stringify(payload)
+    });
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || "Error al crear el lote.");
