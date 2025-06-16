@@ -12,6 +12,10 @@ using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Xml;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BDfy.Controllers
 {
@@ -132,6 +136,125 @@ namespace BDfy.Controllers
             return Ok(users);
         }
 
+        [Authorize]
+        [HttpPut("{auctioneerId}")]
+
+        public async Task<IActionResult> EditAuctioneer([FromBody] EditAuctioneerDto dto, [FromRoute] Guid auctioneerId)
+        {
+            try
+            {
+                if (!ModelState.IsValid) { return BadRequest("At least one thing to edit"); }
+
+                var AuctioneerClaims = HttpContext.User;
+                var AuctioneerRoleFromToken = AuctioneerClaims.FindFirst("Role")?.Value;
+                var AuctioneerIdFromToken = AuctioneerClaims.FindFirst("Id")?.Value;
+
+                if (AuctioneerIdFromToken != auctioneerId.ToString()) { return Unauthorized("You do not have permission."); }
+
+                if (AuctioneerRoleFromToken != UserRole.Auctioneer.ToString())
+                { return Unauthorized("Only auctioneers can edit their profile."); }
+
+                var auctioneer = await _db.Users
+                    .FirstOrDefaultAsync(u => u.Id == auctioneerId);
+
+                if (auctioneer == null) { return NotFound("Auctioneer do not exist in our registry."); }
+
+                bool hasChanges = !string.IsNullOrWhiteSpace(dto.Email) ||
+                                    !string.IsNullOrWhiteSpace(dto.Password) ||
+                                    !string.IsNullOrWhiteSpace(dto.Phone) ||
+                                    dto.Direction != null;
+
+                if (!hasChanges) { return BadRequest("At least one field must be provided for update."); }
+
+                if (!string.IsNullOrWhiteSpace(dto.Email))
+                {
+
+                    if (!IsValidEmail(dto.Email))
+                    {
+                        return BadRequest("Invalid email format.");
+                    }
+
+
+                    var emailExists = await _db.Users
+                        .AnyAsync(u => u.Email == dto.Email && u.Id != auctioneerId);
+
+                    if (emailExists)
+                    {
+                        return BadRequest("Email is already in use by another user.");
+                    }
+
+                    auctioneer.Email = dto.Email;
+                }
+
+                if (!string.IsNullOrWhiteSpace(dto.Password))
+                {
+
+                    if (dto.Password.Length < 8 || dto.Password.Length > 20)
+                    {
+                        return BadRequest("Password must be between 8 and 20 characters.");
+                    }
+
+                    bool hasLowerCase = dto.Password.Any(char.IsLower);
+                    bool hasUpperCase = dto.Password.Any(char.IsUpper);
+                    bool hasDigit = dto.Password.Any(char.IsDigit);
+
+                    if (!hasLowerCase || !hasUpperCase || !hasDigit)
+                    {
+                        return BadRequest("Password must include at least one uppercase letter, one lowercase letter, and one number.");
+                    }
+
+
+                    var passwordHasher = new PasswordHasher<User>();
+                    auctioneer.Password = passwordHasher.HashPassword(auctioneer, dto.Password);
+                }
+
+                if (!string.IsNullOrWhiteSpace(dto.Phone))
+                {
+                    auctioneer.Phone = dto.Phone;
+                }
+
+
+                if (dto.Direction != null)
+                {
+
+                    if (auctioneer.Direction == null)
+                    {
+                        auctioneer.Direction = new Direction();
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(dto.Direction.Street))
+                    {
+                        auctioneer.Direction.Street = dto.Direction.Street;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(dto.Direction.Corner))
+                    {
+                        auctioneer.Direction.Corner = dto.Direction.Corner;
+                    }
+
+                    if (dto.Direction.StreetNumber > 0)
+                    {
+                        auctioneer.Direction.StreetNumber = dto.Direction.StreetNumber;
+                    }
+
+                    if (dto.Direction.ZipCode > 0)
+                    {
+                        auctioneer.Direction.ZipCode = dto.Direction.ZipCode;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(dto.Direction.Department))
+                    {
+                        auctioneer.Direction.Department = dto.Direction.Department;
+                    }
+                }
+
+                await _db.SaveChangesAsync();
+                return NoContent();
+            }
+
+            catch (Exception ex) { return StatusCode(500, "Internal Server Error: " + ex.Message); }
+        }
+
         // 🔒 Método privado para generar el JWT
         private string GenerateJwt(User user)
         {
@@ -160,5 +283,20 @@ namespace BDfy.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
     }
+
 }

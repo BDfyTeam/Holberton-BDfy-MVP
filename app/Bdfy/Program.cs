@@ -150,6 +150,11 @@ builder.Services.AddRateLimiter(options =>
     };
 });
 
+builder.Services.AddHostedService<AuctionCloserService>(); // Services para determinar cuando una auction termina
+builder.Services.AddSingleton<BidPublisher>(); // Servicio de RabbitMQ (Producer)
+builder.Services.AddHostedService<BidConsumerService>(); // Host para el servicio de consumer
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -160,6 +165,11 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bdfy API v1");
     });
+}
+using (var scope = app.Services.CreateScope())
+{
+    var publisher = scope.ServiceProvider.GetRequiredService<BidPublisher>();
+    await publisher.InitializeAsync(); // Inicializamos el productor de RabbitMQ👌
 }
 app.Use(async (context, next) =>
 {

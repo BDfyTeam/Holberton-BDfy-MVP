@@ -1,18 +1,18 @@
+using System.ComponentModel.DataAnnotations;
 using BDfy.Models;
+
 
 namespace BDfy.Dtos
 {
+	public class EditAuctioneerDto
+	{
 
-	public record EditUserDto
-	(
-		string FirstName,
-		string LastName,
-		string Email,
-		string Password,
-		string Ci,
-		string Phone,
-		UserRole Role,
-		Direction Direction,
-		object? Details
-	);
+		public string? Email { get; set; } = null!;
+
+		public string? Password { get; set; }
+
+		public string? Phone { get; set; } = null!;
+
+		public Direction Direction { get; set; } = null!;
+	};
 }
