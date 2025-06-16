@@ -6,15 +6,19 @@ using BDfy.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using BDfy.Services;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics;
 
 namespace BDfy.Controllers
 {
 	[ApiController]
 	[Route("api/1.0/lots")]
 	public class BaseControllerLots(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
-	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext) : BaseControllerLots(db) // Heredamos la DB para poder usarla
+	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher) : BaseControllerLots(db) // Heredamos la DB para poder usarla
 	{
 		private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
+		private readonly BidPublisher _bidPublisher = bidPublisher;
 		[Authorize]
 		[HttpPost("{auctionId}")]
 		public async Task<ActionResult> Register([FromRoute] Guid auctionId, [FromBody] RegisterLot Dto)
@@ -215,7 +219,6 @@ namespace BDfy.Controllers
 				var lot = await _db.Lots
 					.Include(l => l.Auction)
 						.ThenInclude(a => a.Auctioneer)
-					.Include(l => l.BiddingHistory)
 					.FirstOrDefaultAsync(l => l.Id == lotId);
 
 				if (lot == null) { return NotFound("Lot not found"); }
@@ -226,60 +229,54 @@ namespace BDfy.Controllers
 
 				if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-				if (bid.LotId != lotId)
-				{
-					return BadRequest("LotId in the body does not match the LotId in the route");
-				}
-
 				if (!Guid.TryParse(userIdFromToken, out Guid parsedUserId))
 				{
 					return Unauthorized("Invalid User ID in token");
 				}
 
-				var user = await _db.Users
-					.Include(u => u.UserDetails)
-					.FirstOrDefaultAsync(u => u.Id == parsedUserId);
-
-				if (user == null || user.UserDetails == null) { return BadRequest("User details not found for the current user"); }
-
-				var Bid = new Bid
+				var dto = new SendBidDto
 				{
+					LotId = lotId,
 					Amount = bid.Amount,
-					Time = bid.Time,
-					LotId = bid.LotId,
-					BuyerId = parsedUserId,
-					Buyer = user.UserDetails
+					BuyerId = parsedUserId
 				};
+				await _bidPublisher.Publish(dto);
 
-				if (bid.Amount > lot.CurrentPrice)
-				{
-					lot.CurrentPrice = Bid.Amount;
-
-					var bidUpdate = new ReceiveBidDto
-					{
-						LotId = bid.LotId,
-						CurrentPrice = bid.Amount,
-						BuyerId = parsedUserId
-					};
-
-					lot.BiddingHistory ??= new List<Bid>();
-					lot.BiddingHistory.Add(Bid);
-
-					_db.Bids.Add(Bid);
-					await _db.SaveChangesAsync();
-
-					// WebSocket aca 
-					await _hubContext.Clients.Group($"auction_{bid.LotId}").ReceiveBid(bidUpdate); // <---- :D
-
-					return Created("", new { message = "Bid created successfully" });
-				}
-				return BadRequest(new { message = "The bid must be grater than the current price" });
+				return Created("", new { message = "Bid created successfully" });
 			}
 			catch (Exception ex)
 			{
 				return StatusCode(500, "Internal Server Error: " + ex.Message);
 			}
 
+		}
+		[HttpPost("stress-test/{lotId}/{buyerId}")]
+		public async Task<ActionResult> StressTest([FromRoute] Guid lotId, [FromRoute] Guid buyerId)
+		{
+			int cantidadDePujas = 1000;
+			var tasks = new List<Task>();
+			var stopwatch = Stopwatch.StartNew();
+
+			for (int i = 0; i < cantidadDePujas; i++)
+			{
+				var bid = new SendBidDto
+				{
+					LotId = lotId,
+					Amount = 500000 + i,
+					BuyerId = buyerId
+				};
+
+				await _bidPublisher.Publish(bid);
+			}
+			await Task.WhenAll(tasks);
+
+			stopwatch.Stop();
+
+			return Ok(new
+			{
+				mensaje = $"Test de concurrencia terminado en {stopwatch.ElapsedMilliseconds} ms",
+				total = cantidadDePujas
+			});
 		}
 		[Authorize]
 		[HttpPut("{lotId}/edit")]
