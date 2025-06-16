@@ -262,7 +262,7 @@ namespace BDfy.Controllers
 				var bid = new SendBidDto
 				{
 					LotId = lotId,
-					Amount = 500000 + i,
+					Amount = 1000 + i,
 					BuyerId = buyerId
 				};
 
@@ -371,9 +371,7 @@ namespace BDfy.Controllers
 			{
 				return StatusCode(500, new { error = ex.Message });
 			}
-}
-		
-		
+		}	
 	}
 }        
 	
