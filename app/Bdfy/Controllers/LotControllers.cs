@@ -216,23 +216,24 @@ namespace BDfy.Controllers
 				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
 
-				var lot = await _db.Lots
-					.Include(l => l.Auction)
-						.ThenInclude(a => a.Auctioneer)
-					.FirstOrDefaultAsync(l => l.Id == lotId);
+				if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-				if (lot == null) { return NotFound("Lot not found"); }
-
-				if (lot.Auction.Auctioneer.UserId.ToString() == userIdFromToken) { return Unauthorized("Access Denied: You cannot bid in your own Lot"); }
+				if (!Guid.TryParse(userIdFromToken, out Guid parsedUserId)) { return Unauthorized("Invalid User ID in token"); }
 
 				if (userRoleFromToken != UserRole.Buyer.ToString()) { return Unauthorized("Access Denied: Only Buyers can bid in Lots"); }
 
-				if (!ModelState.IsValid) { return BadRequest(ModelState); }
+				var lot = await _db.Lots // Obtenemos solo lo que precisamos para comparar
+					.Where(l => l.Id == lotId)
+					.Select(l => new
+					{
+						l.Id,
+						AuctioneerId = l.Auction.Auctioneer.UserId
+					})
+					.FirstOrDefaultAsync();
 
-				if (!Guid.TryParse(userIdFromToken, out Guid parsedUserId))
-				{
-					return Unauthorized("Invalid User ID in token");
-				}
+				if (lot == null) { return NotFound("Lot not found"); }
+
+				if (lot.AuctioneerId == parsedUserId) { return Unauthorized("Access Denied: You cannot bid in your own Lot"); }
 
 				var dto = new SendBidDto
 				{
@@ -253,7 +254,7 @@ namespace BDfy.Controllers
 		[HttpPost("stress-test/{lotId}/{buyerId}")]
 		public async Task<ActionResult> StressTest([FromRoute] Guid lotId, [FromRoute] Guid buyerId)
 		{
-			int cantidadDePujas = 1000;
+			int cantidadDePujas = 100000;
 			var tasks = new List<Task>();
 			var stopwatch = Stopwatch.StartNew();
 
@@ -262,7 +263,7 @@ namespace BDfy.Controllers
 				var bid = new SendBidDto
 				{
 					LotId = lotId,
-					Amount = 1000 + i,
+					Amount = 8000 + i,
 					BuyerId = buyerId
 				};
 
