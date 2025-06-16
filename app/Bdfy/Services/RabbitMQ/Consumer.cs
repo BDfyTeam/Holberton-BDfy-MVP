@@ -13,13 +13,15 @@ namespace BDfy.Services
 {
     public class BidConsumerService : BackgroundService // Hereda una clase para runear tareas por atras del programa principal
     {
+        private readonly ILogger<BidConsumerService> _logger;
         private readonly IServiceScopeFactory _scopeFactory; // Para crear ambitos, para obtener servicios scoped en un BackgroundService
         private readonly IHubContext<BdfyHub, IClient> _hubContext; // Hub de SignalR
 
-        public BidConsumerService(IServiceScopeFactory scopeFactory, IHubContext<BdfyHub, IClient> hubContext) // Constructor
+        public BidConsumerService(IServiceScopeFactory scopeFactory, IHubContext<BdfyHub, IClient> hubContext, ILogger<BidConsumerService> logger) // Constructor
         {
             _scopeFactory = scopeFactory;
             _hubContext = hubContext;
+            _logger = logger;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) // El proceso del Consumer
         // Tarea para consumir la bid, guarda los datos en la db y lo manda al hub de SignalR
@@ -54,55 +56,61 @@ namespace BDfy.Services
                     var bidDto = JsonSerializer.Deserialize<SendBidDto>(Encoding.UTF8.GetString(body)) ?? throw new InvalidOperationException();
                     // Convierte a el body en un objeto C#
 
-                    var lot = await db.Lots
-                        .Include(l => l.Auction)
-                            .ThenInclude(a => a.Auctioneer)
-                        .Include(l => l.BiddingHistory)
-                        .FirstOrDefaultAsync(l => l.Id == bidDto.LotId) ?? throw new InvalidOperationException(); // Buscamos el lote en la db
+                    using var transaction = await db.Database.BeginTransactionAsync();
 
-                    var user = await db.Users
-                    .Include(u => u.UserDetails)
-                    .FirstOrDefaultAsync(u => u.Id == bidDto.BuyerId);
+                    var updatedRows = await db.Database.ExecuteSqlInterpolatedAsync($@"
+                        UPDATE LOTS
+                        SET current_price = {bidDto.Amount}
+                        WHERE Id = {bidDto.LotId} AND current_price < {bidDto.Amount}
+                    "); // Update directo hacia SQL para mejorar escabilidad, velocidad de ejecucion y seguridad
 
-                    if (user == null || user.UserDetails == null) { throw new InvalidOperationException(); }
-
-                    if (lot.CurrentPrice < bidDto.Amount) // Comparamos el precio actual del lote con el de la puja
+                    if (updatedRows == 0)
                     {
+                        _logger.LogInformation("Puja demasiado baja o lote no encontrado: LotId: {LotId}, Amount: {Amount}", bidDto.LotId, bidDto.Amount);
+                        return;
+                    }
 
-                        lot.CurrentPrice = bidDto.Amount; // Asignamos
+                    var userDetails = await db.UserDetails
+                        .FirstOrDefaultAsync(ud => ud.UserId == bidDto.BuyerId) ?? throw new InvalidOperationException();
 
-                        var bid = new Bid // Creamos nueva bid para la BiddingHistory y la db
-                        {
-                            Amount = bidDto.Amount,
-                            Time = DateTime.UtcNow,
-                            LotId = bidDto.LotId,
-                            BuyerId = bidDto.BuyerId,
-                            Buyer = user.UserDetails
-                        };
+                    var bid = new Bid // Creamos nueva bid para la BiddingHistory y la db
+                    {
+                        Amount = bidDto.Amount,
+                        Time = DateTime.UtcNow,
+                        LotId = bidDto.LotId,
+                        BuyerId = bidDto.BuyerId,
+                        Buyer = userDetails
+                    };
 
+                    db.Bids.Add(bid);
+                    await db.SaveChangesAsync(); // Esperamos a que se guarden los cambios en la db
+
+                    var lot = await db.Lots // Instanciamos el lote para poder asignar la nueva oferta a la BiddingHistory
+                    .Include(l => l.BiddingHistory)
+                    .FirstOrDefaultAsync(l => l.Id == bidDto.LotId);
+
+                    if (lot is not null)
+                    {
                         lot.BiddingHistory ??= new List<Bid>();
                         lot.BiddingHistory.Add(bid);
+                        await db.SaveChangesAsync();
+                    }
+                    await transaction.CommitAsync();
 
-                        var bidUpdate = new ReceiveBidDto
+                    await _hubContext.Clients.Group($"auction_{bid.LotId}").ReceiveBid(
+                        new ReceiveBidDto // Creamos la bid que se mandara al hub
                         {
                             LotId = bid.LotId,
                             CurrentPrice = bid.Amount,
                             BuyerId = bid.BuyerId,
                             Timestamp = DateTime.UtcNow
 
-                        }; // Creamos la bid que se mandara al hub
-
-                        db.Bids.Add(bid);
-                        await db.SaveChangesAsync(); // Esperamos a que se guarden los cambios en la db
-
-                        await _hubContext.Clients.Group($"auction_{bid.LotId}").ReceiveBid(bidUpdate); // Le mandamos la Bid a todo los clientes del grupo by lotId
-
-                    }
-                    throw new ArgumentException("El monto de la puja debe ser mayor que el precio actual del lote.", nameof(bidDto.Amount));
+                        }
+                    ); // Le mandamos la Bid a todo los clientes del grupo by lotId
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(Task.FromException(ex));
+                    _logger.LogError(ex, "Error al procesar puja");
                 }
             };
             await channel.BasicConsumeAsync // BasicConsumeAsync es para consumir la puja (es como que ejecuta todo lo de arriba)
