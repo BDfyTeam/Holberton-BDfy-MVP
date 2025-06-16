@@ -1,8 +1,10 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bdfy", "Bdfy\Bdfy.csproj", "{27F2301F-98A9-5A3F-B827-BFD3C80D480D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bdfy.Tests", "Bdfy.Tests\Bdfy.Tests.csproj", "{68000926-558C-4FE3-8085-781FCB93A73E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +16,10 @@ Global
 		{27F2301F-98A9-5A3F-B827-BFD3C80D480D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27F2301F-98A9-5A3F-B827-BFD3C80D480D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27F2301F-98A9-5A3F-B827-BFD3C80D480D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68000926-558C-4FE3-8085-781FCB93A73E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68000926-558C-4FE3-8085-781FCB93A73E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68000926-558C-4FE3-8085-781FCB93A73E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68000926-558C-4FE3-8085-781FCB93A73E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

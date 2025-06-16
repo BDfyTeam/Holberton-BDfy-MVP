@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Xml;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace BDfy.Controllers
 {
@@ -22,10 +24,9 @@ namespace BDfy.Controllers
     [Route("api/1.0/users")]
     public class BaseController(BDfyDbContext db) : ControllerBase { protected readonly BDfyDbContext _db = db; }
 
-    public class UsersController(BDfyDbContext db, Storage storageService, IOptions<AppSettings> appSettings) : BaseController(db)
+    public class UsersController(BDfyDbContext db, Storage storageService, [FromServices] GenerateJwtToken jwtService) : BaseController(db)
     {
         private readonly Storage _storageService = storageService;
-        private readonly string _secretKey = appSettings.Value.SecretKey;
 
         [EnableRateLimiting("register_policy")]
         [HttpPost("register")]
@@ -88,7 +89,7 @@ namespace BDfy.Controllers
             await _db.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            var token = GenerateJwt(user);
+            var token = jwtService.GenerateJwt(user);
 
             return Ok(new { Token = token });
         }
@@ -98,18 +99,18 @@ namespace BDfy.Controllers
         public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
         {
             var user = await _db.Users
-                .Include(u => u.UserDetails)
-                .Include(u => u.AuctioneerDetails)
-                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+            .Include(u => u.UserDetails)
+            .Include(u => u.AuctioneerDetails)
+            .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
             if (user is null)
-                return NotFound("User not found");
+            return NotFound("User not found");
 
             var result = PasswordHasher.Verify(dto.Password, user.Password);
 
             if (!result) { return Unauthorized("Invalid password"); }
 
-            var token = GenerateJwt(user);
+            var token = jwtService.GenerateJwt(user);
             return Ok(new { Token = token });
         }
 
@@ -255,33 +256,33 @@ namespace BDfy.Controllers
         }
 
         // 🔒 Método privado para generar el JWT
-        private string GenerateJwt(User user)
-        {
-            var claims = new List<Claim>
-            {
-                new("Id", user.Id.ToString()),
-                new("Email", user.Email),
-                new("Role", user.Role.ToString())
-            };
+        // public string GenerateJwt(User user)
+        // {
+        //     var claims = new List<Claim>
+        //     {
+        //         new("Id", user.Id.ToString()),
+        //         new("Email", user.Email),
+        //         new("Role", user.Role.ToString())
+        //     };
 
-            if (user.UserDetails is not null)
-            {
-                claims.Add(new Claim("IsAdmin", user.UserDetails.IsAdmin.ToString()));
-            }
+        //     if (user.UserDetails is not null)
+        //     {
+        //         claims.Add(new Claim("IsAdmin", user.UserDetails.IsAdmin.ToString()));
+        //     }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        //     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+        //     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                issuer: "http://localhost:5015",
-                audience: "http://localhost:5015/api/1.0/users",
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds
-            );
+        //     var token = new JwtSecurityToken(
+        //         issuer: "http://localhost:5015",
+        //         audience: "http://localhost:5015/api/1.0/users",
+        //         claims: claims,
+        //         expires: DateTime.UtcNow.AddHours(1),
+        //         signingCredentials: creds
+        //     );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        //     return new JwtSecurityTokenHandler().WriteToken(token);
+        // }
         
         private bool IsValidEmail(string email)
         {
