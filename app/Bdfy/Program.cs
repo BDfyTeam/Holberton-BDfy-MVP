@@ -56,7 +56,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("SignalRCorsPolicy", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5016", "http://127.0.0.1:5016") // Específicos
+            .WithOrigins(
+                "https://localhost:3000", "https://127.0.1:3000", // Frontend
+                "http://localhost:5016", "http://127.0.0.1:5016") // Específicos
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
