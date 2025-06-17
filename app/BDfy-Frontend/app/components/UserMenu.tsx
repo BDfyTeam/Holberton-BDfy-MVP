@@ -30,7 +30,6 @@ export default function UserMenu() {
     <div className="relative">
       <button
         onClick={() => {
-          console.log("Click detectado");
           setOpen((prev) => !prev);
         }}
         className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold flex items-center justify-center"
