@@ -29,7 +29,7 @@ namespace BDfy.Services
         {
             var factory = new ConnectionFactory // Conexion RabbitMQ
             {
-                HostName = "localhost",
+                HostName = Environment.GetEnvironmentVariable("RabbitMQ__HostName") ?? "rabbitmq",
                 Port = 5672
             };
             IConnection connection = await factory.CreateConnectionAsync(stoppingToken); // El token es para finalizarlo de forma limpia y segura en caso de error
