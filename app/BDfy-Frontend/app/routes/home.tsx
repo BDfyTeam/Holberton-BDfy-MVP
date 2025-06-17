@@ -4,7 +4,7 @@ import "@splidejs/react-splide/css";
 import type { AuctionCard } from "../services/types";
 import CarouselAuctionCard from "~/components/auctionCard";
 import { getAllAuctions, fetchRole } from "~/services/fetchService";
-import CreateAuctionButton from "~/components/auctionForm";
+import CreateAuctionButton from "~/components/POSTAuction";
 import CreateLotButton from "~/components/lotForm";
 import { useAuth } from "~/context/authContext";
 

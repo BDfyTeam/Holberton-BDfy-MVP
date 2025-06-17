@@ -3,7 +3,7 @@ import UserRegisterForm from "~/components/userRegisterForms";
 import AuctionerRegisterFrom from "~/components/auctionerRegisterForm";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import CreateAuctionButton from "~/components/auctionForm";
+import CreateAuctionButton from "~/components/POSTAuction";
 
 export function meta({}: Route.MetaArgs) {
   return [

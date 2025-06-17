@@ -1,19 +1,19 @@
-import { Splide, SplideSlide } from "@splidejs/react-splide";
 import { useState, useEffect } from "react";
 import CarouselAuctionCard from "~/components/auctionCard";
 import AddLot from "~/components/addLot";
 import { getAllAuctions } from "~/services/fetchService";
 import type { AuctionCard } from "~/services/types";
+import UpdateAuctionButton from "~/components/PUTAuction";
 
 export default function MyAuctions() {
   const [activeAuct, setActiveAuct] = useState<AuctionCard[]>([]);
   const [closedAuct, setClosedAuct] = useState<AuctionCard[]>([]);
   const [draftedAuct, setDraftedAuct] = useState<AuctionCard[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedAuction, setSelectedAuction] = useState<AuctionCard | null>(
     null
   );
+  const [auctionToEdit, setAuctionToEdit] = useState<AuctionCard | null>(null);
 
   useEffect(() => {
     async function fetchAuctions() {
@@ -34,8 +34,6 @@ export default function MyAuctions() {
       } catch (error) {
         console.error("Error al cargar las subastas:", error);
         setError("Error al cargar las subastas");
-      } finally {
-        setLoading(false);
       }
     }
     fetchAuctions();
@@ -45,47 +43,50 @@ export default function MyAuctions() {
     <>
       <div className="p-4 text-white">
         <h2 className="text-2xl font-bold mb-4">Subastas Activas</h2>
-        <CarouselAuctionCard
-          auction={activeAuct}
-          renderAction={(auction: AuctionCard) => (
-            <button
-              onClick={() => setSelectedAuction(auction)}
-              className="bg-green-500 text-white font-bold px-4 py-2 rounded"
-            >
-              Agregar Lote
-            </button>
-          )}
-        />
+        <CarouselAuctionCard auction={activeAuct} />
       </div>
 
       <div className="p-4 text-white">
         <h2 className="text-2xl font-bold mb-4">Subastas Cerradas</h2>
-        <CarouselAuctionCard
-          auction={closedAuct}
-          renderAction={(auction: AuctionCard) => (
-            <button
-              onClick={() => setSelectedAuction(auction)}
-              className="bg-green-500 text-white font-bold px-4 py-2 rounded"
-            >
-              Agregar Lote
-            </button>
-          )}
-        />
+        <CarouselAuctionCard auction={closedAuct} />
       </div>
 
-      <div className="p-4 text-white">
+      <div className="p-4 text-white ">
         <h2 className="text-2xl font-bold mb-4">Subastas en Borrador</h2>
         <CarouselAuctionCard
           auction={draftedAuct}
           renderAction={(auction: AuctionCard) => (
-            <button
-              onClick={() => setSelectedAuction(auction)}
-              className="bg-green-500 text-white font-bold px-4 py-2 rounded"
-            >
-              Agregar Lote
-            </button>
+            <>
+              <button
+                onClick={() => setSelectedAuction(auction)}
+                className="bg-green-500 hover:bg-green-700 text-white font-bold px-4 py-2 rounded mr-2"
+              >
+                Agregar Lote
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAuctionToEdit(auction);
+                }}
+                className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold px-4 py-2 rounded"
+              >
+                Editar
+              </button>
+            </>
           )}
         />
+        {selectedAuction && (
+          <AddLot
+            auction={selectedAuction}
+            onClose={() => setSelectedAuction(null)}
+          />
+        )}
+        {auctionToEdit && (
+          <UpdateAuctionButton
+            auction={auctionToEdit}
+            onClose={() => setAuctionToEdit(null)}
+          />
+        )}
       </div>
     </>
   );

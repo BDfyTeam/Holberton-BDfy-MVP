@@ -1,5 +1,6 @@
+import { Drama } from "lucide-react";
 import { getToken, getUserIdFromToken } from "./handleToken";
-import type { AuctionCard, RegisterUserPayload, LotCard } from "./types";
+import type { AuctionCard, RegisterUserPayload, LotCard, CompleteLot } from "./types";
 import type { RegisterAuctioneerPayload } from "./types";
 import { useAuth } from "~/context/authContext";
 
@@ -261,8 +262,37 @@ export async function updateAuction(payload: AuctionCard) {
       const errorData = await response.json();
       throw new Error(errorData.message || "Error al actualizar subasta");
     }
+
+    return "Subasta editada con éxito";
   } catch (err) {
     console.error("Error al actualizar la subasta:", err);
+    throw err;
+  }
+}
+
+// ACTUALIZAR LOTE (AGREGARLO A UNA SUBASTA TAMBIEN)
+export async function updateLot(payload: LotCard) {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("No se encontró el token de autenticación.");
+    }
+    const lotId = payload.id;
+    const response = await fetch(`http://127.0.0.1:5015/api/1.0/lots/${lotId}/edit`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Error al actualizar lote");
+    }
+  } catch (err) {
+    console.error("Error al actualizar el lote:", err);
     throw err;
   }
 }
@@ -273,13 +303,13 @@ export async function getAllStorageLots() {
   if (!token) {
     throw new Error("No se encontró el token de autenticación.");
   }
-  const auctioneerId = getUserIdFromToken();
-  if (!auctioneerId) {
+  const auctioneer_id = getUserIdFromToken();
+  if (!auctioneer_id) {
     throw new Error("No se pudo obtener el ID del usuario desde el token.");
   }
   try {
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/auctions/Storage/${auctioneerId}`,
+      `http://127.0.0.1:5015/api/1.0/lots/${auctioneer_id}`,
       {
         method: "GET",
         headers: {
@@ -297,7 +327,10 @@ export async function getAllStorageLots() {
     }
 
     const data = await response.json();
-    return data;
+    const storageData = data.filter(
+      (lot: CompleteLot) => lot.auction.status === 3
+    );
+    return storageData;
   } catch (error) {
     console.error("Error al obtener el almacenamiento:", error);
     throw error;
