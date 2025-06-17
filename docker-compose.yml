@@ -1,4 +1,3 @@
-
 services:
   backend:
     build:
@@ -42,6 +41,20 @@ services:
       - "5432:5432"
     networks:
       - bidify-net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit
+    ports:
+      - "5672:5672"   # RabbitMQ main port
+      - "15672:15672" # RabbitMQ management UI
+    networks:
+      - bidify-net
+    depends_on:
+      - db
 
 volumes:
   pgdata:

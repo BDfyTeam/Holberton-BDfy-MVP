@@ -29,8 +29,10 @@ namespace BDfy.Services
         {
             var factory = new ConnectionFactory // Conexion RabbitMQ
             {
-                HostName = "localhost",
-                Port = 5672
+                HostName = "rabbitmq", // Cambiado para Docker
+                Port = 5672,
+                UserName = "rabbit",
+                Password = "rabbit"
             };
             IConnection connection = await factory.CreateConnectionAsync(stoppingToken); // El token es para finalizarlo de forma limpia y segura en caso de error
             IChannel channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken); // Lo mismo, por si hay un error

@@ -18,8 +18,10 @@ namespace BDfy.Services
         {
             var factory = new ConnectionFactory // Seteamos los datos para la conexion
             {
-                HostName = "localhost", // Bdfy.com.uy
-                Port = 5672
+                HostName = "rabbitmq", // Cambiado para Docker
+                Port = 5672,
+                UserName = "rabbit",
+                Password = "rabbit"
             };
             _connection = await factory.CreateConnectionAsync(); // Creamos la conexion
             _channel = await _connection.CreateChannelAsync(); // Creamos el canal dentro de la conexion
@@ -49,7 +51,7 @@ namespace BDfy.Services
                 basicProperties: props, // Propiedades en default
                 body: body // La puja en bytes
             );
-            
+
         }
         public void Dispose() // Por si alguno es null la liberamos
         {
