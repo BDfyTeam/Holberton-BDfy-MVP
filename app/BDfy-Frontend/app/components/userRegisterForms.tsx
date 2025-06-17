@@ -27,6 +27,7 @@ function UserRegisterForm() {
   const [isAdmin] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -75,7 +76,6 @@ function UserRegisterForm() {
         },
       };
 
-      const { login } = useAuth();
 
       try {
         const token = await registerUser(payload);
@@ -181,7 +181,6 @@ function UserRegisterForm() {
             id="email-user"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            pattern="[a-z0-9._%+\\-]+@[a-z0-9.-]+\\.[a-z]{2,}$"
             placeholder="mail@example.com"
             required
           />

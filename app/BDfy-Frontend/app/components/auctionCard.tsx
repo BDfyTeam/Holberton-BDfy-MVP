@@ -48,7 +48,7 @@ export default function CarouselAuctionCard({ auction, renderAction }: CarouselA
         }}
       >
         {auction.map((auction) => {
-          const url = `/auction/${auction.id}`;
+          const url = `/auction/specific/${auction.id}`;
           return (
             <SplideSlide key={auction.id}>
               <div className="bg-white text-black p-4 rounded shadow-lg h-95 w-full flex flex-col justify-between">
