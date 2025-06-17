@@ -2,12 +2,13 @@
 
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+import os
 
-DB_HOST = "localhost"
-DB_PORT = "5432"
-DB_NAME = "BDfyDatabase"
-DB_USER = "lucas"
-DB_PASSWORD = "1234"
+DB_HOST = os.environ.get("POSTGRES_HOST", "localhost")
+DB_PORT = os.environ.get("POSTGRES_PORT", "5432")
+DB_NAME = os.environ.get("POSTGRES_DB", "BDfyDatabase")
+DB_USER = os.environ.get("POSTGRES_USER", "root")
+DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "1234")
 
 def create_tables():
     try:

@@ -351,7 +351,31 @@ namespace BDfy.Controllers
 
                 var result = await _auctionServices.EditAuction(auctionId, auctioneerId, dto);
 
-                if (result == false) { return BadRequest("Something goes wrong with the request"); }
+                if (dto.StartAt < DateTime.UtcNow.AddMinutes(-5).ToUniversalTime()) { return BadRequest("Start date cannot be in the past"); }
+
+                if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+                var auction = await _db.Auctions
+                    .Include(a => a.Auctioneer)
+                    .FirstOrDefaultAsync(a => a.Id == auctionId && a.Auctioneer.UserId == auctioneerId);
+
+                if (auction == null) { return NotFound("Auction not found"); }
+
+                if (auction.Status == AuctionStatus.Active) { return BadRequest("Cannot modify an active auction"); }
+
+                if (auction.Status == AuctionStatus.Closed) { return BadRequest("Cannot modify an closed auction"); }
+
+
+                auction.Title = dto.Title;
+                auction.Description = dto.Description;
+                auction.StartAt = dto.StartAt.ToUniversalTime();
+                auction.EndAt = dto.EndAt.ToUniversalTime();
+                auction.Category = dto.Category;
+                auction.Status = dto.Status;
+                auction.Direction = dto.Direction;
+                auction.UpdatedAt = DateTime.UtcNow.ToUniversalTime();
+
+                await _db.SaveChangesAsync();
 
                 return NoContent();
             }

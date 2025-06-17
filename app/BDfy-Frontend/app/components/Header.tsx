@@ -3,6 +3,7 @@ import { NavBar } from "./navBar";
 import DynamicButton from "./navegationButton";
 import UserMenu from "./UserMenu";
 import { useAuth } from "~/context/authContext";
+import { useLocation } from "react-router";
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth();
