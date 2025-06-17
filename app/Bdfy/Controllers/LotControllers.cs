@@ -320,8 +320,6 @@ namespace BDfy.Controllers
 					return BadRequest("Cannot edit lot that already has bids");
 				}
 
-
-
 				if (lot.AuctionId != editLotDto.AuctionId)
 				{
 					var existingAuction = await _db.Auctions

@@ -4,17 +4,17 @@ using BDfy.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using BDfy.Models;
+using BDfy.Services;
 
 namespace BDfy.Controllers
 {
-    public class BasaeController(BDfyDbContext db) : Controller // Para no tener que instanciar la db en los endpoints
-    {
-        protected readonly BDfyDbContext _db = db; // La db
-    }
     [ApiController]
     [Route("api/1.0/auctions")]
-    public class AuctionsController(BDfyDbContext db) : BaseController(db)
+    public class BaseController2(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
+    public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices)  : BaseController2(db)
     {
+        protected readonly AuctionServices _auctionServices = auctionServices;
+
         [Authorize]
         [HttpPost("{userId}")]
         public async Task<ActionResult> Register([FromRoute] Guid userId, [FromBody] RegisterAuctionDto Dto)
@@ -339,6 +339,8 @@ namespace BDfy.Controllers
         {
             try
             {
+                if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
                 var auctioneerClaims = HttpContext.User;
                 var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
                 var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
@@ -347,33 +349,9 @@ namespace BDfy.Controllers
 
                 if (string.IsNullOrEmpty(auctioneerRoleFromToken) || auctioneerRoleFromToken != UserRole.Auctioneer.ToString()) { return Forbid("Access denied: Only auctioneers can update auctions"); }
 
-                if (dto.StartAt >= dto.EndAt) { return BadRequest("Start date must be before end date"); }
+                var result = await _auctionServices.EditAuction(auctionId, auctioneerId, dto);
 
-                if (dto.StartAt < DateTime.UtcNow.AddMinutes(-5).ToUniversalTime()) { return BadRequest("Start date cannot be in the past"); }
-
-                if (!ModelState.IsValid) { return BadRequest(ModelState); }
-
-                var auction = await _db.Auctions
-                    .Include(a => a.Auctioneer)
-                    .FirstOrDefaultAsync(a => a.Id == auctionId && a.Auctioneer.UserId == auctioneerId);
-
-                if (auction == null) { return NotFound("Auction not found"); }
-
-                if (auction.Status == AuctionStatus.Active) { return BadRequest("Cannot modify an active auction"); }
-
-                if (auction.Status == AuctionStatus.Closed) { return BadRequest("Cannot modify an closed auction"); }
-
-
-                auction.Title = dto.Title;
-                auction.Description = dto.Description;
-                auction.StartAt = dto.StartAt.ToUniversalTime();
-                auction.EndAt = dto.EndAt.ToUniversalTime();
-                auction.Category = dto.Category;
-                auction.Status = dto.Status;
-                auction.Direction = dto.Direction;
-                auction.UpdatedAt = DateTime.UtcNow.ToUniversalTime();
-
-                await _db.SaveChangesAsync();
+                if (result == false) { return BadRequest("Something goes wrong with the request"); }
 
                 return NoContent();
             }
