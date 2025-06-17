@@ -25,7 +25,7 @@ export default function UserMenu() {
     const fetchUserRole = async () => {
       try {
         const data = await fetchRole();
-  
+
         if (data) {
           setRole(data.role);
         }
@@ -33,7 +33,7 @@ export default function UserMenu() {
         console.error("Error al obtener el rol del usuario:", error);
       }
     };
-  
+
     fetchUserRole();
   }, []);
 
@@ -70,13 +70,13 @@ export default function UserMenu() {
             <MenuItem icon={<User size={18} />} text="Mi Perfil" />
             {role === 1 && (
               <>
-                <MenuItem 
-                  icon={<Gavel 
-                  size={18} />} 
-                  text="Mis Subastas" 
+                <MenuItem
+                  icon={<Gavel
+                    size={18} />}
+                  text="Mis Subastas"
                   onClick={() => navigate("/my-auctions")}
-                  />
-                <MenuItem icon={<Boxes size={18} />} text="Mis Lotes" />
+                />
+                <MenuItem icon={<Boxes size={18} />} text="Inventario" />
               </>
             )}
             {role === 0 && (

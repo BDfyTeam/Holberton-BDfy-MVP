@@ -23,6 +23,7 @@ function AuctionerRegisterFrom() {
     const [plate, setPlate] = useState('');
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [loading, setLoading] = useState(false);
+    const { login } = useAuth();
 
 
 
@@ -73,7 +74,6 @@ function AuctionerRegisterFrom() {
                 }
             };
 
-            const { login } = useAuth();
 
             try {
                 const token = await registerAuctioner(payload);
@@ -165,7 +165,6 @@ function AuctionerRegisterFrom() {
                         id="email-auctioneer"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        pattern="[a-z0-9._%+\\-]+@[a-z0-9.-]+\\.[a-z]{2,}$"
                         placeholder="mail@example.com"
                         required
                     />

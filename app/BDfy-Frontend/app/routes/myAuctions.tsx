@@ -10,9 +10,7 @@ export default function MyAuctions() {
   const [closedAuct, setClosedAuct] = useState<AuctionCard[]>([]);
   const [draftedAuct, setDraftedAuct] = useState<AuctionCard[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [selectedAuction, setSelectedAuction] = useState<AuctionCard | null>(
-    null
-  );
+  const [selectedAuction, setSelectedAuction] = useState<AuctionCard | null>(null);
   const [auctionToEdit, setAuctionToEdit] = useState<AuctionCard | null>(null);
 
   useEffect(() => {
@@ -58,7 +56,10 @@ export default function MyAuctions() {
           renderAction={(auction: AuctionCard) => (
             <>
               <button
-                onClick={() => setSelectedAuction(auction)}
+                onClick={() => {
+                  setSelectedAuction(auction)
+                  console.log("Estoy abriendo")
+                }}
                 className="bg-green-500 hover:bg-green-700 text-white font-bold px-4 py-2 rounded mr-2"
               >
                 Agregar Lote
