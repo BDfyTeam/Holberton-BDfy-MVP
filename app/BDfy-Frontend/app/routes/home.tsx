@@ -59,7 +59,14 @@ export default function Home() {
   }, [isAuthenticated]);
 
   if (loading) {
-    return <div className="p-6 text-white">Cargando subastas...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[40vh] text-white space-y-4">
+        <div className="w-12 h-12 border-4 border-[#59b9e2] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-xl font-semibold text-[#59b9e2] animate-pulse">
+          Cargando subastas...
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -69,7 +76,10 @@ export default function Home() {
           Subastas disponibles
         </h1>
         <div>
-          <CarouselAuctionCard auction={auctions} />
+          <CarouselAuctionCard 
+            auction={auctions}
+            className="max-w-screen-xl mx-auto rounded-xl border border-[#59b9e2] bg-[#1b3845]/60 shadow-lg p-4 mb-8"
+            />
         </div>
       </div>
       <div className="">

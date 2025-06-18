@@ -1,15 +1,16 @@
 import { NavLink } from "react-router";
 
 interface ButtonProps {
-    to: string;                // URL de destino
-    onClick?: () => void;      // Evento opcional al hacer clic
-    children: React.ReactNode; // Texto o contenido del botón
+  to: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+  className?: string;
 }
 
-export default function DynamicButton({ to, onClick, children }: ButtonProps) {
-    return (
-        <NavLink to={to} end={true} onClick={onClick} className="button-link">
-            {children}
-        </NavLink>
-    );
+export default function DynamicButton({ to, onClick, children, className }: ButtonProps) {
+  return (
+    <NavLink to={to} end={true} onClick={onClick} className={`button-link ${className ?? ''}`}>
+      {children}
+    </NavLink>
+  );
 }
