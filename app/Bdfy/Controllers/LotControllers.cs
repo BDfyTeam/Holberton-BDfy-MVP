@@ -28,6 +28,8 @@ namespace BDfy.Controllers
 				var userClaims = HttpContext.User;
 				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
+				var user = await _db.Users.Include(u => u.UserDetails).FirstOrDefaultAsync(u => u.Id.ToString() == userIdFromToken);
+
 
 				var auction = await _db.Auctions
 					.Include(a => a.Auctioneer)
@@ -41,9 +43,10 @@ namespace BDfy.Controllers
 					return BadRequest("Lot registration is only permitted for draft auctions or the auctioneer Storage");
 				}
 
-				if (auction.Auctioneer.UserId.ToString() != userIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
+				if (auction.Auctioneer.UserId.ToString() != userIdFromToken ) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
-				if (userRoleFromToken != UserRole.Auctioneer.ToString()) { return Unauthorized("Access Denied: Only Auctioneers can create Lots"); }
+				if (userRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
+				{ return Unauthorized("Access Denied: Only Auctioneers can create Lots"); }
 
 				if (!ModelState.IsValid) { return BadRequest(ModelState); }
 

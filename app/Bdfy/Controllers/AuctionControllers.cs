@@ -24,10 +24,12 @@ namespace BDfy.Controllers
                 var userClaims = HttpContext.User;
                 var userIdFromToken = userClaims.FindFirst("Id")?.Value;
                 var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
+                var user = await _db.Users.Include(u => u.UserDetails).FirstOrDefaultAsync(u => u.Id.ToString() == userIdFromToken);
 
                 if (userId.ToString() != userIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
-                if (userRoleFromToken != UserRole.Auctioneer.ToString()) { return Unauthorized("Access Denied: Only Auctioneers can create Auctions"); }
+               if (userRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
+                { return Unauthorized("Access Denied: Only Auctioneers can create Auctions"); }
 
                 if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
@@ -39,7 +41,7 @@ namespace BDfy.Controllers
                     .Include(u => u.AuctioneerDetails)
                     .FirstOrDefaultAsync(u => u.Id == userId);
 
-                if (auctioneer == null || auctioneer.AuctioneerDetails == null) { return NotFound("User not found"); }
+                // if (auctioneer == null || auctioneer.AuctioneerDetails == null) { return NotFound("User not found"); }
 
                 var auction = new Auction
                 {
@@ -342,10 +344,12 @@ namespace BDfy.Controllers
                 var auctioneerClaims = HttpContext.User;
                 var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
                 var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+                var user = await _db.Users.Include(u => u.UserDetails).FirstOrDefaultAsync(u => u.Id.ToString() == auctioneerIdFromToken);
 
                 if (string.IsNullOrEmpty(auctioneerIdFromToken) || !Guid.TryParse(auctioneerIdFromToken, out var auctioneerId)) { return Unauthorized("Invalid user token"); }
 
-                if (string.IsNullOrEmpty(auctioneerRoleFromToken) || auctioneerRoleFromToken != UserRole.Auctioneer.ToString()) { return Forbid("Access denied: Only auctioneers can update auctions"); }
+                if (auctioneerRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
+                 { return Forbid("Access denied: Only auctioneers or adminscan update auctions"); }
 
                 if (dto.StartAt >= dto.EndAt) { return BadRequest("Start date must be before end date"); }
 
