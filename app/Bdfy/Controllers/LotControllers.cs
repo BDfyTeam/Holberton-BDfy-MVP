@@ -288,11 +288,14 @@ namespace BDfy.Controllers
 				var userClaims = HttpContext.User;
 				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
+				var user = await _db.Users.Include(u => u.UserDetails).FirstOrDefaultAsync(u => u.Id.ToString() == userIdFromToken);
+				
 
-				if (userRoleFromToken != UserRole.Auctioneer.ToString())
+				if (userRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
 				{
-					return Unauthorized("Access Denied: Only Auctioneers can edit Lots");
+					return Unauthorized("Access Denied: Only Auctioneers or admins can edit Lots");
 				}
+				
 
 				if (!ModelState.IsValid)
 				{
@@ -309,8 +312,8 @@ namespace BDfy.Controllers
 				{
 					return NotFound("Lot not found");
 				}
-
-				if (lot.Auction.Auctioneer.UserId.ToString() != userIdFromToken)
+				
+				if ((lot.Auction.Auctioneer.UserId.ToString() != userIdFromToken) && !(user?.UserDetails?.IsAdmin ?? false))
 				{
 					return Unauthorized("Access Denied: You can only edit your own lots");
 				}
