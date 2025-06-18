@@ -157,6 +157,7 @@ builder.Services.AddSingleton<BidPublisher>(); // Servicio de RabbitMQ (Producer
 builder.Services.AddHostedService<BidConsumerService>(); // Host para el servicio de consumer
 builder.Services.AddScoped<GenerateJwtToken>();//testing
 
+builder.Services.AddScoped<AuctionServices>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
