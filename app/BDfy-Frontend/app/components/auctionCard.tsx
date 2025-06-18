@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import type { AuctionCard } from "~/services/types";
 import { useEffect, useRef } from "react";
 
+
 type CarouselAuctionCardProps = {
   auction: AuctionCard[];
   renderAction?: (auction: AuctionCard) => React.ReactNode;
@@ -33,6 +34,7 @@ export default function CarouselAuctionCard({ auction, renderAction }: CarouselA
   return (
     <div className="max-w-screen-xl mx-auto">
       <Splide
+        key={auction.length}
         options={{
           type: "loop",
           perPage: 3,

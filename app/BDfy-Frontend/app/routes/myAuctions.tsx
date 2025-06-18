@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import CarouselAuctionCard from "~/components/auctionCard";
 import AddLot from "~/components/addLot";
-import { getAllAuctions } from "~/services/fetchService";
+import { getAuctionsByAuctioneer } from "~/services/fetchService";
 import type { AuctionCard } from "~/services/types";
 import UpdateAuctionButton from "~/components/PUTAuction";
 
@@ -16,7 +16,7 @@ export default function MyAuctions() {
   useEffect(() => {
     async function fetchAuctions() {
       try {
-        const data = await getAllAuctions();
+        const data = await getAuctionsByAuctioneer();
         const activeAuctions = data.filter(
           (auction: AuctionCard) => auction.status === 1
         );

@@ -28,3 +28,8 @@ npm install @types/react-datepicker --save-dev # Tipos para TypeScript (para el 
 
 
 npm install @heroicons/react
+
+
+# Dependencias de tailwind
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p

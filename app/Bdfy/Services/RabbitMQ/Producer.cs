@@ -18,7 +18,7 @@ namespace BDfy.Services
         {
             var factory = new ConnectionFactory // Seteamos los datos para la conexion
             {
-                HostName = Environment.GetEnvironmentVariable("RabbitMQ__HostName") ?? "rabbitmq", // Bdfy.com.uy
+                HostName = "localhost", // Bdfy.com.uy
                 Port = 5672
             };
             _connection = await factory.CreateConnectionAsync(); // Creamos la conexion
