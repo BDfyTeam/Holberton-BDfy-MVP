@@ -3,7 +3,18 @@ import { Link } from "react-router";
 import type { AuctionCard } from "~/services/types";
 import { useEffect, useRef } from "react";
 
-export default function CarouselAuctionCard({ auction }: { auction: AuctionCard[] }) {
+type CarouselAuctionCardProps = {
+  auction: AuctionCard[];
+  renderAction?: (auction: AuctionCard) => React.ReactNode;
+  className?: string;
+};
+
+export default function CarouselAuctionCard({
+  auction,
+  renderAction,
+  className,
+}: CarouselAuctionCardProps) {
+  const promptButton = "Ver Subasta";
   // Esto es para que "breakpoints" funcione correctamente en Splide
   const splideRef = useRef<any>(null); // Referencia para Splide
 
@@ -16,18 +27,26 @@ export default function CarouselAuctionCard({ auction }: { auction: AuctionCard[
 
   if (!auction || auction.length === 0) {
     return (
-      <div className="max-w-screen-xl mx-auto">
-        <p className="text-center text-gray-500">No hay subastas disponibles en este momento.</p>
+      <div className="max-w-screen-xl mx-auto py-20 flex flex-col items-center text-center space-y-6">
+        <img
+          src="../public/assets/ConfusedPengu.png"
+          alt="Sin subastas"
+          className="w-48 h-48 opacity-70"
+        />
+        <p className="text-lg text-gray-400 font-medium">
+          No hay subastas disponibles en este momento.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-screen-xl mx-auto">
+    <div className={className}>
       <Splide
+        key={auction.length}
         options={{
           type: "loop",
-          perPage: 3,
+          perPage: 4,
           arrows: true,
           gap: "1rem",
           focus: "center",
@@ -39,43 +58,88 @@ export default function CarouselAuctionCard({ auction }: { auction: AuctionCard[
           },
         }}
       >
-        {auction.map((auction) => (
-          <SplideSlide key={auction.id}>
-            <div className="bg-white text-black p-4 rounded shadow-lg h-95 w-full flex flex-col justify-between">
-              <h2 className="text-xl font-semibold mb-2 flex flex-col justify-center text-center">
-                {auction.title}
-              </h2>
-              <p className="text-sm text-gray-700 mb-3">
-                {auction.description}
-              </p>
-              <p className="text-sm text-gray-500 mb-3">
-                Categorias: {auction.category.join(", ")}
-              </p>
-              <p className="text-sm text-gray-500 mb-3">
-                Dirección: {auction.direction.street} {auction.direction.streetNumber}, {auction.direction.corner}, {auction.direction.zipCode}, {auction.direction.department}
-              </p>
-              <p className="text-sm text-gray-500">
-              Inicio: 
-              {auction.startAt 
-                ? new Date(auction.startAt).toLocaleString() 
-                : " Fecha de inicio no definida"}
-              </p>
-              <p className="text-sm text-gray-500">
-                Fin:{" "}
-                {auction.endAt
-                  ? new Date(auction.endAt).toLocaleString()
-                  : " Fin de la subasta aún no definido."}
-              </p>
-              <Link
-                to={`/auctions/specific/${auction.id}`}
-                className="text-blue-600 mt-3 inline-block justify-center items-center text-center bg-blue-100 font-semibold py-2 px-4 rounded"
-              >
-                Ver subasta
-              </Link>
-            </div>
-          </SplideSlide>
-        ))}
+        {auction.map((auction) => {
+          const url = `/auction/specific/${auction.id}`;
+          return (
+            <SplideSlide key={auction.id}>
+              <div className="bg-[#1b3845]/70 text-white p-5 rounded-xl border border-[#59b9e2]/40 shadow-md backdrop-blur-sm h-96 w-full flex flex-col justify-between">
+                <h2
+                  className="text-2xl font-extrabold text-[#6cf2ff] mb-3 text-center tracking-wide"
+                  style={{ fontFamily: "Montserrat" }}
+                >
+                  {auction.title}
+                </h2>
+
+                <p className="text-base text-center text-white font-medium leading-relaxed mb-4">
+                  {auction.description}
+                </p>
+
+                <div className="mb-4">
+                  <span className="block text-sm text-[#59b9e2] font-semibold mb-2">
+                    Categorías:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {auction.category.map((cat, index) => (
+                      <span
+                        key={index}
+                        className="bg-[#59b9e2]/20 text-[#59b9e2] text-xs font-medium px-3 py-1 rounded-full border border-[#59b9e2]/40"
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <span className="block text-sm text-[#59b9e2] font-semibold mb-2">
+                    Dirección:
+                  </span>
+                  <p className="text-sm text-white leading-relaxed">
+                    {auction.direction.street} {auction.direction.streetNumber},{" "}
+                    {auction.direction.corner}, {auction.direction.zipCode},{" "}
+                    {auction.direction.department}
+                  </p>
+                </div>
+
+                <div className="mb-4">
+                  <span className="block text-sm text-[#59b9e2] font-semibold mb-2">
+                    Fechas de la subasta:
+                  </span>
+                  <div className="space-y-1 text-sm text-white leading-snug">
+                    <p>
+                      <span className="font-semibold text-[#81fff9]">
+                        Inicio:
+                      </span>{" "}
+                      {auction.startAt
+                        ? new Date(auction.startAt).toLocaleString()
+                        : "Fecha de inicio no definida"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-[#81fff9]">Fin:</span>{" "}
+                      {auction.endAt
+                        ? new Date(auction.endAt).toLocaleString()
+                        : "Fin de la subasta aún no definido"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex justify-center">
+                  {renderAction ? (
+                    renderAction(auction)
+                  ) : (
+                    <Link
+                      to={url}
+                      className="bg-blue-100 text-blue-800 font-semibold py-2 px-4 rounded"
+                    >
+                      {promptButton}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </SplideSlide>
+          );
+        })}
       </Splide>
     </div>
-  ); 
+  );
 }

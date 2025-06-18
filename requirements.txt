@@ -56,3 +56,8 @@ npm install @heroicons/react      # Iconos Heroicons React
 # 4. Para el frontend React, ejecuta los comandos npm dentro de la carpeta correspondiente.
 
 
+
+
+# Dependencias de tailwind
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p

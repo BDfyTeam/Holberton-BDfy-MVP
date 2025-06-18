@@ -49,7 +49,6 @@ namespace BDfy.Services
                 basicProperties: props, // Propiedades en default
                 body: body // La puja en bytes
             );
-            
         }
         public void Dispose() // Por si alguno es null la liberamos
         {

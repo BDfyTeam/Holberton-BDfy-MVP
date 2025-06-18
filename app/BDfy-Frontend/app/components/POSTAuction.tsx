@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { createAuction } from "~/services/fetchService";
+import { createAuction, updateAuction } from "~/services/fetchService";
 import type { AuctionCard } from "~/services/types";
-import "../app.css"
+import "../app.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -72,7 +72,10 @@ export default function CreateAuctionButton() {
         <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-white p-6 rounded shadow-lg z-50 w-200 max-h-[calc(100vh-4rem)] overflow-y-auto">
           <form onSubmit={handleSubmit}>
             {/* Título */}
-            <label htmlFor="title" className="block text-sm font-medium text-gray-900">
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-900"
+            >
               Título
             </label>
             <input
@@ -87,7 +90,10 @@ export default function CreateAuctionButton() {
             />
 
             {/* Descripción */}
-            <label htmlFor="description" className="block text-sm font-medium text-gray-900">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-900"
+            >
               Descripción
             </label>
             <textarea
@@ -101,7 +107,10 @@ export default function CreateAuctionButton() {
             ></textarea>
 
             {/* Fecha de inicio */}
-            <label htmlFor="startAt" className="block text-sm font-medium text-gray-900">
+            <label
+              htmlFor="startAt"
+              className="block text-sm font-medium text-gray-900"
+            >
               Fecha de inicio
             </label>
             <DatePicker
@@ -115,7 +124,10 @@ export default function CreateAuctionButton() {
             />
 
             {/* Fecha de fin */}
-            <label htmlFor="endAt" className="block text-sm font-medium text-gray-900">
+            <label
+              htmlFor="endAt"
+              className="block text-sm font-medium text-gray-900"
+            >
               Fecha de fin
             </label>
             <DatePicker
@@ -129,14 +141,21 @@ export default function CreateAuctionButton() {
             />
 
             {/* Categoría */}
-            <label htmlFor="category" className="block text-sm font-medium text-gray-900">
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium text-gray-900"
+            >
               Categoría
             </label>
             <select
               id="category"
               name="category"
               value={category}
-              onChange={(e) => setCategory(e.target.value === "" ? "" : parseInt(e.target.value))}
+              onChange={(e) =>
+                setCategory(
+                  e.target.value === "" ? "" : parseInt(e.target.value)
+                )
+              }
               className="border border-gray-300 p-2 mb-4 w-full text-black"
             >
               <option value="">Tekenlogia</option>
@@ -162,7 +181,10 @@ export default function CreateAuctionButton() {
             </select>
 
             {/* Estado */}
-            <label htmlFor="status" className="block text-sm font-medium text-gray-900">
+            <label
+              htmlFor="status"
+              className="block text-sm font-medium text-gray-900"
+            >
               Estado
             </label>
             <select
@@ -179,9 +201,14 @@ export default function CreateAuctionButton() {
 
             {/* Dirección */}
             <div className="border-b border-gray-900/10 pb-12">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Dirección</h3>
-              
-              <label htmlFor="street" className="block text-sm font-medium text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Dirección
+              </h3>
+
+              <label
+                htmlFor="street"
+                className="block text-sm font-medium text-gray-900"
+              >
                 Calle
               </label>
               <input
@@ -195,7 +222,10 @@ export default function CreateAuctionButton() {
                 required
               />
 
-              <label htmlFor="streetNumber" className="block text-sm font-medium text-gray-900">
+              <label
+                htmlFor="streetNumber"
+                className="block text-sm font-medium text-gray-900"
+              >
                 Número
               </label>
               <input
@@ -209,7 +239,10 @@ export default function CreateAuctionButton() {
                 required
               />
 
-              <label htmlFor="corner" className="block text-sm font-medium text-gray-900">
+              <label
+                htmlFor="corner"
+                className="block text-sm font-medium text-gray-900"
+              >
                 Esquina
               </label>
               <input
@@ -222,7 +255,10 @@ export default function CreateAuctionButton() {
                 placeholder="Esquina con otra calle (opcional)"
               />
 
-              <label htmlFor="zipCode" className="block text-sm font-medium text-gray-900">
+              <label
+                htmlFor="zipCode"
+                className="block text-sm font-medium text-gray-900"
+              >
                 Código Postal
               </label>
               <input
@@ -236,37 +272,40 @@ export default function CreateAuctionButton() {
                 required
               />
 
-              <label htmlFor="department" className="block text-sm font-medium text-gray-900">
+              <label
+                htmlFor="department"
+                className="block text-sm font-medium text-gray-900"
+              >
                 Departamento
               </label>
               <select
-              id="departamento"
-              name="departamento"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              className="border border-gray-300 p-2 mb-4 w-full text-black"
-            >
-              <option value="">Departamento</option>
-              <option value="Artigas">Artigas</option>
-              <option value="Canelones">Canelones</option>
-              <option value="Cerro Largo">Cerro Largo</option>
-              <option value="Colonia">Colonia</option>
-              <option value="Durazno">Durazno</option>
-              <option value="Flores">Flores</option>
-              <option value="Florida">Florida</option>
-              <option value="Lavalleja">Lavalleja</option>
-              <option value="Maldonado">Maldonado</option>
-              <option value="Montevideo">Montevideo</option>
-              <option value="Paysandú">Paysandú</option>
-              <option value="Río Negro">Río Negro</option>
-              <option value="Rivera">Rivera</option>
-              <option value="Rocha">Rocha</option>
-              <option value="Salto">Salto</option>
-              <option value="San José">San José</option>
-              <option value="Soriano">Soriano</option>
-              <option value="Tacuarembó">Tacuarembó</option>
-              <option value="Treinta y Tres">Treinta y Tres</option>
-            </select>
+                id="departamento"
+                name="departamento"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                className="border border-gray-300 p-2 mb-4 w-full text-black"
+              >
+                <option value="">Departamento</option>
+                <option value="Artigas">Artigas</option>
+                <option value="Canelones">Canelones</option>
+                <option value="Cerro Largo">Cerro Largo</option>
+                <option value="Colonia">Colonia</option>
+                <option value="Durazno">Durazno</option>
+                <option value="Flores">Flores</option>
+                <option value="Florida">Florida</option>
+                <option value="Lavalleja">Lavalleja</option>
+                <option value="Maldonado">Maldonado</option>
+                <option value="Montevideo">Montevideo</option>
+                <option value="Paysandú">Paysandú</option>
+                <option value="Río Negro">Río Negro</option>
+                <option value="Rivera">Rivera</option>
+                <option value="Rocha">Rocha</option>
+                <option value="Salto">Salto</option>
+                <option value="San José">San José</option>
+                <option value="Soriano">Soriano</option>
+                <option value="Tacuarembó">Tacuarembó</option>
+                <option value="Treinta y Tres">Treinta y Tres</option>
+              </select>
             </div>
 
             {/* Botones de acción */}

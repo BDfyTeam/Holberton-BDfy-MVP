@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createLot } from "~/services/fetchService";
-import getAuctionsByAuctioneer from "~/services/fetchService";
+import { getAuctionsByAuctioneer } from "~/services/fetchService";
 import type { LotCard } from "~/services/types";
 import "../app.css"
 import "react-datepicker/dist/react-datepicker.css";

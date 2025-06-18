@@ -1,10 +1,9 @@
 import type { Route } from "./+types/home";
 import UserRegisterForm from "~/components/userRegisterForms";
 import AuctionerRegisterFrom from "~/components/auctionerRegisterForm";
-
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import CreateAuctionButton from "~/components/auctionForm";
+import CreateAuctionButton from "~/components/POSTAuction";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -25,16 +24,12 @@ export default function Register() {
           className="my-8"
           loop
         >
-          <div>
-            <SwiperSlide>
-              <AuctionerRegisterFrom />
-            </SwiperSlide>
-          </div>
-          <div>
-            <SwiperSlide>
-              <UserRegisterForm />
-            </SwiperSlide>
-          </div>
+          <SwiperSlide key="auctioneer">
+            <AuctionerRegisterFrom />
+          </SwiperSlide>
+          <SwiperSlide key="user">
+            <UserRegisterForm />
+          </SwiperSlide>
         </Swiper>
       </div>
     </main>

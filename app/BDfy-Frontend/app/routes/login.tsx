@@ -4,6 +4,7 @@ import Button from "~/components/functionButton";
 import Header from "~/components/Header";
 import { loginUser } from "~/services/fetchService";
 import { Mail, Lock, Eye, EyeOff, Gavel, Trophy } from "lucide-react";
+import { useAuth } from "~/context/authContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +21,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const token = await loginUser(email, password);
-      localStorage.setItem("token", token);
-      console.log("Login exitoso");
+      login(token);
       navigate("/");
     } catch (error: any) {
       setError(error.message || "Inicio de sesión fallido");

@@ -1,16 +1,31 @@
+<<<<<<< HEAD
 
 services:
   backend:
     build:
       context: .
       dockerfile: app/Bdfy/Dockerfile
+=======
+services:
+  backend:
+    build:
+      context: ./app/Bdfy
+      dockerfile: Dockerfile
+>>>>>>> main-dev
     ports:
       - "5015:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BDfyDatabase;Username=root;Password=1234
+<<<<<<< HEAD
     depends_on:
       - db
+=======
+      - RabbitMQ__HostName=rabbitmq
+    depends_on:
+      - db
+      - rabbitmq
+>>>>>>> main-dev
     networks:
       - bidify-net
 
@@ -40,6 +55,17 @@ services:
       - ./app/Bdfy/Data/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
+    networks:
+      - bidify-net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     networks:
       - bidify-net
 
