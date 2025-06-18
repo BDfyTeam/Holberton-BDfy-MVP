@@ -24,12 +24,10 @@ namespace BDfy.Controllers
                 var userClaims = HttpContext.User;
                 var userIdFromToken = userClaims.FindFirst("Id")?.Value;
                 var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
-                var user = await _db.Users.Include(u => u.UserDetails).FirstOrDefaultAsync(u => u.Id.ToString() == userIdFromToken);
 
                 if (userId.ToString() != userIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
-               if (userRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
-                { return Unauthorized("Access Denied: Only Auctioneers can create Auctions"); }
+                if (userRoleFromToken != UserRole.Auctioneer.ToString()) { return Unauthorized("Access Denied: Only Auctioneers can create Auctions"); }
 
                 if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
@@ -41,7 +39,7 @@ namespace BDfy.Controllers
                     .Include(u => u.AuctioneerDetails)
                     .FirstOrDefaultAsync(u => u.Id == userId);
 
-                // if (auctioneer == null || auctioneer.AuctioneerDetails == null) { return NotFound("User not found"); }
+                if (auctioneer == null || auctioneer.AuctioneerDetails == null) { return NotFound("User not found"); }
 
                 var auction = new Auction
                 {
@@ -66,8 +64,8 @@ namespace BDfy.Controllers
                 var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 return BadRequest($"Error inesperado al crear la subasta: {errorMessage}");
             }
-
         }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AuctionDto>>> GetAllAuction()
         {

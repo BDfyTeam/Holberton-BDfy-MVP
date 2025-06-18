@@ -291,14 +291,14 @@ namespace BDfy.Controllers
 				var userClaims = HttpContext.User;
 				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
-				var user = await _db.Users.Include(u => u.UserDetails).FirstOrDefaultAsync(u => u.Id.ToString() == userIdFromToken);
-				
+				var userIsAdmin = userClaims.FindFirst("IsAdmin")?.Value;
 
-				if (userRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
+				if (userRoleFromToken != UserRole.Auctioneer.ToString() && userIsAdmin == null || userIsAdmin == false.ToString())
 				{
 					return Unauthorized("Access Denied: Only Auctioneers or admins can edit Lots");
 				}
-				
+
+                if (string.IsNullOrEmpty(userIdFromToken) || !Guid.TryParse(userIdFromToken, out var userId)) { return Unauthorized("Invalid user token"); }
 
 				if (!ModelState.IsValid)
 				{
@@ -310,13 +310,13 @@ namespace BDfy.Controllers
 						.ThenInclude(a => a.Auctioneer)
 					.Include(l => l.BiddingHistory)
 					.FirstOrDefaultAsync(l => l.Id == lotId);
-
+	
 				if (lot == null)
 				{
 					return NotFound("Lot not found");
 				}
 				
-				if ((lot.Auction.Auctioneer.UserId.ToString() != userIdFromToken) && !(user?.UserDetails?.IsAdmin ?? false))
+				if (lot.Auction.Auctioneer.UserId.ToString() != userIdFromToken && userIsAdmin == null || userIsAdmin == false.ToString())
 				{
 					return Unauthorized("Access Denied: You can only edit your own lots");
 				}
@@ -326,11 +326,11 @@ namespace BDfy.Controllers
 					return BadRequest("Cannot edit lot that already has bids");
 				}
 
-				if (lot.AuctionId != editLotDto.AuctionId)
+				if (lot.AuctionId != editLotDto.AuctionId && userIsAdmin == null || userIsAdmin == false.ToString())
 				{
 					var existingAuction = await _db.Auctions
 						.FirstOrDefaultAsync(a => a.Id == editLotDto.AuctionId
-									&& Guid.Parse(userIdFromToken) == a.Auctioneer.UserId
+									&& userId == a.Auctioneer.UserId
 									&& a.Status != AuctionStatus.Storage);
 
 					if (existingAuction == null)
