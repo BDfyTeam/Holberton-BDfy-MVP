@@ -2,6 +2,7 @@ using RabbitMQ.Client;
 using BDfy.Dtos;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace BDfy.Services
 {
@@ -10,16 +11,25 @@ namespace BDfy.Services
         private IChannel? _channel; // Puede ser null pq despues lo manejas
         private IConnection? _connection; // Puede ser null pq despues lo manejas
         private readonly ILogger<BidPublisher> _logger;
-        public BidPublisher(ILogger<BidPublisher> logger)
+        private readonly IConfiguration _configuration;
+
+        public BidPublisher(ILogger<BidPublisher> logger, IConfiguration configuration)
         {
             _logger = logger; // Informacion de la conexion (testing)
+            _configuration = configuration;
         }
         public async Task InitializeAsync() // Tarea para inicializar la conexion, el canal y la queue
         {
+            var rabbitMQConfig = _configuration.GetSection("RabbitMQ");
+            var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
+            var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
+            var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
+
             var factory = new ConnectionFactory // Seteamos los datos para la conexion
             {
-                HostName = "localhost", // Bdfy.com.uy
-                Port = 5672
+                HostName = hostName,
+                UserName = userName,
+                Password = password
             };
             _connection = await factory.CreateConnectionAsync(); // Creamos la conexion
             _channel = await _connection.CreateChannelAsync(); // Creamos el canal dentro de la conexion
