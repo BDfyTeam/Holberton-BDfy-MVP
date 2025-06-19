@@ -79,7 +79,7 @@ export default function Home() {
         <div>
           <CarouselAuctionCard 
             auction={auctions}
-            className="max-w-screen-xl mx-auto rounded-xl border border-[#59b9e2] bg-[#1b3845]/60 shadow-lg p-4 mb-8 overflow-visible"
+            className="max-w-screen-xl mx-auto rounded-xl border border-[#59b9e2] bg-[#1b3845]/60 shadow-lg p-4 mb-8"
             />
         </div>
       </div>

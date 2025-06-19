@@ -27,11 +27,6 @@ body {
   transition: all 0.3s ease;
 }
 
-@layer utilities {
-  .datepicker-z {
-    z-index: 9999 !important;
-  }
-}
 
 .swiper-pagination-bullet {
   background: #406a79;

@@ -57,7 +57,7 @@ export default function UserMenu() {
   if (!isClient) return null; // 👈 evita renderizar en SSR
 
   return (
-    <div className="relative z-50">
+    <div className="relative z-40">
       <button
         onClick={() => setOpen((prev) => !prev)}
         className="w-12 h-12 rounded-full bg-[#59b9e2] text-white font-bold text-2xl flex items-center justify-center hover:drop-shadow-[0_0_6px_#59b9e2] transition duration-300"
@@ -66,7 +66,7 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl text-sm z-9999">
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl text-sm z-80 ">
           {/* Cabecera del menú */}
           <div className="bg-[#1B3845] text-[#81fff9] p-4 rounded-t-lg border-b border-[#59b9e2]/40 shadow-sm">
             <div className="font-bold text-lg leading-tight">
