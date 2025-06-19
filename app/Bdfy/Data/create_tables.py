@@ -2,13 +2,13 @@
 
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-import os
 
-DB_HOST = os.environ.get("POSTGRES_HOST", "localhost")
-DB_PORT = os.environ.get("POSTGRES_PORT", "5432")
-DB_NAME = os.environ.get("POSTGRES_DB", "BDfyDatabase")
-DB_USER = os.environ.get("POSTGRES_USER", "franco")
-DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "1234")
+# Configuración directa para Cloud SQL
+DB_HOST = "35.199.73.96"
+DB_PORT = "5432"
+DB_NAME = "BDfyDatabase"
+DB_USER = "lucas"
+DB_PASSWORD = "BdfyAdmin123!"
 
 def create_tables():
     try:
@@ -136,19 +136,19 @@ def create_tables():
         """)
 
         conn.commit()
-        print("✅")
+        print("✅ Tablas creadas correctamente.")
         cursor.close()
         conn.close()
         return True
 
     except Exception as e:
-        print(f"🚨: {e}")
+        print(f"🚨 Error: {e}")
         return False
 
 def main():
-    print("⌛")
+    print("⌛ Creando tablas...")
     create_tables()
-    print("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅")
+    print("✅ Fin del proceso.")
 
 if __name__ == "__main__":
     main()
