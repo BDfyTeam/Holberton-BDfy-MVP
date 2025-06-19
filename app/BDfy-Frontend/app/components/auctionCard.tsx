@@ -9,11 +9,7 @@ type CarouselAuctionCardProps = {
   className?: string;
 };
 
-export default function CarouselAuctionCard({
-  auction,
-  renderAction,
-  className,
-}: CarouselAuctionCardProps) {
+export default function CarouselAuctionCard({ auction, renderAction, className, }: CarouselAuctionCardProps) {
   const promptButton = "Ver Subasta";
   // Esto es para que "breakpoints" funcione correctamente en Splide
   const splideRef = useRef<any>(null); // Referencia para Splide
@@ -29,7 +25,7 @@ export default function CarouselAuctionCard({
     return (
       <div className="max-w-screen-xl mx-auto py-20 flex flex-col items-center text-center space-y-6">
         <img
-          src="../public/assets/ConfusedPengu.png"
+          src="/assets/ConfusedPengu.png"
           alt="Sin subastas"
           className="w-48 h-48 opacity-70"
         />
@@ -57,12 +53,25 @@ export default function CarouselAuctionCard({
             1024: { perPage: 3, gap: "1rem" },
           },
         }}
+        className=""
       >
+        {/* Style necesario para mover las flechas hacia afuera */}
+        <style>{` 
+          .splide__arrow--prev {
+          left: -4rem;
+          }
+
+          .splide__arrow--next {
+          right: -4rem;
+          }
+        `}
+        </style>
         {auction.map((auction) => {
           const url = `/auction/specific/${auction.id}`;
           return (
             <SplideSlide key={auction.id}>
-              <div className="bg-[#1b3845]/70 text-white p-5 rounded-xl border border-[#59b9e2]/40 shadow-md backdrop-blur-sm h-96 w-full flex flex-col justify-between">
+              {/* Titulo */}
+              <div className="bg-[#1b3845]/70 text-white p-5 rounded-xl border border-[#59b9e2]/40 shadow-md backdrop-blur-sm h-[420px] w-full flex flex-col justify-between transform transition-transform duration-300 hover:scale-101 hover:z-10">
                 <h2
                   className="text-2xl font-extrabold text-[#6cf2ff] mb-3 text-center tracking-wide"
                   style={{ fontFamily: "Montserrat" }}
@@ -70,10 +79,12 @@ export default function CarouselAuctionCard({
                   {auction.title}
                 </h2>
 
+                {/* Descripcion */}
                 <p className="text-base text-center text-white font-medium leading-relaxed mb-4">
                   {auction.description}
                 </p>
 
+                {/* Categorias */}
                 <div className="mb-4">
                   <span className="block text-sm text-[#59b9e2] font-semibold mb-2">
                     Categorías:
@@ -90,6 +101,7 @@ export default function CarouselAuctionCard({
                   </div>
                 </div>
 
+                {/* Direccion */}
                 <div className="mb-4">
                   <span className="block text-sm text-[#59b9e2] font-semibold mb-2">
                     Dirección:
@@ -101,6 +113,7 @@ export default function CarouselAuctionCard({
                   </p>
                 </div>
 
+                {/* Fechas inicio/fin */}
                 <div className="mb-4">
                   <span className="block text-sm text-[#59b9e2] font-semibold mb-2">
                     Fechas de la subasta:
@@ -123,13 +136,14 @@ export default function CarouselAuctionCard({
                   </div>
                 </div>
 
+                {/* Botones */}
                 <div className="mt-3 flex justify-center">
                   {renderAction ? (
                     renderAction(auction)
                   ) : (
                     <Link
                       to={url}
-                      className="bg-blue-100 text-blue-800 font-semibold py-2 px-4 rounded"
+                      className="bg-[#81fff9] text-[#1b3845] font-semibold py-2 px-6 rounded-full transition-all duration-300 hover:bg-white hover:text-[#1b3845] hover:shadow-md"
                     >
                       {promptButton}
                     </Link>

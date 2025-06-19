@@ -1,21 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import {
-  User,
-  Gavel,
-  Trophy,
-  Boxes,
-  Bell,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { User, Gavel, Trophy, Boxes, Bell, User2, LogOut } from "lucide-react";
 import { fetchRole } from "~/services/fetchService";
 import { useAuth } from "~/context/authContext";
+import { getUserById } from "~/services/fetchService";
+import { getUserIdFromToken } from "~/services/handleToken";
+import { createPortal } from "react-dom";
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
   const [isClient, setIsClient] = useState(false); // 👈 nuevo
   const [role, setRole] = useState<number | null>(null);
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -34,7 +30,23 @@ export default function UserMenu() {
       }
     };
 
+    const fetchUserInfo = async () => {
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        console.error("User ID is null");
+        return;
+      }
+
+      try {
+        const userData = await getUserById(userId);
+        setUser(userData);
+      } catch (err) {
+        console.error("Error al obtener datos del usuario", err);
+      }
+    };
+
     fetchUserRole();
+    fetchUserInfo();
   }, []);
 
   const handleLogout = () => {
@@ -44,34 +56,32 @@ export default function UserMenu() {
 
   if (!isClient) return null; // 👈 evita renderizar en SSR
 
-
   return (
-    <div className="relative">
+    <div className="relative z-50">
       <button
-        onClick={() => {
-          setOpen((prev) => !prev);
-        }}
-        className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold flex items-center justify-center"
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-12 h-12 rounded-full bg-[#59b9e2] text-white font-bold text-2xl flex items-center justify-center hover:drop-shadow-[0_0_6px_#59b9e2] transition duration-300"
       >
-        U
+        {user ? user.firstName.charAt(0).toUpperCase() : "U"}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl text-sm z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl text-sm z-9999">
           {/* Cabecera del menú */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-4 rounded-t-lg">
-            <div className="font-bold">Usuario Demo</div>
-            <div className="text-xs opacity-80">#12345</div>
+          <div className="bg-[#1B3845] text-[#81fff9] p-4 rounded-t-lg border-b border-[#59b9e2]/40 shadow-sm">
+            <div className="font-bold text-lg leading-tight">
+              {user.firstName} {user.lastName}
+            </div>
+            <div className="text-xs text-[#81fff9]/70">{user.email}</div>
           </div>
 
           {/* Lista de opciones */}
-          <ul className="divide-y divide-gray-100 text-gray-700">
+          <ul className="divide-y divide-[#59b9e2]/20 text-[#1B3845]">
             <MenuItem icon={<User size={18} />} text="Mi Perfil" />
             {role === 1 && (
               <>
                 <MenuItem
-                  icon={<Gavel
-                    size={18} />}
+                  icon={<Gavel size={18} />}
                   text="Mis Subastas"
                   onClick={() => navigate("/my-auctions")}
                 />
@@ -86,7 +96,6 @@ export default function UserMenu() {
               text="Notificaciones"
               badge={3}
             />
-            <MenuItem icon={<Settings size={18} />} text="Configuración" />
             <MenuItem
               icon={<LogOut size={18} />}
               text="Cerrar sesión"
@@ -113,11 +122,11 @@ function MenuItem({
   return (
     <li
       onClick={onClick}
-      className="flex items-center justify-between px-4 py-3 hover:bg-gray-100 cursor-pointer"
+      className="flex items-center justify-between px-4 py-3 hover:bg-[#59b9e2]/10 cursor-pointer transition rounded-md"
     >
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-3">
         {icon}
-        <span>{text}</span>
+        <span className="text-sm font-medium">{text}</span>
       </div>
       {badge !== undefined && (
         <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -127,3 +136,4 @@ function MenuItem({
     </li>
   );
 }
+

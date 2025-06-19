@@ -5,7 +5,7 @@ import type { AuctionCard } from "../services/types";
 import CarouselAuctionCard from "~/components/auctionCard";
 import { getAllAuctions, fetchRole } from "~/services/fetchService";
 import CreateAuctionButton from "~/components/POSTAuction";
-import CreateLotButton from "~/components/lotForm";
+import CreateLotButton from "~/components/POSTLots";
 import { useAuth } from "~/context/authContext";
 
 export function meta({}: Route.MetaArgs) {
@@ -21,6 +21,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<number | null>(null);
   const { isAuthenticated } = useAuth();
+  
 
   useEffect(() => {
     async function fetchAuctions() {
@@ -78,16 +79,16 @@ export default function Home() {
         <div>
           <CarouselAuctionCard 
             auction={auctions}
-            className="max-w-screen-xl mx-auto rounded-xl border border-[#59b9e2] bg-[#1b3845]/60 shadow-lg p-4 mb-8"
+            className="max-w-screen-xl mx-auto rounded-xl border border-[#59b9e2] bg-[#1b3845]/60 shadow-lg p-4 mb-8 overflow-visible"
             />
         </div>
       </div>
       <div className="">
         {isAuthenticated && role === 1 && (
-          <>
-            <CreateAuctionButton />
-            <CreateLotButton />
-          </>
+          <div className="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
+            <CreateAuctionButton className="bg-[#59b9e2] text-white hover:bg-[#81fff9] hover:text-[#1b3845] transition-all px-7 py-3 rounded-full shadow-lg font-semibold text-xl" />
+            <CreateLotButton className="bg-[#59b9e2] text-white hover:bg-[#81fff9] hover:text-[#1b3845] transition-all px-7 py-3 rounded-full shadow-lg font-semibold text-xl" />
+          </div>
         )}
       </div>
     </main>
