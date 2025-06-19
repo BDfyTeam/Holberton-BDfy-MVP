@@ -25,7 +25,7 @@ export default function CarouselAuctionCard({ auction, renderAction, className, 
     return (
       <div className="max-w-screen-xl mx-auto py-20 flex flex-col items-center text-center space-y-6">
         <img
-          src="/assets/ConfusedPengu.png"
+          src="/public/assets/ConfusedPengu.png"
           alt="Sin subastas"
           className="w-48 h-48 opacity-70"
         />

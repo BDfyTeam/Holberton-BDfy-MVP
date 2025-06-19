@@ -77,7 +77,7 @@ export default function CreateLotButton({ className }: LotForm) {
         className="transition-all px-2 py-1 font-semibold flex items-center space-x-2"
       >
         <Boxes size={20} />
-        <span>Crear Subasta</span>
+        <span>Crear Lote</span>
       </button>
       {/* Fondo oscuro */}
       {showForm && (
