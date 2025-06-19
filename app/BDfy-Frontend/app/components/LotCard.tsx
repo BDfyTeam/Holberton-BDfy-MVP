@@ -3,7 +3,6 @@ import type { Lot } from "../services/types";
 
 interface LotCardProps {
   lot: Lot;
-  // Nueva prop: un callback para notificar cuando se inicia una puja en este lote
   onBidInitiated: (lotId: string) => void; 
 }
 

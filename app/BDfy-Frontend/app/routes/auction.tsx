@@ -18,7 +18,6 @@ export default function AuctionPage() {
     const fetchAuction = async () => {
       try {
         const data = await getAuctionById(String(id));
-        console.log("Datos de la subasta recibidos:", data);
         setAuction(data);
         // Opcional: Si quieres que por defecto se escuche el primer lote al cargar la subasta
         if (data.lots && data.lots.length > 0) {
@@ -35,17 +34,14 @@ export default function AuctionPage() {
   }, [id]);
 
   const handleBidUpdate = useCallback((bidUpdate: { LotId: string; CurrentPrice: number; BuyerId: string; Timestamp: string }) => {
-    console.log("Nueva puja recibida (PascalCase):", bidUpdate);
     setAuction((prev) => {
       if (!prev) {
         console.log("No hay auction para actualizar");
         return prev;
       }
       
-      console.log("Actualizando auction con nueva puja (PascalCase):", bidUpdate);
       const updatedLots = prev.lots.map((lot) => {
         if (lot.id === bidUpdate.LotId) {
-          console.log(`Actualizando lote ${lot.id}: ${lot.currentPrice} -> ${bidUpdate.CurrentPrice}`);
           return { ...lot, currentPrice: bidUpdate.CurrentPrice };
         }
         return lot;

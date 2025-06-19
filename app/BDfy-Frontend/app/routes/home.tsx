@@ -8,6 +8,7 @@ import CreateAuctionButton from "~/components/POSTAuction";
 import CreateLotButton from "~/components/POSTLots";
 import { useAuth } from "~/context/authContext";
 
+
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "New React Router App" },
