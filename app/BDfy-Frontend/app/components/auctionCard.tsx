@@ -2,6 +2,7 @@ import { Splide, SplideSlide } from "@splidejs/react-splide";
 import { Link } from "react-router";
 import type { AuctionCard } from "~/services/types";
 import { useEffect, useRef } from "react";
+import pengu from "app/public/assets/ConfusedPengu.png"
 
 type CarouselAuctionCardProps = {
   auction: AuctionCard[];
@@ -25,7 +26,7 @@ export default function CarouselAuctionCard({ auction, renderAction, className, 
     return (
       <div className="max-w-screen-xl mx-auto py-20 flex flex-col items-center text-center space-y-6">
         <img
-          src="/public/assets/ConfusedPengu.png"
+          src={pengu}
           alt="Sin subastas"
           className="w-48 h-48 opacity-70"
         />
@@ -53,7 +54,6 @@ export default function CarouselAuctionCard({ auction, renderAction, className, 
             1024: { perPage: 3, gap: "1rem" },
           },
         }}
-        className=""
       >
         {/* Style necesario para mover las flechas hacia afuera */}
         <style>{` 
