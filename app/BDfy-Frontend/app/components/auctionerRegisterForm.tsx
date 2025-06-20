@@ -644,7 +644,7 @@ function AuctionerRegisterFrom({ className }: auctioneerRegisterProps) {
         <div className="flex justify-center mt-8">
           <button
             className="bg-[#81fff9] text-[#1B3845] font-semibold py-2 px-6 rounded-lg border border-[#81fff9] 
-    transition-colors duration-300 hover:bg-[#59b9e2] hover:text-white hover:border-[#59b9e2] shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+              transition-colors duration-300 hover:bg-[#59b9e2] hover:text-white hover:border-[#59b9e2] shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
             type="submit"
             disabled={loading}
           >

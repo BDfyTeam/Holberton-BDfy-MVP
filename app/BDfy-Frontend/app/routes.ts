@@ -13,5 +13,6 @@ export default [
     route("profile", "routes/profile.tsx"),
     route("auction/specific/:id", "routes/auction.tsx"),
     route("my-auctions", "routes/myAuctions.tsx"),
+    route("my-lots", "routes/myLots.tsx")
   ]),
 ] satisfies RouteConfig;

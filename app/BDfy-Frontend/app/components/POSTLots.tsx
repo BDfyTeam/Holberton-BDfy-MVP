@@ -11,12 +11,8 @@ type LotForm = {
 };
 
 export default function CreateLotButton({ className }: LotForm) {
-  const [auctionOptions, setAuctionOptions] = useState<
-    { id: number; title: string }[]
-  >([]);
-  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(
-    null
-  );
+  const [auctionOptions, setAuctionOptions] = useState<{ id: number; title: string }[]>([]);
+  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [lotNumber, setLotNumber] = useState("");
   const [description, setDescription] = useState("");

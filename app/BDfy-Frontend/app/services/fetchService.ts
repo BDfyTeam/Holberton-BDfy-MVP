@@ -377,3 +377,39 @@ export async function getUserById(userId: string) {
     throw error;
   }
 }
+
+
+// HACER UNA PUJA EN UN LOTE
+export async function makeBid(lotId: string, bid: number) {
+  const token = getToken();
+
+  try {
+    const dateNow = new Date();
+    const response = await fetch(`http://127.0.0.1:5016/api/1.0/lots/bid/${lotId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: bid,
+          time: dateNow,
+          lotId: lotId,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Error desconocido al realizar la puja."
+      );
+    }
+
+    return "✅ Puja realizada con éxito";
+  } catch (err: any) {
+    console.error("Error al enviar la puja:", err);
+    return `❌ ${err.message}`;
+  }
+};

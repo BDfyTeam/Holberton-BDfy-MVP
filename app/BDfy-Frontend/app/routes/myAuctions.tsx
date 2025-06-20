@@ -58,7 +58,6 @@ export default function MyAuctions() {
               <button
                 onClick={() => {
                   setSelectedAuction(auction)
-                  console.log("Estoy abriendo")
                 }}
                 className="bg-green-500 hover:bg-green-700 text-white font-bold px-4 py-2 rounded mr-2"
               >

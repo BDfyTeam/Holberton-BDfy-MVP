@@ -1,3 +1,5 @@
+import type { JSX } from "react/jsx-runtime";
+
 // REGISTRO DE USARIO Y SUBASTADOR
 export type RegisterUserPayload = {
   firstName: string;
@@ -121,4 +123,13 @@ export interface Auction {
     email: string;
   };
   lots: Lot[];
+}
+
+// TIPO BASICO PARA UNA CARD
+export type BasicCardItem = {
+  id: string,
+  title: string;
+  description: string;
+  category?: number[];
+  image?: string;
 }
