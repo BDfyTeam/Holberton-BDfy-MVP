@@ -4,8 +4,13 @@ import type { AuctionCard } from "~/services/types";
 import "../app.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Gavel } from "lucide-react";
 
-export default function CreateAuctionButton() {
+type AuctionForm = {
+  className?: string;
+};
+
+export default function CreateAuctionButton({ className }: AuctionForm) {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -14,9 +19,9 @@ export default function CreateAuctionButton() {
   const [category, setCategory] = useState<number | "">("");
   const [status, setStatus] = useState(2);
   const [street, setStreet] = useState("");
-  const [streetNumber, setStreetNumber] = useState(0);
+  const [streetNumber, setStreetNumber] = useState("");
   const [corner, setCorner] = useState("");
-  const [zipCode, setZipCode] = useState(0);
+  const [zipCode, setZipCode] = useState("");
   const [department, setDepartment] = useState("");
 
   const openForm = () => {
@@ -38,9 +43,9 @@ export default function CreateAuctionButton() {
       status,
       direction: {
         street,
-        streetNumber,
+        streetNumber: parseInt(streetNumber),
         corner,
-        zipCode,
+        zipCode: parseInt(zipCode),
         department,
       },
     };
@@ -53,273 +58,353 @@ export default function CreateAuctionButton() {
   };
 
   return (
-    <div>
+    <div className={className}>
       <button
         onClick={openForm}
-        className="fixed bottom-10 right-10 p-4 bg-blue-500 hover:bg-blue-700 text-white text-2xl font-bold py-4 px-8 rounded-full hover:shadow-lg transition duration-300 ease-in-out"
+        className="transition-all px-2 py-1 font-semibold flex items-center space-x-2"
       >
-        Crear Subasta
+        <Gavel size={20} />
+        <span>Crear Subasta</span>
       </button>
+      
       {/* Fondo oscuro */}
       {showForm && (
         <div
           onClick={closeForm}
-          className="fixed inset-0 bg-[rgba(0,0,0,0.3)] bg-opacity-60 z-40"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
         />
       )}
       {/* formulario desplegable */}
       {showForm && (
-        <div className="fixed top-10 left-1/2 transform -translate-x-1/2 bg-white p-6 rounded shadow-lg z-50 w-200 max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <div
+          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
+          w-full max-w-xl bg-[#1B3845] text-white p-8 rounded-2xl shadow-2xl 
+          z-50 overflow-y-auto max-h-[90vh] border border-[#59b9e2]/50 backdrop-blur-sm"
+        >
+          <button
+            onClick={closeForm}
+            className="absolute top-3 right-5 text-white hover:text-[#81fff9] transition-colors text-xl"
+          >
+            ✕
+          </button>
+
+          <h2 className="text-3xl font-bold mb-6 flex flex-col text-center font-[Inter]">
+            Crear subasta
+          </h2>
+
           <form onSubmit={handleSubmit}>
             {/* Título */}
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Título
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="border border-gray-300 p-2 mb-4 w-full text-black"
-              placeholder="Título de la subasta"
-              required
-            />
+            <div className="relative z-0 w-full mb-6 group font-[Inter]">
+              <input
+                type="text"
+                name="title"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+                placeholder="Título"
+                required
+              />
+              <label
+                htmlFor="title"
+                className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60 peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+              >
+                Título
+              </label>
+            </div>
 
             {/* Descripción */}
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Descripción
-            </label>
-            <textarea
-              name="description"
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="border border-gray-300 p-2 mb-4 w-full text-black"
-              placeholder="Descipciones y detalles importantes de la subasta"
-              required
-            ></textarea>
+            <div className="relative z-0 w-full mb-6 group font-[Inter]">
+              <textarea
+                name="description"
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition resize-none min-h-[120px]"
+                placeholder="Descripción"
+                required
+              ></textarea>
+              <label
+                htmlFor="description"
+                className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60 peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+              >
+                Descripción
+              </label>
+            </div>
 
             {/* Fecha de inicio */}
-            <label
-              htmlFor="startAt"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Fecha de inicio
-            </label>
-            <DatePicker
-              selected={startAt}
-              onChange={(date: Date | null) => setStartAt(date)}
-              showTimeSelect // Permite seleccionar la hora
-              dateFormat="Pp" // Formato de fecha y hora
-              className="border border-gray-300 p-2 mb-4 w-full text-black"
-              wrapperClassName="w-full" // Asegura que el DatePicker ocupe todo el ancho del contenedor
-              placeholderText="06/09/2025, 4:00 PM"
-            />
+            <div className="relative w-full mb-6 group font-[Inter]">
+              <DatePicker
+                selected={startAt}
+                onChange={(date: Date | null) => setStartAt(date)}
+                showTimeSelect
+                dateFormat="Pp"
+                placeholderText="06/09/2025, 4:00 PM"
+                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+                wrapperClassName="w-full"
+                popperClassName="datepicker-z"
+                id="startAt"
+              />
+              <label
+                htmlFor="startAt"
+                className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200
+                peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60
+                peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+              >
+                Fecha de inicio
+              </label>
+            </div>
 
             {/* Fecha de fin */}
-            <label
-              htmlFor="endAt"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Fecha de fin
-            </label>
-            <DatePicker
-              selected={endAt}
-              onChange={(date: Date | null) => setEndAt(date)}
-              showTimeSelect
-              dateFormat="Pp"
-              className="border border-gray-300 p-2 mb-4 w-full text-black"
-              wrapperClassName="w-full"
-              placeholderText="06/09/2025, 4:00 PM"
-            />
+            <div className="relative w-full mb-6 group font-[Inter]">
+              <DatePicker
+                selected={endAt}
+                onChange={(date: Date | null) => setEndAt(date)}
+                showTimeSelect
+                dateFormat="Pp"
+                placeholderText="06/09/2025, 4:00 PM"
+                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+                wrapperClassName="w-full"
+                id="endAt"
+              />
+              <label
+                htmlFor="endAt"
+                className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200
+                peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60
+                peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+              >
+                Fecha de fin
+              </label>
+            </div>
 
             {/* Categoría */}
-            <label
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Categoría
-            </label>
-            <select
-              id="category"
-              name="category"
-              value={category}
-              onChange={(e) =>
-                setCategory(
-                  e.target.value === "" ? "" : parseInt(e.target.value)
-                )
-              }
-              className="border border-gray-300 p-2 mb-4 w-full text-black"
-            >
-              <option value="">Tekenlogia</option>
-              <option value="1">Muebles</option>
-              <option value="2">Celulares</option>
-              <option value="3">Deportes</option>
-              <option value="4">Camas</option>
-              <option value="5">Cafe</option>
-              <option value="6">Arte</option>
-              <option value="7">Joyeria</option>
-              <option value="8">Autos</option>
-              <option value="9">Construccion</option>
-              <option value="10">Limpieza</option>
-              <option value="11">VideoJuegos</option>
-              <option value="12">Comida</option>
-              <option value="13">Cobiertos</option>
-              <option value="14">Estufas</option>
-              <option value="15">Terrenos</option>
-              <option value="16">Ganado</option>
-              <option value="17">Pesca</option>
-              <option value="18">Tacuarembó</option>
-              <option value="19">Treinta y Tres</option>
-            </select>
+            <div className="relative z-0 w-full mb-6 group font-[Inter]">
+              <select
+                id="category"
+                name="category"
+                value={category}
+                onChange={(e) =>
+                  setCategory(
+                    e.target.value === "" ? "" : parseInt(e.target.value)
+                  )
+                }
+                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-[#81fff9] focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+              >
+                <option value="" disabled hidden></option>
+                <option value="1">Ropa y Accesorios</option>
+                <option value="2">Inmuebles en Venta</option>
+                <option value="3">Autos y Motos</option>
+                <option value="4">Camiones y Autobuses</option>
+                <option value="5">Maquinaria de Construcción</option>
+                <option value="6">Maquinaria Agrícola</option>
+                <option value="7">Equipos Industriales</option>
+                <option value="8">Movimiento y Transporte</option>
+                <option value="9">Tecnología y Gadgets</option>
+                <option value="10">Electrodomésticos</option>
+                <option value="11">Materiales de Construcción</option>
+                <option value="12">
+                  Cocinas y Equipamiento para Restaurantes
+                </option>
+                <option value="13">Hogar y Decoración</option>
+                <option value="14">Oportunidades Únicas</option>
+                <option value="15">Chatarra, Materiales y Residuos</option>
+                <option value="16">Antigüedades y Coleccionables</option>
+              </select>
+
+              <label
+                htmlFor="category"
+                className={`absolute left-4 px-1 bg-[#1B3845] text-sm text-[#81fff9] transition-all duration-200
+                  ${
+                    category === ""
+                      ? "top-4 text-base text-[#81fff9]/60"
+                      : "-top-3 text-sm"
+                  }`}
+              >
+                Categoría
+              </label>
+            </div>
 
             {/* Estado */}
-            <label
-              htmlFor="status"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Estado
-            </label>
-            <select
-              id="status"
-              name="status"
-              value={status}
-              onChange={(e) => setStatus(parseInt(e.target.value))}
-              className="border border-gray-300 p-2 mb-4 w-full text-black"
-            >
-              <option value="1">Activo</option>
-              <option value="0">Cerrada</option>
-              <option value="2">Borrador</option>
-            </select>
+            <div className="relative z-0 w-full mb-6 group font-[Inter]">
+              <select
+                id="status"
+                name="status"
+                value={status}
+                onChange={(e) => setStatus(parseInt(e.target.value))}
+                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-3.5 pb-3.5 text-sm text-[#81fff9] focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+              >
+                <option value="" disabled hidden></option>
+                <option value="1">Activo</option>
+                <option value="0">Cerrada</option>
+                <option value="2">Borrador</option>
+              </select>
+
+              <label
+                htmlFor="status"
+                className={`absolute left-4 px-1 bg-[#1B3845] text-sm text-[#81fff9] transition-all duration-200
+                  ${
+                    status === 0
+                      ? "top-3 text-base text-[#81fff9]/60"
+                      : "-top-3 text-sm"
+                  }`}
+              >
+                Estado
+              </label>
+            </div>
 
             {/* Dirección */}
-            <div className="border-b border-gray-900/10 pb-12">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="border-b border-gray-900/10 pb-12 font-[Inter]">
+              <h3 className="text-lg font-semibold text-[#81fff9] mb-2">
                 Dirección
               </h3>
+              <div className="h-0.5 bg-[#81fff9] w-full mb-6 rounded" />
 
-              <label
-                htmlFor="street"
-                className="block text-sm font-medium text-gray-900"
-              >
-                Calle
-              </label>
-              <input
-                type="text"
-                id="street"
-                name="street"
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
-                className="border border-gray-300 p-2 mb-4 w-full text-black"
-                placeholder="Calle principal"
-                required
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Calle */}
+                <div className="relative z-0 w-full group">
+                  <input
+                    type="text"
+                    id="street"
+                    name="street"
+                    value={street}
+                    onChange={(e) => setStreet(e.target.value)}
+                    className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-3.5 pb-4 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+                    placeholder="Calle"
+                    required
+                  />
+                  <label
+                    htmlFor="street"
+                    className="absolute left-4 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200 
+                      peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60 
+                      peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+                  >
+                    Calle
+                  </label>
+                </div>
 
-              <label
-                htmlFor="streetNumber"
-                className="block text-sm font-medium text-gray-900"
-              >
-                Número
-              </label>
-              <input
-                type="number"
-                id="streetNumber"
-                name="streetNumber"
-                value={streetNumber}
-                onChange={(e) => setStreetNumber(parseInt(e.target.value))}
-                className="border border-gray-300 p-2 mb-4 w-full text-black"
-                placeholder="Número del establecimiento"
-                required
-              />
+                {/* Número */}
+                <div className="relative z-0 w-full group">
+                  <input
+                    type="text"
+                    id="streetNumber"
+                    name="streetNumber"
+                    value={streetNumber}
+                    onChange={(e) => setStreetNumber(e.target.value)}
+                    className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-3.5 pb-4 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+                    placeholder="Número"
+                    required
+                  />
+                  <label
+                    htmlFor="streetNumber"
+                    className="absolute left-4 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200 
+                      peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60 
+                      peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+                  >
+                    Número
+                  </label>
+                </div>
 
-              <label
-                htmlFor="corner"
-                className="block text-sm font-medium text-gray-900"
-              >
-                Esquina
-              </label>
-              <input
-                type="text"
-                id="corner"
-                name="corner"
-                value={corner}
-                onChange={(e) => setCorner(e.target.value)}
-                className="border border-gray-300 p-2 mb-4 w-full text-black"
-                placeholder="Esquina con otra calle (opcional)"
-              />
+                {/* Esquina */}
+                <div className="relative z-0 w-full group">
+                  <input
+                    type="text"
+                    id="corner"
+                    name="corner"
+                    value={corner}
+                    onChange={(e) => setCorner(e.target.value)}
+                    className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-3.5 pb-4 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+                    placeholder="Esquina"
+                  />
+                  <label
+                    htmlFor="corner"
+                    className="absolute left-4 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200 
+                      peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60 
+                      peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+                  >
+                    Esquina
+                  </label>
+                </div>
 
-              <label
-                htmlFor="zipCode"
-                className="block text-sm font-medium text-gray-900"
-              >
-                Código Postal
-              </label>
-              <input
-                type="number"
-                id="zipCode"
-                name="zipCode"
-                value={zipCode}
-                onChange={(e) => setZipCode(parseInt(e.target.value))}
-                className="border border-gray-300 p-2 mb-4 w-full text-black"
-                placeholder="Código Postal"
-                required
-              />
+                {/* Código Postal */}
+                <div className="relative z-0 w-full group">
+                  <input
+                    type="text"
+                    id="zipCode"
+                    name="zipCode"
+                    value={zipCode}
+                    onChange={(e) => setZipCode(e.target.value)}
+                    className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-3.5 pb-4 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+                    placeholder="Código Postal"
+                    required
+                  />
+                  <label
+                    htmlFor="zipCode"
+                    className="absolute left-4 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200 
+                      peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60 
+                      peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+                  >
+                    Código Postal
+                  </label>
+                </div>
 
-              <label
-                htmlFor="department"
-                className="block text-sm font-medium text-gray-900"
-              >
-                Departamento
-              </label>
-              <select
-                id="departamento"
-                name="departamento"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                className="border border-gray-300 p-2 mb-4 w-full text-black"
-              >
-                <option value="">Departamento</option>
-                <option value="Artigas">Artigas</option>
-                <option value="Canelones">Canelones</option>
-                <option value="Cerro Largo">Cerro Largo</option>
-                <option value="Colonia">Colonia</option>
-                <option value="Durazno">Durazno</option>
-                <option value="Flores">Flores</option>
-                <option value="Florida">Florida</option>
-                <option value="Lavalleja">Lavalleja</option>
-                <option value="Maldonado">Maldonado</option>
-                <option value="Montevideo">Montevideo</option>
-                <option value="Paysandú">Paysandú</option>
-                <option value="Río Negro">Río Negro</option>
-                <option value="Rivera">Rivera</option>
-                <option value="Rocha">Rocha</option>
-                <option value="Salto">Salto</option>
-                <option value="San José">San José</option>
-                <option value="Soriano">Soriano</option>
-                <option value="Tacuarembó">Tacuarembó</option>
-                <option value="Treinta y Tres">Treinta y Tres</option>
-              </select>
+                {/* Departamento */}
+                <div className="relative z-0 w-full group md:col-span-2">
+                  <select
+                    id="department"
+                    name="department"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-3.5 pb-4 text-sm text-[#81fff9] focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+                  >
+                    <option value="" disabled hidden></option>
+                    <option value="Artigas">Artigas</option>
+                    <option value="Canelones">Canelones</option>
+                    <option value="Cerro Largo">Cerro Largo</option>
+                    <option value="Colonia">Colonia</option>
+                    <option value="Durazno">Durazno</option>
+                    <option value="Flores">Flores</option>
+                    <option value="Florida">Florida</option>
+                    <option value="Lavalleja">Lavalleja</option>
+                    <option value="Maldonado">Maldonado</option>
+                    <option value="Montevideo">Montevideo</option>
+                    <option value="Paysandú">Paysandú</option>
+                    <option value="Río Negro">Río Negro</option>
+                    <option value="Rivera">Rivera</option>
+                    <option value="Rocha">Rocha</option>
+                    <option value="Salto">Salto</option>
+                    <option value="San José">San José</option>
+                    <option value="Soriano">Soriano</option>
+                    <option value="Tacuarembó">Tacuarembó</option>
+                    <option value="Treinta y Tres">Treinta y Tres</option>
+                  </select>
+
+                  <label
+                    htmlFor="department"
+                    className={`absolute left-4 px-1 bg-[#1B3845] text-sm text-[#81fff9] transition-all duration-200 ${
+                      department === ""
+                        ? "top-4 text-base text-[#81fff9]/60"
+                        : "-top-3 text-sm"
+                    }`}
+                  >
+                    Departamento
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* Botones de acción */}
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end gap-4 mb-4 font-[Inter]">
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:shadow-lg transition duration-300 ease-in-out"
+                className="bg-[#81fff9] text-[#1B3845] font-semibold py-2 px-5 rounded-lg border border-[#81fff9] transition-colors duration-300 hover:bg-[#59b9e2] hover:text-white hover:border-[#59b9e2] shadow-md"
               >
                 Crear
               </button>
+
               <button
                 type="button"
                 onClick={closeForm}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 hover:shadow-lg transition duration-300 ease-in-out"
+                className="bg-[#2c4d5a] text-[#9acfd9] font-semibold py-2 px-5 rounded-lg border border-[#406a79] transition-colors duration-300 hover:bg-[#1B3845] hover:text-[#81fff9] shadow-md"
               >
                 Cerrar
               </button>

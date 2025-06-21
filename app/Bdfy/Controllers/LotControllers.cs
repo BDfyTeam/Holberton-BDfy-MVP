@@ -15,10 +15,12 @@ namespace BDfy.Controllers
 	[ApiController]
 	[Route("api/1.0/lots")]
 	public class BaseControllerLots(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
-	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher) : BaseControllerLots(db) // Heredamos la DB para poder usarla
+	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher, IAutoBidService autoBidService) : BaseControllerLots(db) // Heredamos la DB para poder usarla
 	{
 		private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
 		private readonly BidPublisher _bidPublisher = bidPublisher;
+		private IAutoBidService _autoBidService = autoBidService;
+
 		[Authorize]
 		[HttpPost("{auctionId}")]
 		public async Task<ActionResult> Register([FromRoute] Guid auctionId, [FromBody] RegisterLot Dto)
@@ -211,7 +213,7 @@ namespace BDfy.Controllers
 
 		[Authorize]
 		[HttpPost("bid/{lotId}")]
-		public async Task<ActionResult<AuctionDto>> PostBid([FromBody] BidDto bid, [FromRoute] Guid lotId)
+		public async Task<ActionResult> PostBid([FromBody] BidDto bid, [FromRoute] Guid lotId)
 		{
 			try
 			{
@@ -242,9 +244,17 @@ namespace BDfy.Controllers
 				{
 					LotId = lotId,
 					Amount = bid.Amount,
-					BuyerId = parsedUserId
+					BuyerId = parsedUserId,
+					IsAutoBid = false
 				};
 				await _bidPublisher.Publish(dto);
+				
+				var autoBidService = _autoBidService; 
+				_ = Task.Run(async () => // Despues de procesarse una bid manual mandamos el lote para verificar si hay alguna auto bid para realizar en ese lote
+				{
+					await Task.Delay(500);
+					await autoBidService.ProcessAutoBidAsync(lotId, bid.Amount);
+				});
 
 				return Created("", new { message = "Bid created successfully" });
 			}
@@ -267,7 +277,8 @@ namespace BDfy.Controllers
 				{
 					LotId = lotId,
 					Amount = 8000 + i,
-					BuyerId = buyerId
+					BuyerId = buyerId,
+					IsAutoBid = false
 				};
 
 				await _bidPublisher.Publish(bid);
@@ -376,7 +387,75 @@ namespace BDfy.Controllers
 			{
 				return StatusCode(500, new { error = ex.Message });
 			}
-		}	
+		}
+
+		[Authorize]
+		[HttpPost("auto-bid/{lotId}/{buyerId}")]
+		public async Task<IActionResult> RegisterAutoBid([FromRoute] Guid lotId, [FromRoute] Guid buyerId, [FromBody] CreateAutoBidDto dto)
+		{
+			try
+			{
+				var userClaims = HttpContext.User;
+				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
+				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
+
+				if (userRoleFromToken != UserRole.Buyer.ToString())
+				{
+					return Unauthorized("Access Denied: Only Buyers can register Auto-bids");
+				}
+
+				if (!Guid.TryParse(userIdFromToken, out Guid parsedUserId)) { return Unauthorized("Invalid user ID"); }
+
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(ModelState);
+				}
+
+				var existingLot = await _db.Lots
+					.Include(l => l.Auction.Auctioneer)
+					.FirstOrDefaultAsync(l => l.Id == lotId) ?? throw new ArgumentException("Lot not found"); ;
+
+				if (existingLot.Auction.AuctioneerId == parsedUserId) { return Unauthorized("Access Denied: Cannot Auto-bid on your own lot"); }
+
+				var userDetails = await _db.UserDetails.FirstOrDefaultAsync(ud => ud.UserId == buyerId) ?? throw new ArgumentException("Not found"); ;
+
+				var autoBid = await _autoBidService.CreateAutoBidAsync(userDetails.Id, lotId, dto);
+
+				return Ok(new
+				{
+					message = "Auto-bid created successfully",
+					autoBidId = autoBid.Id,
+					maxBid = autoBid.MaxBid,
+					increment = autoBid.IncreasePrice
+				});
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { error = ex.Message });
+			}
+		}
+
+		[Authorize]
+		[HttpDelete("auto-bid/{autoBidId}")]
+		public async Task<ActionResult> CancelAutoBid([FromRoute] Guid autoBidId)
+		{
+			try
+			{
+				var userIdFromToken = HttpContext.User.FindFirst("Id")?.Value;
+				if (!Guid.TryParse(userIdFromToken, out Guid parsedUserId)) { return Unauthorized("Invalid user ID"); }
+
+				var success = await _autoBidService.CancelAutoBidAsync(autoBidId, parsedUserId);
+
+				if (!success)
+					return NotFound("Auto-bid not found");
+
+				return Ok(new { message = "Auto-bid cancelled successfully" });
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { error = ex.Message });
+			}
+		}
 	}
 }        
 	

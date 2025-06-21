@@ -310,7 +310,7 @@ namespace BDfy.Controllers
                 if (auctioneer == null) { return NotFound("Auctioneer not found"); }
 
                 var lotsInStorage = await _db.Lots
-                    .Where(l => l.Auction.AuctioneerId == auctioneerId
+                    .Where(l => auctioneer.Id == auctioneerId
                         && l.Auction.Status == AuctionStatus.Storage // El lote ya estaria en el Storage
                         && l.Sold == false)
                     .Select(l => new LotsDto

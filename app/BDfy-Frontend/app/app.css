@@ -12,6 +12,34 @@ body {
   }
 }
 
-input::placeholder {
-  color: rgba(67, 68, 78, 0.836);
+/* input::placeholder {
+  color: #59b9e2;
+} */
+
+/* Estilo de las flechas de los splide */
+.splide__arrow {
+  transform: translateY(-50%);
+  top: 50%;
+  background-color: #59b9e2 !important;
+  color: white !important;
+  border-radius: 9999px;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+@layer utilities {
+  .datepicker-z {
+    z-index: 9999 !important;
+  }
+}
+
+.swiper-pagination-bullet {
+  background: #406a79;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.swiper-pagination-bullet-active {
+  background: #81fff9 !important;
+  opacity: 1;
 }

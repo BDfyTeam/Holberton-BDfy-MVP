@@ -354,3 +354,26 @@ export async function getAuctionById(id: string) {
     throw error;
   }
 }
+
+// GET USER BY ID
+export async function getUserById(userId: string) {
+  try {
+    const token = getToken();
+
+    const response = await fetch(`/api/1.0/users/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      }
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Error al obtener el usuario.")
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error al tratar de obtener el usuario:", error);
+    throw error;
+  }
+}
