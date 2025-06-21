@@ -1,30 +1,56 @@
-import React, { useEffect, useState } from "react";
-import { createLot } from "~/services/fetchService";
-import { getAuctionsByAuctioneer } from "~/services/fetchService";
-import type { LotCard } from "~/services/types";
-import "../app.css";
-import "react-datepicker/dist/react-datepicker.css";
-import { Boxes } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  getAuctionsByAuctioneer,
+  getLotById,
+  updateLot,
+} from "~/services/fetchService";
+import type { BasicCardItem, Lot, LotCard } from "~/services/types";
 
-type LotForm = {
+type Props = {
+  basicLot: BasicCardItem;
+  onClose?: () => void;
   className?: string;
 };
 
-export default function CreateLotButton({ className }: LotForm) {
-  const [auctionOptions, setAuctionOptions] = useState<{ id: number; title: string }[]>([]);
-  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(null);
+export default function UpdateLots({ basicLot, onClose, className }: Props) {
   const [showForm, setShowForm] = useState(false);
+  const [auctionOptions, setAuctionOptions] = useState<
+    { id: number; title: string }[]
+  >([]);
+  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(
+    null
+  );
   const [lotNumber, setLotNumber] = useState("");
   const [description, setDescription] = useState("");
-  const [startingPrice, setStartingPrice] = useState("");
   const [details, setDetails] = useState("");
+  const [startingPrice, setStartingPrice] = useState("");
 
-  const openForm = () => {
+  useEffect(() => {
+    async function fetchLot() {
+      try {
+        const lot = await getLotById(basicLot.id);
+        return lot;
+      } catch (err) {
+        console.error("Error trayendo el lote:", err);
+      }
+    }
+
+    fetchLot().then((lot) => {
+      if (lot) {
+        setLotNumber(lot.lotNumber);
+        setDescription(lot.descripción);
+        setDetails(lot.details);
+        setStartingPrice(lot.startingPrice);
+        setSelectedAuctionId(lot.endingPrice);
+      }
+    });
     setShowForm(true);
-  };
-  const closeForm = () => {
+  }, [basicLot]);
+
+  function closeForm() {
     setShowForm(false);
-  };
+    onClose?.();
+  }
 
   useEffect(() => {
     if (showForm) {
@@ -48,33 +74,27 @@ export default function CreateLotButton({ className }: LotForm) {
     }
   }, [showForm]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     const payload: LotCard = {
+      id: basicLot.id,
       lotNumber: parseInt(lotNumber),
       description: description,
-      startingPrice: parseInt(startingPrice),
       details: details,
-      auctionId: selectedAuctionId !== null ? selectedAuctionId.toString() : "",
+      startingPrice: parseInt(startingPrice),
+      auctionId: selectedAuctionId ?? "",
     };
 
-    const success = await createLot(payload);
+    const success = await updateLot(payload);
     if (success) {
       closeForm();
-      alert("Lote creado con éxito");
+      alert("Subasta editada con éxito");
     }
-  };
+  }
 
   return (
     <div className={className}>
-      <button
-        onClick={openForm}
-        className="transition-all px-2 py-1 font-semibold flex items-center space-x-2"
-      >
-        <Boxes size={20} />
-        <span>Crear Lote</span>
-      </button>
       {/* Fondo oscuro */}
       {showForm && (
         <div
@@ -97,7 +117,7 @@ export default function CreateLotButton({ className }: LotForm) {
           </button>
 
           <h2 className="text-3xl font-bold mb-6 flex flex-col text-center font-[Inter]">
-            Crear lote
+            Editar lote
           </h2>
 
           <form onSubmit={handleSubmit}>
@@ -221,7 +241,7 @@ export default function CreateLotButton({ className }: LotForm) {
                 type="submit"
                 className="bg-[#81fff9] text-[#1B3845] font-semibold py-2 px-5 rounded-lg border border-[#81fff9] transition-colors duration-300 hover:bg-[#59b9e2] hover:text-white hover:border-[#59b9e2] shadow-md"
               >
-                Crear
+                Editar
               </button>
 
               <button

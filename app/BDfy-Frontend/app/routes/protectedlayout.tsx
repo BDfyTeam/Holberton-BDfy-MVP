@@ -13,7 +13,7 @@ export default function ProtectedLayout() {
   // }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[rgb(60,63,96)] to-[rgb(28,148,180)]">
+    <div className="min-h-screen flex flex-col bg-[#DDE9F0]">
       <Header />
       <main className="flex-1 p-6">
         <Outlet />

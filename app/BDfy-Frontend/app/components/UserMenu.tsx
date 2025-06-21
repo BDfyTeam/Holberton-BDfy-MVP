@@ -85,7 +85,11 @@ export default function UserMenu() {
                   text="Mis Subastas"
                   onClick={() => navigate("/my-auctions")}
                 />
-                <MenuItem icon={<Boxes size={18} />} text="Inventario" />
+                <MenuItem 
+                  icon={<Boxes size={18} />} 
+                  text="Inventario" 
+                  onClick={() => navigate("/my-lots")}
+                />
               </>
             )}
             {role === 0 && (
