@@ -155,7 +155,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddHostedService<AuctionCloserService>(); // Services para determinar cuando una auction termina
 builder.Services.AddSingleton<BidPublisher>(); // Servicio de RabbitMQ (Producer)
 builder.Services.AddHostedService<BidConsumerService>(); // Host para el servicio de consumer
-
+builder.Services.AddScoped<GenerateJwtToken>();//testing
 
 builder.Services.AddScoped<AuctionServices>(); // Servicio para editar una subasta
 builder.Services.AddScoped<IAutoBidService, AutoBidService>(); // Servicio para hacer Auto-bids

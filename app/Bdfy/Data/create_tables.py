@@ -3,7 +3,6 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-# Configuración directa para Cloud SQL
 DB_HOST = "35.199.73.96"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"

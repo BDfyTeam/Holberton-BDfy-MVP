@@ -64,8 +64,8 @@ namespace BDfy.Controllers
                 var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 return BadRequest($"Error inesperado al crear la subasta: {errorMessage}");
             }
-
         }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AuctionDto>>> GetAllAuction()
         {
@@ -344,10 +344,12 @@ namespace BDfy.Controllers
                 var auctioneerClaims = HttpContext.User;
                 var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
                 var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+                var user = await _db.Users.Include(u => u.UserDetails).FirstOrDefaultAsync(u => u.Id.ToString() == auctioneerIdFromToken);
 
                 if (string.IsNullOrEmpty(auctioneerIdFromToken) || !Guid.TryParse(auctioneerIdFromToken, out var auctioneerId)) { return Unauthorized("Invalid user token"); }
 
-                if (string.IsNullOrEmpty(auctioneerRoleFromToken) || auctioneerRoleFromToken != UserRole.Auctioneer.ToString()) { return Forbid("Access denied: Only auctioneers can update auctions"); }
+                if (auctioneerRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
+                 { return Forbid("Access denied: Only auctioneers or adminscan update auctions"); }
 
                 var result = await _auctionServices.EditAuction(auctionId, auctioneerId, dto);
 

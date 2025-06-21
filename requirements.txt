@@ -1,33 +1,61 @@
+# Dependencias para API REST en C# (NuGet Packages)
+# Uso: Ejecuta los comandos dotnet add package en la raíz del proyecto .NET para instalarlos.
+
+# Base de datos y ORM (Entity Framework Core y PostgreSQL)
 dotnet add package Microsoft.EntityFrameworkCore
 dotnet add package Microsoft.EntityFrameworkCore.Tools
 dotnet add package Microsoft.EntityFrameworkCore.Design
 dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
 dotnet add package Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 dotnet add package Microsoft.EntityFrameworkCore.Proxies
-dotnet add package Microsoft.AspNetCore.SignalR.Client
 
-dotnet add package RabbitMQ.Client
+# SignalR para comunicación en tiempo real
+dotnet add package Microsoft.AspNetCore.SignalR.Client
 dotnet add package Microsoft.AspNetCore.SignalR
-sudo apt-get install rabbitmq-server
-sudo systemctl enable rabbitmq-server
+
+# Mensajería con RabbitMQ
+dotnet add package RabbitMQ.Client
+
+# Autenticación y autorización JWT
 dotnet add package System.IdentityModel.Tokens.Jwt
 dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.5
+
+# Soporte para JSON avanzado en MVC
 dotnet add package Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
+# Rate Limiting (Limitación de peticiones)
 dotnet add package Microsoft.AspNetCore.RateLimiting
-pip install psycopg2-binary --break-system-packages //script crear database
 
-# FRONTEND REQUIREMENTS
-swiper: npm install swiper # Clase carrousel Swiper
-splide.js: npm install @splidejs/react-splide # Clase carrousel Splide
-lucide-react: npm install lucide-react # Iconos
-npm install jwt-decode # Decodificar JWT
+# ---------------------------------------------
+# Paquetes para Unit Testing
+dotnet add package Moq
+dotnet add package NUnit
+dotnet add package NUnit3TestAdapter
 
-npm install react-datepicker --save # Selector de fecha
-npm install @types/react-datepicker --save-dev # Tipos para TypeScript (para el selector de fecha)
+# ---------------------------------------------
+# Requisitos Frontend (npm packages)
+# Ejecutar en el directorio del frontend
+
+npm install swiper                # Carrousel Swiper
+npm install @splidejs/react-splide # Carrousel Splide (React)
+npm install lucide-react          # Iconos Lucide React
+npm install jwt-decode            # Decodificar JWT para frontend
+npm install react-datepicker      # Selector de fecha
+npm install @types/react-datepicker --save-dev  # Tipos TypeScript para react-datepicker
+npm install @heroicons/react      # Iconos Heroicons React
+
+# ---------------------------------------------
+# Notas adicionales
+
+# 1. Para la base de datos PostgreSQL, instalar y configurar PostgreSQL en el sistema.
+# 2. Para RabbitMQ, instalar y habilitar el servicio RabbitMQ:
+#    sudo apt-get install rabbitmq-server
+#    sudo systemctl enable rabbitmq-server
+# 3. Para ejecutar comandos dotnet, navega a la carpeta del proyecto API y ejecuta:
+#    dotnet add package [NombrePaquete]
+# 4. Para el frontend React, ejecuta los comandos npm dentro de la carpeta correspondiente.
 
 
-npm install @heroicons/react
 
 
 # Dependencias de tailwind
