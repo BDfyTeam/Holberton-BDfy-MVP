@@ -91,6 +91,7 @@ namespace BDfy.Services
 
                 var activeAutoBids = await db.AutoBidConfigs // Busca todas las auto bids que tiene el lote
                     .Where(ab => ab.LotId == lotId && ab.IsActive)
+                    .Include(ab => ab.Buyer)
                     .OrderBy(ab => ab.CreatedAt)
                     .ToListAsync();
 
@@ -104,7 +105,7 @@ namespace BDfy.Services
                         {
                             LotId = lotId,
                             Amount = nextBidAmount,
-                            BuyerId = autoBid.BuyerId,
+                            BuyerId = autoBid.Buyer.UserId,
                             IsAutoBid = true // Indicamos si la auto-bid es active
                         };
 

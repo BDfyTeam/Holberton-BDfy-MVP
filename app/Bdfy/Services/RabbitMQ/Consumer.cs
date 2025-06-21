@@ -51,7 +51,7 @@ namespace BDfy.Services
                 {
                     using var scope = _scopeFactory.CreateScope(); // Creamos el ambito (para obtener la db)
                     var db = scope.ServiceProvider.GetRequiredService<BDfyDbContext>(); // Obtenemos la db
-                    
+
                     var body = ea.Body.ToArray(); // Contiene el mensaje tal cual como se mando
                     var bidDto = JsonSerializer.Deserialize<SendBidDto>(Encoding.UTF8.GetString(body)) ?? throw new InvalidOperationException();
                     // Convierte a el body en un objeto C#
@@ -69,6 +69,9 @@ namespace BDfy.Services
                         _logger.LogInformation("Puja demasiado baja o lote no encontrado: LotId: {LotId}, Amount: {Amount}", bidDto.LotId, bidDto.Amount);
                         return;
                     }
+
+                    _logger.LogInformation("El buyerId antes de hacer la consulta es: {BuyerId}", bidDto.BuyerId);
+
 
                     var userDetails = await db.UserDetails // Se rompe al realizar unaa accion con la DB
                         .FirstOrDefaultAsync(ud => ud.UserId == bidDto.BuyerId) ?? throw new InvalidOperationException();
@@ -106,6 +109,13 @@ namespace BDfy.Services
                             Timestamp = DateTime.UtcNow
                         }
                     ); // Le mandamos la Bid a todo los clientes del grupo by lotId
+                    
+                    
+                    if (bidDto.IsAutoBid)
+                    {
+                        _logger.LogInformation("Bid is an AutoBid, skipping ProcessAutoBidAsync to avoid loop.");
+                        return;
+                    }
                 }
                 catch (Exception ex)
                 {
