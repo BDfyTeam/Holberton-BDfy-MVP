@@ -57,6 +57,7 @@ namespace BDfy.Hub
                     LotId = lotId,
                     CurrentPrice = lot.CurrentPrice,
                     BuyerId = Guid.Empty, 
+                    IsAutoBid = false
                 };
 
                 await Clients.Caller.ReceiveBid(currentBid);
@@ -105,7 +106,8 @@ namespace BDfy.Hub
                         LotId = bid.LotId,
                         CurrentPrice = bid.Amount,
                         BuyerId = bid.BuyerId,
-                        Timestamp = DateTime.UtcNow
+                        Timestamp = DateTime.UtcNow,
+                        IsAutoBid = bid.IsAutoBid
                     };
 
                     string groupName = $"auction_{bid.LotId}";

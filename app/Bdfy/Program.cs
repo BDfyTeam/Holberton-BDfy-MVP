@@ -157,7 +157,8 @@ builder.Services.AddSingleton<BidPublisher>(); // Servicio de RabbitMQ (Producer
 builder.Services.AddHostedService<BidConsumerService>(); // Host para el servicio de consumer
 
 
-builder.Services.AddScoped<AuctionServices>();
+builder.Services.AddScoped<AuctionServices>(); // Servicio para editar una subasta
+builder.Services.AddScoped<IAutoBidService, AutoBidService>(); // Servicio para hacer Auto-bids
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

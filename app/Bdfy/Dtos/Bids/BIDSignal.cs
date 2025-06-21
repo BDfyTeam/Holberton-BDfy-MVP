@@ -15,6 +15,9 @@ namespace BDfy.Dtos
 
         [Required]
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        public bool IsAutoBid { get; set; }
         
     }
 
@@ -29,5 +32,8 @@ namespace BDfy.Dtos
 
         [Required]
         public Guid BuyerId { get; set; }
+
+        [Required]
+        public bool IsAutoBid { get; set; }
     };
 }

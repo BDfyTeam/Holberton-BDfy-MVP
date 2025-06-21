@@ -47,11 +47,11 @@ namespace BDfy.Services
 
             consumer.ReceivedAsync += async (model, ea) => // Toda la logica de consumer para la bid
             {
-                using var scope = _scopeFactory.CreateScope(); // Creamos el ambito (para obtener la db)
-                var db = scope.ServiceProvider.GetRequiredService<BDfyDbContext>(); // Obtenemos la db
-
                 try
                 {
+                    using var scope = _scopeFactory.CreateScope(); // Creamos el ambito (para obtener la db)
+                    var db = scope.ServiceProvider.GetRequiredService<BDfyDbContext>(); // Obtenemos la db
+                    
                     var body = ea.Body.ToArray(); // Contiene el mensaje tal cual como se mando
                     var bidDto = JsonSerializer.Deserialize<SendBidDto>(Encoding.UTF8.GetString(body)) ?? throw new InvalidOperationException();
                     // Convierte a el body en un objeto C#
@@ -70,7 +70,7 @@ namespace BDfy.Services
                         return;
                     }
 
-                    var userDetails = await db.UserDetails
+                    var userDetails = await db.UserDetails // Se rompe al realizar unaa accion con la DB
                         .FirstOrDefaultAsync(ud => ud.UserId == bidDto.BuyerId) ?? throw new InvalidOperationException();
 
                     var bid = new Bid // Creamos nueva bid para la BiddingHistory y la db
@@ -78,8 +78,8 @@ namespace BDfy.Services
                         Amount = bidDto.Amount,
                         Time = DateTime.UtcNow,
                         LotId = bidDto.LotId,
-                        BuyerId = bidDto.BuyerId,
-                        Buyer = userDetails
+                        BuyerId = userDetails.Id,
+                        IsAutoBid = bidDto.IsAutoBid
                     };
 
                     db.Bids.Add(bid);
@@ -104,7 +104,6 @@ namespace BDfy.Services
                             CurrentPrice = bid.Amount,
                             BuyerId = bid.BuyerId,
                             Timestamp = DateTime.UtcNow
-
                         }
                     ); // Le mandamos la Bid a todo los clientes del grupo by lotId
                 }
