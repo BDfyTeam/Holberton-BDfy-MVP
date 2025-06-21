@@ -54,7 +54,6 @@ export default function CarouselAuctionCard({ auction, renderAction, className, 
             1024: { perPage: 3, gap: "1rem" },
           },
         }}
-        className=""
       >
         {/* Style necesario para mover las flechas hacia afuera */}
         <style>{` 
