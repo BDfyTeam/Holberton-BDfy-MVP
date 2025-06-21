@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import GaleryOfCards from "~/components/galeryOfCards";
+import UpdateLots from "~/components/PUTLots";
 import { getAllStorageLots } from "~/services/fetchService";
-import type { BasicCardItem, CompleteLot } from "~/services/types";
-
+import type { BasicCardItem, CompleteLot, Lot } from "~/services/types";
 
 type Props = {
-    className: string;
-}
+  className: string;
+};
 
 export default function MyLots({ className }: Props) {
   const [storageLots, setStorageLots] = useState<CompleteLot[]>([]);
-    const [selectLot, setselectLot] = useState<CompleteLot | null>(null);
-  
+  const [selectLot, setselectLot] = useState<Lot| null>(null);
 
   useEffect(() => {
     async function fetchAuctions() {
@@ -23,6 +22,8 @@ export default function MyLots({ className }: Props) {
     }
     fetchAuctions();
   }, []);
+
+  const handleCloseForm = () => setselectLot(null);
 
   const items = storageLots.map((lot) => ({
     id: lot.id,
@@ -39,11 +40,21 @@ export default function MyLots({ className }: Props) {
   return (
     <div className={className}>
       <h1>Inventario</h1>
-      <GaleryOfCards 
-        items={items} 
+      <GaleryOfCards
+        items={items}
         onCardClick={handleCardClick}
         className="bg-[#DDE9F0] text-black p-4 rounded-lg shadow space-y-2 space-x-4 w-full flex flex-col justify-between"
-    />
+      />
+      {selectLot && (
+        <UpdateLots
+          basicLot={{
+            id: selectLot.id,
+            title: `Lote #${selectLot.lotNumber}`,
+            description: selectLot.description,
+          }}
+          onClose={handleCloseForm}
+        />
+      )}
     </div>
   );
 }

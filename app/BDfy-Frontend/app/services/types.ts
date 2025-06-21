@@ -102,9 +102,9 @@ export interface Lot {
   description: string;
   details: string;
   startingPrice: number;
-  endingPrice: number;
+  endingPrice?: number;
   currentPrice?: number; // opcional si lo calculás en tiempo real
-  winner: string | null;
+  winner?: string | null;
 }
 
 // Type para auction y tipar correctamente el useState
