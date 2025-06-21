@@ -4,10 +4,12 @@ on:
     branches:
       - main
       - main-dev
+      - test-actions
   pull_request:
     branches:
       - main
       - main-dev
+      - test-actions
 
 jobs:
   backend:
