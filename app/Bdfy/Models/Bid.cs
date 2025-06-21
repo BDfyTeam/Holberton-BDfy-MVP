@@ -15,6 +15,13 @@ namespace BDfy.Models
         public DateTime Time { get; set; }
 
         [Required]
+        [Column("is_autobid")]
+        public bool IsAutoBid { get; set; }
+
+        [Column("parent_auto_bid")]
+        public Guid? ParentAutoBid { get; set; }
+
+        [Required]
         [Column("lot_id")]
         public Guid LotId { get; set; }
         public Lot Lot { get; set; } = null!;

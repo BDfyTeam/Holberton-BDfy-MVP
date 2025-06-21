@@ -16,6 +16,7 @@ namespace BDfy.Data
         public DbSet<Auction> Auctions { get; set; }
         public DbSet<Lot> Lots { get; set; }
         public DbSet<Bid> Bids { get; set; }
+        public DbSet<AutoBidConfig> AutoBidConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,7 @@ namespace BDfy.Data
             modelBuilder.Entity<Auction>().ToTable("auctions");
             modelBuilder.Entity<Lot>().ToTable("lots");
             modelBuilder.Entity<Bid>().ToTable("bids");
+            modelBuilder.Entity<AutoBidConfig>().ToTable("autobidconfig");
 
             //  UserDetails <-> User (1:1)
             modelBuilder.Entity<User>()
@@ -99,8 +101,8 @@ namespace BDfy.Data
             // Bid --> User (Buyer)
             modelBuilder.Entity<Bid>(entity =>
             {
-                entity.HasOne(b => b.Buyer) // User
-                      .WithMany()
+                entity.HasOne(b => b.Buyer) // User details
+                      .WithMany(ud => ud.Bids)
                       .HasForeignKey(b => b.BuyerId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
@@ -112,6 +114,20 @@ namespace BDfy.Data
                       .WithMany(a => a.Lots)
                       .HasForeignKey(l => l.AuctionId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<AutoBidConfig>(entity =>
+            {
+                // AutoBidConfig --> UserDetails (Buyer)
+                entity.HasOne(ab => ab.Buyer)
+                    .WithMany(ud => ud.AutoBidConfigs)
+                    .HasForeignKey(ab => ab.BuyerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // AutoBidConfig --> Lot
+                entity.HasOne(ab => ab.Lot)
+                    .WithMany(l => l.AutoBidHistory)
+                    .HasForeignKey(ab => ab.LotId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

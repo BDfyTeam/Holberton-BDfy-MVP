@@ -123,6 +123,8 @@ def create_tables():
                 id UUID PRIMARY KEY,
                 amount DECIMAL(19,4) NOT NULL CHECK (amount >= 0),
                 time TIMESTAMPTZ NOT NULL,
+                is_autobid BOOL NOT NULL,
+                parent_auto_bid UUID,
 
                 lot_id UUID NOT NULL,
                 buyer_id UUID NOT NULL,
@@ -132,6 +134,25 @@ def create_tables():
 
                 FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE,
                 FOREIGN KEY (buyer_id) REFERENCES userdetails(id) ON DELETE CASCADE
+            )
+        """)
+
+        # Tabla AutoBidConfig
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS autobidconfig (
+                id UUID PRIMARY KEY,
+                increase_price DECIMAL(19,4) NOT NULL CHECK (increase_price > 0),
+                max_bid DECIMAL(19,4) NOT NULL CHECK (max_bid >= 0),
+                is_active BOOLEAN NOT NULL,
+
+                buyer_id UUID NOT NULL,
+                lot_id UUID NOT NULL,
+
+                created_at TIMESTAMPTZ NOT NULL,
+                updated_at TIMESTAMPTZ NOT NULL,
+
+                FOREIGN KEY (buyer_id) REFERENCES userdetails(id) ON DELETE CASCADE,
+                FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE
             )
         """)
 

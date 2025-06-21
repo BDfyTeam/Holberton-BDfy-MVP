@@ -22,6 +22,12 @@ namespace BDfy.Models
         [JsonIgnore]
         public User User { get; set; } = null!;
 
+        [InverseProperty("Buyer")]
+        public List<AutoBidConfig> AutoBidConfigs { get; set; } = [];
+
+        [InverseProperty("Buyer")]
+        public List<Bid> Bids { get; set; } = [];
+
         public UserDetails() { } // EF
     }
 }
