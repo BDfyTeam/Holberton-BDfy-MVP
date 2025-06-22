@@ -10,8 +10,7 @@ namespace BDfy.Controllers
 {
     [ApiController]
     [Route("api/1.0/auctions")]
-    public class BaseController2(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
-    public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices)  : BaseController2(db)
+    public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices)  : BaseController(db)
     {
         protected readonly AuctionServices _auctionServices = auctionServices;
 
