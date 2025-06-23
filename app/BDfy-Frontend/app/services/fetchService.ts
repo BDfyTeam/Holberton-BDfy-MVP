@@ -343,14 +343,19 @@ export async function updateLot(payload: LotCard) {
       throw new Error("No se encontró el token de autenticación.");
     }
     const lotId = payload.id;
-    console.log(lotId)
     const response = await fetch(`http://127.0.0.1:5015/api/1.0/lots/${lotId}/edit`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        lotNumber: payload.lotNumber,
+        description: payload.description,
+        details: payload.details,
+        startingPrice: payload.startingPrice,
+        auctionId: payload.auctionId
+      })
     });
 
     if (!response.ok) {
