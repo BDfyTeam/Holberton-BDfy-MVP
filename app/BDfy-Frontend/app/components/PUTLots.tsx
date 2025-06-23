@@ -14,12 +14,8 @@ type Props = {
 
 export default function UpdateLots({ basicLot, onClose, className }: Props) {
   const [showForm, setShowForm] = useState(false);
-  const [auctionOptions, setAuctionOptions] = useState<
-    { id: number; title: string }[]
-  >([]);
-  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(
-    null
-  );
+  const [auctionOptions, setAuctionOptions] = useState<{ id: number; title: string }[]>([]);
+  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(null);
   const [lotNumber, setLotNumber] = useState("");
   const [description, setDescription] = useState("");
   const [details, setDetails] = useState("");
@@ -41,7 +37,7 @@ export default function UpdateLots({ basicLot, onClose, className }: Props) {
         setDescription(lot.descripción);
         setDetails(lot.details);
         setStartingPrice(lot.startingPrice);
-        setSelectedAuctionId(lot.endingPrice);
+        setSelectedAuctionId(lot.auctionId);
       }
     });
     setShowForm(true);
@@ -85,7 +81,6 @@ export default function UpdateLots({ basicLot, onClose, className }: Props) {
       startingPrice: parseInt(startingPrice),
       auctionId: selectedAuctionId ?? "",
     };
-
     const success = await updateLot(payload);
     if (success) {
       closeForm();
