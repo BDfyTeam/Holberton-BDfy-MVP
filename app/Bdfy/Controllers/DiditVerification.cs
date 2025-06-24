@@ -74,17 +74,15 @@ namespace BDfy.Controllers
         [HttpGet("{userId}/{sessionId}")]
         public async Task<ActionResult> RetrieveSession([FromRoute] Guid userId, [FromRoute] string sessionId)
         {
-
-            Console.WriteLine($"Didit CODEEEE: {sessionId}");
-            Console.WriteLine($"Didit CODEEEE type: {sessionId.GetType}");
-
             var userClaims = HttpContext.User;
             var userIdFromToken = userClaims.FindFirst("Id")?.Value;
             var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _db.Users
+                .Include(u => u.UserDetails)
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (user == null) { return BadRequest("User not found"); }
+            if (user == null || user.UserDetails == null) { return BadRequest("User not found"); }
 
             if (string.IsNullOrEmpty(userIdFromToken) || !Guid.TryParse(userIdFromToken, out var ParseduserId)) { return Unauthorized("Invalid user token"); }
 
@@ -109,6 +107,8 @@ namespace BDfy.Controllers
             var json = System.Text.Json.JsonDocument.Parse(response.Content);
             if (json.RootElement.TryGetProperty("status", out var Status))
             {
+                if (Status.GetString() == "Approved") { user.UserDetails.IsVerified = true; }
+                else{ user.UserDetails.IsVerified = false; }
 
                 return Ok(new
                 {

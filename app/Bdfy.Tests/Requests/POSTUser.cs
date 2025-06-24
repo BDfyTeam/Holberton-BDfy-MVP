@@ -41,7 +41,7 @@ namespace Bdfy.Requests
                     ZipCode = 15600,
                     Department = "Artigas"
                 },
-                UserDetails = new UserDetailsDto { IsAdmin = true }
+                UserDetails = new UserDetailsDto { IsAdmin = true, IsVerified = false }
             };
         }
         }
