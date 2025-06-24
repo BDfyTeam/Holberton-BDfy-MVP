@@ -13,13 +13,16 @@ namespace BDfy.Controllers
     public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices)  : BaseController(db)
     {
         protected readonly AuctionServices _auctionServices = auctionServices;
-
+       
         [Authorize]
         [HttpPost("{userId}")]
         public async Task<ActionResult> Register([FromRoute] Guid userId, [FromBody] RegisterAuctionDto Dto)
         {
             try
             {
+                var startAtUtc = Dto.StartAt.UtcDateTime;
+                var endAtUtc = Dto.EndAt.UtcDateTime;
+
                 var userClaims = HttpContext.User;
                 var userIdFromToken = userClaims.FindFirst("Id")?.Value;
                 var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
@@ -30,9 +33,9 @@ namespace BDfy.Controllers
 
                 if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-                if (Dto.StartAt >= Dto.EndAt) { return BadRequest("Start date must be before end date"); }
+                if (startAtUtc >= endAtUtc) { return BadRequest("Start date must be before end date"); }
 
-                if (Dto.StartAt < DateTime.UtcNow.AddMinutes(-5).ToUniversalTime()) { return BadRequest("Start date cannot be in the past"); }
+                if (startAtUtc < DateTime.UtcNow.AddMinutes(-5).ToUniversalTime()) { return BadRequest("Start date cannot be in the past"); }
 
                 var auctioneer = await _db.Users
                     .Include(u => u.AuctioneerDetails)
@@ -44,8 +47,8 @@ namespace BDfy.Controllers
                 {
                     Title = Dto.Title,
                     Description = Dto.Description,
-                    StartAt = Dto.StartAt.ToUniversalTime(),
-                    EndAt = Dto.EndAt.ToUniversalTime(),
+                    StartAt = startAtUtc,
+                    EndAt = endAtUtc,
                     Category = Dto.Category ?? [],
                     Status = Dto.Status,
                     Direction = Dto.Direction,
@@ -75,14 +78,15 @@ namespace BDfy.Controllers
                     .Include(a => a.Lots)
                     .Where(a => a.Status != AuctionStatus.Storage)
                     .ToListAsync();
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
 
                 var auctionDtos = auctions.Select(a => new AuctionDto
                 {
                     Id = a.Id,
                     Title = a.Title,
                     Description = a.Description,
-                    StartAt = a.StartAt.ToUniversalTime(),
-                    EndAt = a.EndAt.ToUniversalTime(),
+                    StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
+                    EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
                     Category = a.Category ?? [],
                     Status = a.Status,
                     Direction = a.Direction,
@@ -133,14 +137,16 @@ namespace BDfy.Controllers
                     .Include(a => a.Lots)
                     .Where(a => a.Auctioneer.UserId == auctioneerId)
                     .ToListAsync();
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
+                
 
                 var auctionsDto = auctions.Select(a => new AuctionDtoId
                 {
                     Id = a.Id,
                     Title = a.Title,
                     Description = a.Description,
-                    StartAt = a.StartAt.ToUniversalTime(),
-                    EndAt = a.EndAt.ToUniversalTime(),
+                    StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
+                    EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
                     Category = a.Category,
                     Status = a.Status,
                     Direction = a.Direction,
@@ -189,13 +195,15 @@ namespace BDfy.Controllers
                     return Unauthorized("Access Denied");
                 }
 
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
+
                 var auctionDtos = auctions.Select(a => new AuctionDto
                 {
                     Id = a.Id,
                     Title = a.Title,
                     Description = a.Description,
-                    StartAt = a.StartAt.ToUniversalTime(),
-                    EndAt = a.EndAt,
+                    StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
+                    EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
                     Category = a.Category ?? [],
                     Status = a.Status,
                     Direction = a.Direction,
@@ -240,13 +248,16 @@ namespace BDfy.Controllers
 
                 if (auctionById == null) { return NotFound("Auction not found"); }
 
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
+
+
                 var auctionDto = new AuctionDto
                 {
                     Id = auctionById.Id,
                     Title = auctionById.Title,
                     Description = auctionById.Description,
-                    StartAt = auctionById.StartAt,
-                    EndAt = auctionById.EndAt,
+                    StartAt = TimeZoneInfo.ConvertTimeFromUtc(auctionById.StartAt, tz),
+                    EndAt = TimeZoneInfo.ConvertTimeFromUtc(auctionById.EndAt, tz),
                     Category = auctionById.Category ?? [],
                     Status = auctionById.Status,
                     Direction = auctionById.Direction,

@@ -56,7 +56,7 @@ namespace BDfy.Services
                 MaxBid = dto.MaxBid,
                 IncreasePrice = dto.IncreasePrice,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow // Cambiar (guarda los datos en UTC 0 no en UTC -3)
+                CreatedAt = DateTime.UtcNow.ToLocalTime() // Cambiar (guarda los datos en UTC 0 no en UTC -3)
             };
 
             db.AutoBidConfigs.Add(autoBidConfig);

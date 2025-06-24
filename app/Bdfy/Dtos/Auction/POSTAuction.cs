@@ -14,10 +14,10 @@ namespace BDfy.Dtos
         public string Description { get; set; } = null!;
 
         [Required]
-        public DateTime StartAt { get; set; }
+        public DateTimeOffset StartAt { get; set; }
 
         [Required]
-        public DateTime EndAt { get; set; }
+        public DateTimeOffset EndAt { get; set; }
 
         public int[]? Category { get; set; } = [];
 
