@@ -456,7 +456,7 @@ namespace BDfy.Controllers
 				return StatusCode(500, new { error = ex.Message });
 			}
 		}
-		[HttpGet("/{lotId}/bidding-history")]
+		[HttpGet("/_internal/{lotId}/bidding-history")]
 		public async Task<ActionResult<BiddingHistoryDto>> GetAllBidsByLotId([FromRoute] Guid lotId)
 		{
 			try

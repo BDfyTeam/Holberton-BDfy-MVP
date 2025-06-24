@@ -15,6 +15,16 @@ type BidUpdate = {
   Timestamp: string;
 };
 
+type BiddingHistoryDto = {
+  winner: {
+    firstName: string;
+    lastName: string;
+  };
+  amount: number;
+  time: string;
+  isAutoBid: boolean;
+};
+
 export default function AuctionPage() {
   const { id } = useParams();
   const [auction, setAuction] = useState<Auction | null>(null);
@@ -25,6 +35,8 @@ export default function AuctionPage() {
   // Nuevo estado para rastrear el ID del lote al que estamos escuchando activamente
   const [activeListeningLotId, setActiveListeningLotId] = useState<string | null>(null);
   const [selectLot, setselectLot] = useState<Lot | null>(null);
+  const [biddingHistory, setBiddingHistory] = useState<BiddingHistoryDto[]>([]); 
+
 
   useEffect(() => {
     if (selectLot) {
@@ -37,7 +49,7 @@ export default function AuctionPage() {
       try {
         const data = await getAuctionById(String(id));
         setAuction(data);
-        // Opcional: Si quieres que por defecto se escuche el primer lote al cargar la subasta
+        
         if (data.lots && data.lots.length > 0) {
           setActiveListeningLotId(data.lots[0].id);
         }
@@ -67,6 +79,10 @@ export default function AuctionPage() {
       return { ...prev, lots: updatedLots };
     });
   }, []);
+
+  const handleBiddingHistory = useCallback((history: BiddingHistoryDto[]) => { // 
+  setBiddingHistory(history);
+}, []);
 
   useEffect(() => {
     if (!auction || !selectLot) return;
@@ -172,6 +188,8 @@ export default function AuctionPage() {
     // Configurar event handlers
     connection.on("ReceiveBid", handleBidUpdate);
     connection.on("ReceiveMessage", handleMessage);
+    connection.on("ReceiveBiddingHistory", handleBiddingHistory);
+
 
     connection.onclose((error) => {
       if (isMounted) {
