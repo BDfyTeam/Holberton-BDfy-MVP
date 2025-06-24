@@ -7,5 +7,8 @@ namespace BDfy.Dtos
 	{
 		[Required]
 		public bool IsAdmin { get; set; } = false;
+
+		[Required]
+		public bool IsVerified { get; set; } = false;
 	}
 }

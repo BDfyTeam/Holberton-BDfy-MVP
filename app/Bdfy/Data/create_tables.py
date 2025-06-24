@@ -51,6 +51,7 @@ def create_tables():
                 id UUID PRIMARY KEY,
                 user_id UUID UNIQUE NOT NULL,
                 is_admin BOOLEAN NOT NULL,
+                is_verified BOOLEAN NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL,
                 updated_at TIMESTAMPTZ NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

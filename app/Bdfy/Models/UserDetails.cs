@@ -15,6 +15,10 @@ namespace BDfy.Models
         [Required]
         public bool IsAdmin { get; set; }
 
+        [Required(ErrorMessage = "The verification status is mandatory")]
+        [Column("is_verified")]
+        public bool IsVerified{ get; set; }
+
         [InverseProperty("Winner")]
         public List<Lot> Lots { get; set; } = [];
 
