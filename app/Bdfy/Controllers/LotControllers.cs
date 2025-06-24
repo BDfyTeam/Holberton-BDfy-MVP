@@ -82,8 +82,6 @@ namespace BDfy.Controllers
 			}
 		}
 
-
-		//Hoy sabado hacer GET LOTES POR AUCTIONEER ID!!!!!!
 		[HttpGet("{auctioneer_id}")]
 		public async Task<ActionResult<IEnumerable<GetLotByIdDto>>> GetLotByAuctioneerId([FromRoute] Guid auctioneer_id)
 		{
@@ -200,7 +198,8 @@ namespace BDfy.Controllers
 					CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
 					EndingPrice = l.EndingPrice ?? 0,
 					Sold = l.Sold,
-					AuctionId = l.AuctionId
+					AuctionId = l.AuctionId,
+					WinnerId = l.WinnerId ?? Guid.Empty
 				});
 
 				return Ok(lotsDto);
