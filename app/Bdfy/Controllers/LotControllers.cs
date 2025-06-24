@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 using BDfy.Services;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics;
+using Microsoft.IdentityModel.Tokens.Experimental;
 
 namespace BDfy.Controllers
 {
@@ -45,7 +46,7 @@ namespace BDfy.Controllers
 					return BadRequest("Lot registration is only permitted for draft auctions or the auctioneer Storage");
 				}
 
-				if (auction.Auctioneer.UserId.ToString() != userIdFromToken ) { return Unauthorized("Access Denied: Diffrent User as the login"); }
+				if (auction.Auctioneer.UserId.ToString() != userIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
 				if (userRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
 				{ return Unauthorized("Access Denied: Only Auctioneers can create Lots"); }
@@ -247,8 +248,8 @@ namespace BDfy.Controllers
 					IsAutoBid = false
 				};
 				await _bidPublisher.Publish(dto);
-				
-				var autoBidService = _autoBidService; 
+
+				var autoBidService = _autoBidService;
 				_ = Task.Run(async () => // Despues de procesarse una bid manual mandamos el lote para verificar si hay alguna auto bid para realizar en ese lote
 				{
 					await Task.Delay(500);
@@ -308,7 +309,7 @@ namespace BDfy.Controllers
 					return Unauthorized("Access Denied: Only Auctioneers or admins can edit Lots");
 				}
 
-                if (string.IsNullOrEmpty(userIdFromToken) || !Guid.TryParse(userIdFromToken, out var userId)) { return Unauthorized("Invalid user token"); }
+				if (string.IsNullOrEmpty(userIdFromToken) || !Guid.TryParse(userIdFromToken, out var userId)) { return Unauthorized("Invalid user token"); }
 
 				if (!ModelState.IsValid)
 				{
@@ -320,12 +321,12 @@ namespace BDfy.Controllers
 						.ThenInclude(a => a.Auctioneer)
 					.Include(l => l.BiddingHistory)
 					.FirstOrDefaultAsync(l => l.Id == lotId);
-	
+
 				if (lot == null)
 				{
 					return NotFound("Lot not found");
 				}
-				
+
 				if (lot.Auction.Auctioneer.UserId.ToString() != userIdFromToken && userIsAdmin == null || userIsAdmin == false.ToString())
 				{
 					return Unauthorized("Access Denied: You can only edit your own lots");
@@ -449,6 +450,62 @@ namespace BDfy.Controllers
 					return NotFound("Auto-bid not found");
 
 				return Ok(new { message = "Auto-bid cancelled successfully" });
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { error = ex.Message });
+			}
+		}
+		[HttpGet("/{lotId}/bidding-history")]
+		public async Task<ActionResult<BiddingHistoryDto>> GetAllBidsByLotId([FromRoute] Guid lotId)
+		{
+			try
+			{
+				var bids = await _db.Bids
+					.Include(b => b.Lot)
+					.Include(b => b.Buyer)
+						.ThenInclude(ud => ud.User)
+					.Where(b => b.LotId == lotId)
+					.ToListAsync();
+
+				var autoBids = await _db.AutoBidConfigs
+					.Include(ab => ab.Lot)
+					.Include(ab => ab.Buyer)
+						.ThenInclude(ud => ud.User)
+					.Where(b => b.LotId == lotId)
+					.ToListAsync();
+
+				var BidsDto = bids.Select(b => new BiddingHistoryDto
+				{
+					Winner = new WinnerDto
+					{
+						FirstName = b.Buyer.User.FirstName,
+						LastName = b.Buyer.User.LastName
+					},
+					Amount = b.Amount,
+					Time = b.Time,
+					IsAutoBid = false
+				});
+
+				var AutoBidsDto = autoBids.Select(ab => new BiddingHistoryDto
+				{
+					Winner = new WinnerDto
+					{
+						FirstName = ab.Buyer.User.FirstName,
+						LastName = ab.Buyer.User.LastName
+					},
+					Amount = ab.IncreasePrice,
+					Time = ab.UpdatedAt,
+					IsAutoBid = true
+				});
+
+				var BiddingHistory = BidsDto
+					.Concat(AutoBidsDto)
+					.OrderByDescending(b => b.Time)
+					.ToList();
+
+				return Ok(BiddingHistory);
+
 			}
 			catch (Exception ex)
 			{
