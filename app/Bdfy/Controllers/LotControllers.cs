@@ -7,37 +7,37 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using BDfy.Services;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics;
-using Microsoft.IdentityModel.Tokens.Experimental;
 
 namespace BDfy.Controllers
 {
 	[ApiController]
 	[Route("api/1.0/lots")]
 	public class BaseControllerLots(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
-	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher, IAutoBidService autoBidService) : BaseControllerLots(db) // Heredamos la DB para poder usarla
+	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher, IAutoBidService autoBidService, BiddingHistoryService biddingHistoryService) : BaseControllerLots(db) // Heredamos la DB para poder usarla
 	{
 		private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
 		private readonly BidPublisher _bidPublisher = bidPublisher;
 		private IAutoBidService _autoBidService = autoBidService;
+		private BiddingHistoryService _bh = biddingHistoryService;
 
 		[Authorize]
 		[HttpPost("{auctionId}")]
-		public async Task<ActionResult> Register([FromRoute] Guid auctionId, [FromBody] RegisterLot Dto)
+		public async Task<ActionResult> RegisterLot([FromRoute] Guid auctionId, [FromBody] RegisterLot Dto)
 		{
 			try
 			{
+				if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
 				var userClaims = HttpContext.User;
 				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
-				var user = await _db.Users.Include(u => u.UserDetails).FirstOrDefaultAsync(u => u.Id.ToString() == userIdFromToken);
 
+				if (!Guid.TryParse(userIdFromToken, out var userId)) { return Unauthorized("Invalid user token"); }
 
 				var auction = await _db.Auctions
 					.Include(a => a.Auctioneer)
-					.Include(a => a.Lots)
-					.FirstOrDefaultAsync(a => a.Id == auctionId);
+					.FirstOrDefaultAsync(a => a.Id == auctionId && a.Auctioneer.UserId == userId);
 
 				if (auction == null) { return NotFound("Auction not found"); }
 
@@ -46,40 +46,46 @@ namespace BDfy.Controllers
 					return BadRequest("Lot registration is only permitted for draft auctions or the auctioneer Storage");
 				}
 
-				if (auction.Auctioneer.UserId.ToString() != userIdFromToken) { return Unauthorized("Access Denied: Diffrent User as the login"); }
+				if (userRoleFromToken != UserRole.Auctioneer.ToString()) { return Forbid("Access Denied: Only Auctioneers can create Lots"); }
 
-				if (userRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
-				{ return Unauthorized("Access Denied: Only Auctioneers can create Lots"); }
+				if (auction.Auctioneer.UserId != userId) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
-				if (!ModelState.IsValid) { return BadRequest(ModelState); }
+				var checkLot = await _db.AuctionLots // Busco en la tabla intermedia por algun lote que cumpla las caracteristicas
+				 	.Include(al => al.Lot)
+					.AnyAsync(al => al.Lot.LotNumber == Dto.LotNumber && al.AuctionId == auctionId && al.IsOriginalAuction);
 
-				var lot = new Lot
+				if (checkLot) { return BadRequest($"Lot number {Dto.LotNumber} already exists"); }
+
+				var lot = new Lot // Creamos el lote
 				{
 					LotNumber = Dto.LotNumber,
 					Description = Dto.Description,
 					Details = Dto.Details,
 					StartingPrice = Dto.StartingPrice,
 					CurrentPrice = Dto.StartingPrice,
-					AuctionId = auctionId,
-					Auction = auction,
 					Sold = false
 				};
-
-				var checkLot = await _db.Lots
-					.FirstOrDefaultAsync(l => l.LotNumber == Dto.LotNumber && l.AuctionId == auctionId);
-
-				if (checkLot != null) { throw new InvalidOperationException("The Lot number on this Auction is already taken"); }
-
-				auction.Lots.Add(lot); // Arreglar
-
 				_db.Lots.Add(lot);
 				await _db.SaveChangesAsync();
 
-				return Created();
+				var auctionLot = new AuctionLot // Tabla de relacion intermedia de auction <-> lot
+				{
+					AuctionId = auctionId,
+					LotId = lot.Id,
+					IsOriginalAuction = true // Cuando se crea un lote su primer auction es el original
+				};
+
+				_db.AuctionLots.Add(auctionLot);
+				await _db.SaveChangesAsync();
+
+				return Created($"/api/1.0/lots/{lot.Id}", new { 
+					message = "Lot registered successfully",
+					lotId = lot.Id 
+				});
 			}
 			catch (Exception ex)
 			{
-				return StatusCode(500, new { error = ex.Message }); // Entraba aca l.AuctionId
+				return StatusCode(500, new { error = ex.Message });
 			}
 		}
 
@@ -88,46 +94,46 @@ namespace BDfy.Controllers
 		{
 			try
 			{
-				var lotsByAuctioneerId = await _db.Lots
-					.Include(l => l.Auction)
+				var lotsByAuctioneerId = await _db.AuctionLots
+					.Where(al => al.Auction.Auctioneer.UserId == auctioneer_id) // IsOriginal mostrara solo los lotes de subastas originales
+					.Include(al => al.Lot)
+					.Include(al => al.Auction)
 						.ThenInclude(a => a.Auctioneer)
-					.Where(l => l.Auction.Auctioneer.UserId == auctioneer_id) // Auction.AuctioneerId ----> La id de la tabla AuctioneerDetails no el UserId
+					.Select(al => new GetLotByIdDto
+					{
+						Id = al.Lot.Id,
+						LotNumber = al.Lot.LotNumber,
+						Description = al.Lot.Description,
+						Details = al.Lot.Details,
+						StartingPrice = al.Lot.StartingPrice,
+						CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
+						EndingPrice = al.Lot.EndingPrice ?? 0,
+						Sold = al.Lot.Sold,
+						Auction = new LotByIdAuctionDto
+						{
+							Id = al.Auction.Id,
+							Title = al.Auction.Title,
+							Description = al.Auction.Description,
+							StartAt = al.Auction.StartAt,
+							EndAt = al.Auction.EndAt,
+							Category = al.Auction.Category ?? Array.Empty<int>(),
+							Status = al.Auction.Status,
+							AuctioneerId = al.Auction.AuctioneerId,
+							Auctioneer = new AuctioneerDto
+							{
+								UserId = al.Auction.Auctioneer.UserId,
+								Plate = al.Auction.Auctioneer.Plate
+							}
+						}
+					})
 					.ToListAsync();
 
-				if (lotsByAuctioneerId == null || !lotsByAuctioneerId.Any())
+				if (lotsByAuctioneerId == null || lotsByAuctioneerId.Count == 0)
 				{
 					return NotFound("No lots found for this auctioneer.");
 				}
 
-				var lotDtos = lotsByAuctioneerId.Select(lotById => new GetLotByIdDto // Cpz cambiar por tener menos info a la vista
-				{
-					Id = lotById.Id,
-					LotNumber = lotById.LotNumber,
-					Description = lotById.Description,
-					Details = lotById.Details,
-					StartingPrice = lotById.StartingPrice,
-					CurrentPrice = lotById.CurrentPrice ?? lotById.StartingPrice,
-					EndingPrice = lotById.EndingPrice ?? 0,
-					Sold = lotById.Sold,
-					Auction = new LotByIdAuctionDto
-					{
-						Id = lotById.Auction.Id,
-						Title = lotById.Auction.Title,
-						Description = lotById.Auction.Description,
-						StartAt = lotById.Auction.StartAt,
-						EndAt = lotById.Auction.EndAt,
-						Category = lotById.Auction.Category ?? [],
-						Status = lotById.Auction.Status,
-						AuctioneerId = lotById.Auction.AuctioneerId,
-						Auctioneer = new AuctioneerDto
-						{
-							UserId = lotById.Auction.Auctioneer.UserId,
-							Plate = lotById.Auction.Auctioneer.Plate
-						}
-					}
-				}).ToList();
-
-				return Ok(lotDtos);
+				return Ok(lotsByAuctioneerId);
 			}
 			catch (Exception ex)
 			{
@@ -140,38 +146,42 @@ namespace BDfy.Controllers
 		{
 			try
 			{
-				var lotById = await _db.Lots
-					.Include(l => l.Auction)
+				var auctionLotById = await _db.AuctionLots
+					.Include(al => al.Auction)
 						.ThenInclude(a => a.Auctioneer)
-					.FirstOrDefaultAsync(l => l.Id == lotId);
+					.Include(al => al.Lot)
+					.FirstOrDefaultAsync(al => al.IsOriginalAuction && al.LotId == lotId);
 
-				if (lotById == null) { return NotFound("Lot not found. Sorry"); }
+				if (auctionLotById == null) { return NotFound("AuctionLot not found. Sorry"); }
 
+				if (auctionLotById.Auction == null) { return NotFound("Auction not found. Sorry"); }
+
+				if (auctionLotById.Lot == null) { return NotFound("Lot not found. Sorry"); }
 
 				var lotDto = new GetLotByIdDto
 				{
-					Id = lotById.Id,
-					LotNumber = lotById.LotNumber,
-					Description = lotById.Description,
-					Details = lotById.Details,
-					StartingPrice = lotById.StartingPrice,
-					CurrentPrice = lotById.CurrentPrice ?? lotById.StartingPrice,
-					EndingPrice = lotById.EndingPrice ?? 0,
-					Sold = lotById.Sold,
+					Id = auctionLotById.LotId,
+					LotNumber = auctionLotById.Lot.LotNumber,
+					Description = auctionLotById.Lot.Description,
+					Details = auctionLotById.Lot.Details,
+					StartingPrice = auctionLotById.Lot.StartingPrice,
+					CurrentPrice = auctionLotById.Lot.CurrentPrice ?? auctionLotById.Lot.StartingPrice,
+					EndingPrice = auctionLotById.Lot.EndingPrice ?? 0,
+					Sold = auctionLotById.Lot.Sold,
 					Auction = new LotByIdAuctionDto
 					{
-						Id = lotById.Auction.Id,
-						Title = lotById.Auction.Title,
-						Description = lotById.Auction.Description,
-						StartAt = lotById.Auction.StartAt,
-						EndAt = lotById.Auction.EndAt,
-						Category = lotById.Auction.Category ?? [],
-						Status = lotById.Auction.Status,
-						AuctioneerId = lotById.Auction.AuctioneerId,
+						Id = auctionLotById.Auction.Id,
+						Title = auctionLotById.Auction.Title,
+						Description = auctionLotById.Auction.Description,
+						StartAt = auctionLotById.Auction.StartAt,
+						EndAt = auctionLotById.Auction.EndAt,
+						Category = auctionLotById.Auction.Category ?? [],
+						Status = auctionLotById.Auction.Status,
+						AuctioneerId = auctionLotById.Auction.AuctioneerId,
 						Auctioneer = new AuctioneerDto
 						{
-							UserId = lotById.Auction.Auctioneer.UserId,
-							Plate = lotById.Auction.Auctioneer.Plate
+							UserId = auctionLotById.Auction.Auctioneer.UserId,
+							Plate = auctionLotById.Auction.Auctioneer.Plate
 						}
 					}
 				};
@@ -187,20 +197,24 @@ namespace BDfy.Controllers
 		{
 			try
 			{
-				var lots = await _db.Lots.ToListAsync();
+				var auctionLots = await _db.AuctionLots
+				.Include(al => al.Auction)
+				.Include(al => al.Lot)
+				.Where(al => al.IsOriginalAuction)
+				.ToListAsync();
 
-				var lotsDto = lots.Select(l => new LotGetDto
+				var lotsDto = auctionLots.Select(al => new LotGetDto
 				{
-					Id = l.Id,
-					LotNumber = l.LotNumber,
-					Description = l.Description,
-					Details = l.Details,
-					StartingPrice = l.StartingPrice,
-					CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
-					EndingPrice = l.EndingPrice ?? 0,
-					Sold = l.Sold,
-					AuctionId = l.AuctionId,
-					WinnerId = l.WinnerId ?? Guid.Empty
+					Id = al.LotId,
+					LotNumber = al.Lot.LotNumber,
+					Description = al.Lot.Description,
+					Details = al.Lot.Details,
+					StartingPrice = al.Lot.StartingPrice,
+					CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
+					EndingPrice = al.Lot.EndingPrice ?? 0,
+					Sold = al.Lot.Sold,
+					AuctionId = al.AuctionId,
+					WinnerId = al.Lot.WinnerId ?? Guid.Empty
 				});
 
 				return Ok(lotsDto);
@@ -223,22 +237,39 @@ namespace BDfy.Controllers
 
 				if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-				if (!Guid.TryParse(userIdFromToken, out Guid parsedUserId)) { return Unauthorized("Invalid User ID in token"); }
+				if (string.IsNullOrEmpty(userIdFromToken) || !Guid.TryParse(userIdFromToken, out Guid parsedUserId)) { return Unauthorized("Invalid User ID in token"); }
 
 				if (userRoleFromToken != UserRole.Buyer.ToString()) { return Unauthorized("Access Denied: Only Buyers can bid in Lots"); }
 
-				var lot = await _db.Lots // Obtenemos solo lo que precisamos para comparar
-					.Where(l => l.Id == lotId)
-					.Select(l => new
+				var AuctionLot = await _db.AuctionLots // Obtenemos solo lo que precisamos para comparar
+					.Where(al => al.LotId == lotId && al.IsOriginalAuction && al.Auction.Status == AuctionStatus.Active)
+					.OrderByDescending(al => al.Auction.StartAt)
+					.Select(al => new
 					{
-						l.Id,
-						AuctioneerId = l.Auction.Auctioneer.UserId
+						al.LotId,
+						AuctioneerId = al.Auction.Auctioneer.UserId,
+						AuctionStatus = al.Auction.Status,
+						AuctionEndAt = al.Auction.EndAt,
+						LotCurrentPrice = al.Lot.CurrentPrice,
+						LotStartingPrice = al.Lot.StartingPrice,
+						LotSold = al.Lot.Sold
 					})
 					.FirstOrDefaultAsync();
 
-				if (lot == null) { return NotFound("Lot not found"); }
+				if (AuctionLot == null) { return NotFound("Lot not found"); }
 
-				if (lot.AuctioneerId == parsedUserId) { return Unauthorized("Access Denied: You cannot bid in your own Lot"); }
+				if (AuctionLot.AuctioneerId == parsedUserId) { return Forbid("Access Denied: You cannot bid in your own Lot"); }
+
+				if (AuctionLot.AuctionStatus != AuctionStatus.Active) { return BadRequest("Cannot bid on inactive auction"); }
+
+				if (AuctionLot.LotSold) { return BadRequest("Lot has already been sold"); }
+
+				var minimumBid = AuctionLot.LotCurrentPrice ?? AuctionLot.LotStartingPrice;
+
+				if (bid.Amount <= minimumBid)
+				{
+					return BadRequest($"Bid amount must be greater than current price: {minimumBid}");
+				}
 
 				var dto = new SendBidDto
 				{
@@ -256,7 +287,11 @@ namespace BDfy.Controllers
 					await autoBidService.ProcessAutoBidAsync(lotId, bid.Amount);
 				});
 
-				return Created("", new { message = "Bid created successfully" });
+				return Created($"/api/lots/{lotId}", new { 
+					message = "Bid created successfully",
+					lotId = lotId,
+					amount = bid.Amount 
+				});
 			}
 			catch (Exception ex)
 			{
@@ -299,45 +334,47 @@ namespace BDfy.Controllers
 		{
 			try
 			{
+				
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(ModelState);
+				}
+
 				var userClaims = HttpContext.User;
 				var userRoleFromToken = userClaims.FindFirst("Role")?.Value;
 				var userIdFromToken = userClaims.FindFirst("Id")?.Value;
 				var userIsAdmin = userClaims.FindFirst("IsAdmin")?.Value;
+
+				if (string.IsNullOrEmpty(userIdFromToken) || !Guid.TryParse(userIdFromToken, out var userId)) { return Unauthorized("Invalid user token"); }
 
 				if (userRoleFromToken != UserRole.Auctioneer.ToString() && userIsAdmin == null || userIsAdmin == false.ToString())
 				{
 					return Unauthorized("Access Denied: Only Auctioneers or admins can edit Lots");
 				}
 
-				if (string.IsNullOrEmpty(userIdFromToken) || !Guid.TryParse(userIdFromToken, out var userId)) { return Unauthorized("Invalid user token"); }
+				var auctionLot = await _db.AuctionLots
+				.Include(al => al.Auction)
+					.ThenInclude(a => a.Auctioneer)
+				.Include(al => al.Lot)
+					.ThenInclude(l => l.BiddingHistory)
+				.FirstOrDefaultAsync(al => al.IsOriginalAuction && al.LotId == lotId);
 
-				if (!ModelState.IsValid)
-				{
-					return BadRequest(ModelState);
-				}
-
-				var lot = await _db.Lots
-					.Include(l => l.Auction)
-						.ThenInclude(a => a.Auctioneer)
-					.Include(l => l.BiddingHistory)
-					.FirstOrDefaultAsync(l => l.Id == lotId);
-
-				if (lot == null)
+				if (auctionLot == null)
 				{
 					return NotFound("Lot not found");
 				}
 
-				if (lot.Auction.Auctioneer.UserId.ToString() != userIdFromToken && userIsAdmin == null || userIsAdmin == false.ToString())
+				if (auctionLot.Auction.Auctioneer.UserId.ToString() != userIdFromToken && userIsAdmin == null || userIsAdmin == false.ToString())
 				{
 					return Unauthorized("Access Denied: You can only edit your own lots");
 				}
 
-				if (lot.BiddingHistory != null && lot.BiddingHistory.Any())
+				if (auctionLot.Lot.BiddingHistory != null && auctionLot.Lot.BiddingHistory.Count != 0)
 				{
 					return BadRequest("Cannot edit lot that already has bids");
 				}
 
-				if (lot.AuctionId != editLotDto.AuctionId && userIsAdmin == null || userIsAdmin == false.ToString())
+				if (auctionLot.AuctionId != editLotDto.AuctionId && userIsAdmin == null || userIsAdmin == false.ToString())
 				{
 					var existingAuction = await _db.Auctions
 						.FirstOrDefaultAsync(a => a.Id == editLotDto.AuctionId
@@ -350,14 +387,16 @@ namespace BDfy.Controllers
 					}
 				}
 
-				if (editLotDto.LotNumber != lot.LotNumber)
+				if (editLotDto.LotNumber != auctionLot.Lot.LotNumber)
 				{
-					var existingLot = await _db.Lots
-						.FirstOrDefaultAsync(l => l.LotNumber == editLotDto.LotNumber &&
-										l.AuctionId == lot.AuctionId &&
-										l.Id != lotId);
+					var existingLot = await _db.AuctionLots
+						.Include(al => al.Lot)
+						.AnyAsync(al => al.Lot.LotNumber == editLotDto.LotNumber &&
+									al.AuctionId == editLotDto.AuctionId &&
+									al.LotId != lotId &&
+									al.IsOriginalAuction);
 
-					if (existingLot != null)
+					if (existingLot)
 					{
 						return BadRequest("The Lot number is already taken in this auction");
 					}
@@ -367,21 +406,59 @@ namespace BDfy.Controllers
 
 				if (finalAuction == null) { return BadRequest("Auction not found. Sorry"); }
 
-				lot.LotNumber = editLotDto.LotNumber;
-				lot.Description = editLotDto.Description;
-				lot.Details = editLotDto.Details;
-				lot.StartingPrice = editLotDto.StartingPrice;
-				lot.AuctionId = editLotDto.AuctionId;
-				lot.Auction = finalAuction;
+				auctionLot.Lot.LotNumber = editLotDto.LotNumber;
+				auctionLot.Lot.Description = editLotDto.Description;
+				auctionLot.Lot.Details = editLotDto.Details;
+				auctionLot.Lot.StartingPrice = editLotDto.StartingPrice;
 
-				if (lot.BiddingHistory == null || !lot.BiddingHistory.Any())
+				if (auctionLot.Lot.BiddingHistory == null || auctionLot.Lot.BiddingHistory.Count == 0)
 				{
-					lot.CurrentPrice = editLotDto.StartingPrice;
+					auctionLot.Lot.CurrentPrice = editLotDto.StartingPrice;
+				}
+
+				if (auctionLot.AuctionId != editLotDto.AuctionId) // Si se quiere cambiar de auction 
+				{
+
+					var storageAuctionLot = await _db.AuctionLots // Checkea si el lote tiene una relacion con el storage
+						.Include(al => al.Auction)
+						.FirstOrDefaultAsync(al =>
+							al.LotId == lotId &&
+							al.Auction.Status == AuctionStatus.Storage);
+
+					if (storageAuctionLot != null)
+					{
+						_db.AuctionLots.Remove(storageAuctionLot); // Borramos referencia con el Storage
+					}
+
+					var exists = await _db.AuctionLots // Checkea si ya existe alguna relacion auction <-> lot con los datos del dto
+						.AnyAsync(al => al.AuctionId == editLotDto.AuctionId && al.LotId == lotId);
+
+					if (!exists) // sino existe la crea
+					{
+						var newAuctionLot = new AuctionLot
+						{
+							AuctionId = editLotDto.AuctionId,
+							LotId = lotId,
+							IsOriginalAuction = true,
+							CreatedAt = DateTime.UtcNow,
+							UpdatedAt = DateTime.UtcNow
+						};
+
+						_db.AuctionLots.Add(newAuctionLot);
+					}
+					else
+					{
+						var existingAuctionLot = await _db.AuctionLots
+							.FirstAsync(al => al.AuctionId == editLotDto.AuctionId && al.LotId == lotId);
+
+						existingAuctionLot.IsOriginalAuction = true;
+						existingAuctionLot.UpdatedAt = DateTime.UtcNow;
+					}
 				}
 
 				await _db.SaveChangesAsync();
 
-				return Ok(new { message = "Lot updated successfully" });
+				return Ok(new { message = "Lot updated successfully", lotId = lotId} );
 			}
 			catch (Exception ex)
 			{
@@ -411,9 +488,10 @@ namespace BDfy.Controllers
 					return BadRequest(ModelState);
 				}
 
-				var existingLot = await _db.Lots
-					.Include(l => l.Auction.Auctioneer)
-					.FirstOrDefaultAsync(l => l.Id == lotId) ?? throw new ArgumentException("Lot not found"); ;
+				var existingLot = await _db.AuctionLots
+					.Include(al => al.Auction.Auctioneer)
+					.Include(al => al.Lot)
+					.FirstOrDefaultAsync(al => al.LotId == lotId) ?? throw new ArgumentException("Lot not found"); ;
 
 				if (existingLot.Auction.AuctioneerId == parsedUserId) { return Unauthorized("Access Denied: Cannot Auto-bid on your own lot"); }
 
@@ -461,51 +539,8 @@ namespace BDfy.Controllers
 		{
 			try
 			{
-				var bids = await _db.Bids
-					.Include(b => b.Lot)
-					.Include(b => b.Buyer)
-						.ThenInclude(ud => ud.User)
-					.Where(b => b.LotId == lotId)
-					.ToListAsync();
-
-				var autoBids = await _db.AutoBidConfigs
-					.Include(ab => ab.Lot)
-					.Include(ab => ab.Buyer)
-						.ThenInclude(ud => ud.User)
-					.Where(b => b.LotId == lotId)
-					.ToListAsync();
-
-				var BidsDto = bids.Select(b => new BiddingHistoryDto
-				{
-					Winner = new WinnerDto
-					{
-						FirstName = b.Buyer.User.FirstName,
-						LastName = b.Buyer.User.LastName
-					},
-					Amount = b.Amount,
-					Time = b.Time,
-					IsAutoBid = false
-				});
-
-				var AutoBidsDto = autoBids.Select(ab => new BiddingHistoryDto
-				{
-					Winner = new WinnerDto
-					{
-						FirstName = ab.Buyer.User.FirstName,
-						LastName = ab.Buyer.User.LastName
-					},
-					Amount = ab.IncreasePrice,
-					Time = ab.UpdatedAt,
-					IsAutoBid = true
-				});
-
-				var BiddingHistory = BidsDto
-					.Concat(AutoBidsDto)
-					.OrderByDescending(b => b.Time)
-					.ToList();
-
-				return Ok(BiddingHistory);
-
+				var biddingHistory = await _bh.GetAllBidsByLotId(lotId);
+				return Ok(biddingHistory);
 			}
 			catch (Exception ex)
 			{

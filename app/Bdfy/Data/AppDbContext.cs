@@ -17,6 +17,7 @@ namespace BDfy.Data
         public DbSet<Lot> Lots { get; set; }
         public DbSet<Bid> Bids { get; set; }
         public DbSet<AutoBidConfig> AutoBidConfigs { get; set; }
+        public DbSet<AuctionLot> AuctionLots { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,6 +30,7 @@ namespace BDfy.Data
             modelBuilder.Entity<Lot>().ToTable("lots");
             modelBuilder.Entity<Bid>().ToTable("bids");
             modelBuilder.Entity<AutoBidConfig>().ToTable("autobidconfig");
+            modelBuilder.Entity<AuctionLot>().ToTable("auctionlot");
 
             //  UserDetails <-> User (1:1)
             modelBuilder.Entity<User>()
@@ -107,14 +109,6 @@ namespace BDfy.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Lot --> Auctioneer
-            modelBuilder.Entity<Lot>(entity =>
-            {
-                entity.HasOne(l => l.Auction)
-                      .WithMany(a => a.Lots)
-                      .HasForeignKey(l => l.AuctionId)
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
             modelBuilder.Entity<AutoBidConfig>(entity =>
             {
                 // AutoBidConfig --> UserDetails (Buyer)
@@ -128,6 +122,28 @@ namespace BDfy.Data
                     .WithMany(l => l.AutoBidHistory)
                     .HasForeignKey(ab => ab.LotId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<AuctionLot>()
+                .Property(al => al.IsOriginalAuction)
+                .IsRequired();
+
+            // Auction <--> Lot entidad intermedia AuctionLot
+            modelBuilder.Entity<AuctionLot>(entity =>
+            {
+                entity.HasKey(al => new { al.AuctionId, al.LotId });
+
+                entity.HasOne(al => al.Auction)
+                    .WithMany(a => a.AuctionLots)
+                    .HasForeignKey(al => al.AuctionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(al => al.Lot)
+                    .WithMany(l => l.AuctionLots)
+                    .HasForeignKey(al => al.LotId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(al => al.IsOriginalAuction)
+                    .HasDefaultValue(true);
             });
         }
     }

@@ -22,6 +22,12 @@ namespace BDfy.Controllers
             {
                 var startAtUtc = Dto.StartAt.UtcDateTime;
                 var endAtUtc = Dto.EndAt.UtcDateTime;
+                Console.WriteLine($"Lo que le mando: {Dto.StartAt}");
+                Console.WriteLine($"Transforma a: {startAtUtc}");
+                Console.WriteLine($"Actual en el back: {DateTime.UtcNow.AddMinutes(-5)}");
+                Console.WriteLine($"Comparacion start < al actual: {startAtUtc < DateTime.UtcNow.AddMinutes(-5)}");
+                Console.WriteLine($"Comparacion start >= end: {startAtUtc >= endAtUtc}");
+
 
                 var userClaims = HttpContext.User;
                 var userIdFromToken = userClaims.FindFirst("Id")?.Value;
@@ -35,7 +41,7 @@ namespace BDfy.Controllers
 
                 if (startAtUtc >= endAtUtc) { return BadRequest("Start date must be before end date"); }
 
-                if (startAtUtc < DateTime.UtcNow.AddMinutes(-5).ToUniversalTime()) { return BadRequest("Start date cannot be in the past"); }
+                if (startAtUtc < DateTime.UtcNow.AddMinutes(-5)) { return BadRequest("Start date cannot be in the past"); }
 
                 var auctioneer = await _db.Users
                     .Include(u => u.AuctioneerDetails)
@@ -75,7 +81,8 @@ namespace BDfy.Controllers
             {
                 var auctions = await _db.Auctions
                     .Include(ad => ad.Auctioneer)
-                    .Include(a => a.Lots)
+                    .Include(a => a.AuctionLots)
+                        .ThenInclude(al => al.Lot)
                     .Where(a => a.Status != AuctionStatus.Storage)
                     .ToListAsync();
                 var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
@@ -91,17 +98,18 @@ namespace BDfy.Controllers
                     Status = a.Status,
                     Direction = a.Direction,
                     AuctioneerId = a.AuctioneerId,
-                    Lots = a.Lots.Select(l => new LotsDto
+                    Lots = a.AuctionLots
+                    .Select(al => new LotsDto
                     {
-                        Id = l.Id,
-                        LotNumber = l.LotNumber,
-                        Description = l.Description,
-                        Details = l.Details,
-                        AuctionId = l.AuctionId,
-                        StartingPrice = l.StartingPrice,
-                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
-                        EndingPrice = l.EndingPrice ?? 0,
-                        Sold = l.Sold
+                        Id = al.LotId,
+                        LotNumber = al.Lot.LotNumber,
+                        Description = al.Lot.Description,
+                        Details = al.Lot.Details,
+                        AuctionId = al.AuctionId,
+                        StartingPrice = al.Lot.StartingPrice,
+                        CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
+                        EndingPrice = al.Lot.EndingPrice ?? 0,
+                        Sold = al.Lot.Sold
                         
                     }).ToList() ?? new List<LotsDto>(), 
                     Auctioneer = new AuctioneerDto
@@ -134,7 +142,8 @@ namespace BDfy.Controllers
 
                 var auctions = await _db.Auctions
                     .Include(a => a.Auctioneer)
-                    .Include(a => a.Lots)
+                    .Include(a => a.AuctionLots)
+                        .ThenInclude(al => al.Lot)
                     .Where(a => a.Auctioneer.UserId == auctioneerId)
                     .ToListAsync();
                 var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
@@ -151,18 +160,20 @@ namespace BDfy.Controllers
                     Status = a.Status,
                     Direction = a.Direction,
                     AuctioneerId = a.Auctioneer.UserId,
-                    Lots = a.Lots.Select(l => new LotGetDto
+                    Lots = a.AuctionLots
+                    //.Where(al => al.IsOriginalAuction)  Esto evita mandar las que estan en el storage
+                    .Select(al => new LotGetDto
                     {
-                        Id = l.Id,
-                        StartingPrice = l.StartingPrice,
-                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
-                        Description = l.Description,
-                        Details = l.Details,
-                        AuctionId = l.AuctionId,
-                        LotNumber = l.LotNumber,
-                        Sold = l.Sold,
-                        EndingPrice = l.EndingPrice ?? 0,
-                        WinnerId = l.WinnerId
+                        Id = al.LotId,
+                        StartingPrice = al.Lot.StartingPrice,
+                        CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
+                        Description = al.Lot.Description,
+                        Details = al.Lot.Details,
+                        AuctionId = al.AuctionId,
+                        LotNumber = al.Lot.LotNumber,
+                        Sold = al.Lot.Sold,
+                        EndingPrice = al.Lot.EndingPrice ?? 0,
+                        WinnerId = al.Lot.WinnerId
                     }).ToList()
                 });
                 return Ok(auctionsDto);
@@ -186,7 +197,7 @@ namespace BDfy.Controllers
 
                 var auctions = await _db.Auctions
                         .Include(ad => ad.Auctioneer)
-                        .Include(a => a.Lots)
+                        .Include(a => a.AuctionLots)
                         .Where(a => a.Status == enumStatus)
                         .ToListAsync();
 
@@ -208,17 +219,19 @@ namespace BDfy.Controllers
                     Status = a.Status,
                     Direction = a.Direction,
                     AuctioneerId = a.AuctioneerId,
-                    Lots = a.Lots.Select(l => new LotsDto
+                    Lots = a.AuctionLots
+                    .Where(al => al.IsOriginalAuction)
+                    .Select(al => new LotsDto
                     {
-                        Id = l.Id,
-                        LotNumber = l.LotNumber,
-                        Description = l.Description,
-                        Details = l.Details,
-                        AuctionId = l.AuctionId,
-                        StartingPrice = l.StartingPrice,
-                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
-                        EndingPrice = l.EndingPrice ?? 0,
-                        Sold = l.Sold
+                        Id = al.LotId,
+                        LotNumber = al.Lot.LotNumber,
+                        Description = al.Lot.Description,
+                        Details = al.Lot.Details,
+                        AuctionId = al.AuctionId,
+                        StartingPrice = al.Lot.StartingPrice,
+                        CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
+                        EndingPrice = al.Lot.EndingPrice ?? 0,
+                        Sold = al.Lot.Sold
                         
                     }).ToList() ?? new List<LotsDto>(), 
                     Auctioneer = new AuctioneerDto
@@ -243,13 +256,13 @@ namespace BDfy.Controllers
             {
                 var auctionById = await _db.Auctions
                         .Include(ad => ad.Auctioneer)
-                        .Include(a => a.Lots)
+                        .Include(a => a.AuctionLots)
+                            .ThenInclude(al => al.Lot) 
                         .FirstOrDefaultAsync(a => a.Id == auctionId);
 
                 if (auctionById == null) { return NotFound("Auction not found"); }
 
                 var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
-
 
                 var auctionDto = new AuctionDto
                 {
@@ -262,17 +275,17 @@ namespace BDfy.Controllers
                     Status = auctionById.Status,
                     Direction = auctionById.Direction,
                     AuctioneerId = auctionById.AuctioneerId,
-                    Lots = auctionById.Lots.Select(l => new LotsDto
+                    Lots = auctionById.AuctionLots.Where(al => al.IsOriginalAuction).Select(al => new LotsDto
                     {
-                        Id = l.Id,
-                        LotNumber = l.LotNumber,
-                        Description = l.Description,
-                        Details = l.Details,
-                        AuctionId = l.AuctionId,
-                        StartingPrice = l.StartingPrice,
-                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
-                        EndingPrice = l.EndingPrice ?? 0,
-                        Sold = l.Sold
+                        Id = al.LotId,
+                        LotNumber = al.Lot.LotNumber,
+                        Description = al.Lot.Description,
+                        Details = al.Lot.Details,
+                        AuctionId = al.AuctionId,
+                        StartingPrice = al.Lot.StartingPrice,
+                        CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
+                        EndingPrice = al.Lot.EndingPrice ?? 0,
+                        Sold = al.Lot.Sold
                         
                     }).ToList() ?? new List<LotsDto>(), 
                     Auctioneer = new AuctioneerDto
@@ -319,21 +332,26 @@ namespace BDfy.Controllers
 
                 if (auctioneer == null) { return NotFound("Auctioneer not found"); }
 
-                var lotsInStorage = await _db.Lots
-                    .Where(l => auctioneer.Id == auctioneerId
-                        && l.Auction.Status == AuctionStatus.Storage // El lote ya estaria en el Storage
-                        && l.Sold == false)
-                    .Select(l => new LotsDto
+                var lotsInStorage = await _db.AuctionLots
+                    .Include(al => al.Lot)
+                    .Include(al => al.Auction)
+                        .ThenInclude(a => a.Auctioneer)
+                    .Where(al =>
+                        al.Auction.Status == AuctionStatus.Storage &&
+                        al.Auction.AuctioneerId == auctioneerId
+                        && al.Lot.Sold == false
+                    )
+                    .Select(al => new LotsDto
                     {
-                        Id = l.Id,
-                        LotNumber = l.LotNumber,
-                        Description = l.Description,
-                        Details = l.Details,
-                        AuctionId = l.AuctionId,
-                        StartingPrice = l.StartingPrice,
-                        CurrentPrice = l.CurrentPrice ?? l.StartingPrice,
-                        EndingPrice = l.EndingPrice ?? 0,
-                        Sold = l.Sold
+                        Id = al.LotId,
+                        LotNumber = al.Lot.LotNumber,
+                        Description = al.Lot.Description,
+                        Details = al.Lot.Details,
+                        AuctionId = al.AuctionId,
+                        StartingPrice = al.Lot.StartingPrice,
+                        CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
+                        EndingPrice = al.Lot.EndingPrice ?? 0,
+                        Sold = al.Lot.Sold
                     }).ToListAsync();
 
                 return Ok(lotsInStorage);

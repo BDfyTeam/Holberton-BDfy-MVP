@@ -34,11 +34,11 @@ namespace BDfy.Services
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<BDfyDbContext>();
 
-            var lot = await db.Lots
-                .Include(l => l.Auction)
-                .FirstOrDefaultAsync(l => l.Id == lotId) ?? throw new ArgumentException("Lot not found");
+            var al = await db.AuctionLots
+                .Include(al => al.Lot)
+                .FirstOrDefaultAsync(al => al.IsOriginalAuction && al.LotId == lotId) ?? throw new ArgumentException("Lot not found");
 
-            var currentPrice = lot.CurrentPrice ?? lot.StartingPrice;
+            var currentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice;
             if (dto.MaxBid <= currentPrice) { throw new InvalidOperationException("Max bid must be higher than current price"); }
 
             var existing = await db.AutoBidConfigs // Buscamos si hay alguna Auto bid ya establecido para este lote

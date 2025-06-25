@@ -51,6 +51,7 @@ namespace BDfy.Services
                 {
                     using var scope = _scopeFactory.CreateScope(); // Creamos el ambito (para obtener la db)
                     var db = scope.ServiceProvider.GetRequiredService<BDfyDbContext>(); // Obtenemos la db
+                    var bhs = scope.ServiceProvider.GetRequiredService<BiddingHistoryService>();
 
                     var body = ea.Body.ToArray(); // Contiene el mensaje tal cual como se mando
                     var bidDto = JsonSerializer.Deserialize<SendBidDto>(Encoding.UTF8.GetString(body)) ?? throw new InvalidOperationException();
@@ -99,50 +100,9 @@ namespace BDfy.Services
                         lot.BiddingHistory.Add(bid);
                     }
 
-                    var bids = await db.Bids
-                        .Include(b => b.Lot)
-                        .Include(b => b.Buyer)
-                            .ThenInclude(ud => ud.User)
-                        .Where(b => b.LotId == bidDto.LotId)
-                        .ToListAsync();
+                    var biddingHistory = await bhs.GetAllBidsByLotId(bid.LotId);
 
-                    var autoBids = await db.AutoBidConfigs
-                        .Include(ab => ab.Lot)
-                        .Include(ab => ab.Buyer)
-                            .ThenInclude(ud => ud.User)
-                        .Where(b => b.LotId == bidDto.LotId)
-                        .ToListAsync();
-
-                    var BidsDto = bids.Select(b => new BiddingHistoryDto
-                    {
-                        Winner = new WinnerDto
-                        {
-                            FirstName = b.Buyer.User.FirstName,
-                            LastName = b.Buyer.User.LastName
-                        },
-                        Amount = b.Amount,
-                        Time = b.Time,
-                        IsAutoBid = false
-                    });
-
-                    var AutoBidsDto = autoBids.Select(ab => new BiddingHistoryDto
-                    {
-                        Winner = new WinnerDto
-                        {
-                            FirstName = ab.Buyer.User.FirstName,
-                            LastName = ab.Buyer.User.LastName
-                        },
-                        Amount = ab.IncreasePrice,
-                        Time = ab.UpdatedAt,
-                        IsAutoBid = true
-                    });
-
-                    var BiddingHistory = BidsDto
-                        .Concat(AutoBidsDto)
-                        .OrderByDescending(b => b.Time)
-                        .ToList();
-
-                    await _hubContext.Clients.Groups($"auction_{bid.LotId}").ReceiveBiddingHistory(BiddingHistory);
+                    await _hubContext.Clients.Groups($"auction_{bid.LotId}").ReceiveBiddingHistory(biddingHistory);
 
                     await _hubContext.Clients.Group($"auction_{bid.LotId}").ReceiveBid(
                         new ReceiveBidDto // Creamos la bid que se mandara al hub
