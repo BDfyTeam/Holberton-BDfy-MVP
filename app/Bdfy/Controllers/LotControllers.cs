@@ -14,11 +14,12 @@ namespace BDfy.Controllers
 	[ApiController]
 	[Route("api/1.0/lots")]
 	public class BaseControllerLots(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
-	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher, IAutoBidService autoBidService) : BaseControllerLots(db) // Heredamos la DB para poder usarla
+	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher, IAutoBidService autoBidService, BiddingHistoryService biddingHistoryService) : BaseControllerLots(db) // Heredamos la DB para poder usarla
 	{
 		private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
 		private readonly BidPublisher _bidPublisher = bidPublisher;
 		private IAutoBidService _autoBidService = autoBidService;
+		private BiddingHistoryService _bh = biddingHistoryService;
 
 		[Authorize]
 		[HttpPost("{auctionId}")]
@@ -45,17 +46,17 @@ namespace BDfy.Controllers
 					return BadRequest("Lot registration is only permitted for draft auctions or the auctioneer Storage");
 				}
 
-				if (auction.Auctioneer.UserId != userId) { return Unauthorized("Access Denied: Diffrent User as the login"); }
-
 				if (userRoleFromToken != UserRole.Auctioneer.ToString()) { return Forbid("Access Denied: Only Auctioneers can create Lots"); }
 
-				var checkLot = await _db.AuctionLots
+				if (auction.Auctioneer.UserId != userId) { return Unauthorized("Access Denied: Diffrent User as the login"); }
+
+				var checkLot = await _db.AuctionLots // Busco en la tabla intermedia por algun lote que cumpla las caracteristicas
 				 	.Include(al => al.Lot)
 					.AnyAsync(al => al.Lot.LotNumber == Dto.LotNumber && al.AuctionId == auctionId && al.IsOriginalAuction);
 
 				if (checkLot) { return BadRequest($"Lot number {Dto.LotNumber} already exists"); }
 
-				var lot = new Lot
+				var lot = new Lot // Creamos el lote
 				{
 					LotNumber = Dto.LotNumber,
 					Description = Dto.Description,
@@ -71,7 +72,7 @@ namespace BDfy.Controllers
 				{
 					AuctionId = auctionId,
 					LotId = lot.Id,
-					IsOriginalAuction = true
+					IsOriginalAuction = true // Cuando se crea un lote su primer auction es el original
 				};
 
 				_db.AuctionLots.Add(auctionLot);
@@ -84,7 +85,7 @@ namespace BDfy.Controllers
 			}
 			catch (Exception ex)
 			{
-				return StatusCode(500, new { error = ex.Message }); // Entraba aca l.AuctionId
+				return StatusCode(500, new { error = ex.Message });
 			}
 		}
 
@@ -94,7 +95,7 @@ namespace BDfy.Controllers
 			try
 			{
 				var lotsByAuctioneerId = await _db.AuctionLots
-					.Where(al => al.IsOriginalAuction && al.Auction.Auctioneer.UserId == auctioneer_id)
+					.Where(al => al.Auction.Auctioneer.UserId == auctioneer_id) // IsOriginal mostrara solo los lotes de subastas originales
 					.Include(al => al.Lot)
 					.Include(al => al.Auction)
 						.ThenInclude(a => a.Auctioneer)
@@ -241,7 +242,8 @@ namespace BDfy.Controllers
 				if (userRoleFromToken != UserRole.Buyer.ToString()) { return Unauthorized("Access Denied: Only Buyers can bid in Lots"); }
 
 				var AuctionLot = await _db.AuctionLots // Obtenemos solo lo que precisamos para comparar
-					.Where(al =>  al.LotId == lotId && al.IsOriginalAuction)
+					.Where(al => al.LotId == lotId && al.IsOriginalAuction && al.Auction.Status == AuctionStatus.Active)
+					.OrderByDescending(al => al.Auction.StartAt)
 					.Select(al => new
 					{
 						al.LotId,
@@ -414,20 +416,44 @@ namespace BDfy.Controllers
 					auctionLot.Lot.CurrentPrice = editLotDto.StartingPrice;
 				}
 
-				if (auctionLot.AuctionId != editLotDto.AuctionId)
+				if (auctionLot.AuctionId != editLotDto.AuctionId) // Si se quiere cambiar de auction 
 				{
-					_db.AuctionLots.Remove(auctionLot);
 
-					var newAuctionLot = new AuctionLot
+					var storageAuctionLot = await _db.AuctionLots // Checkea si el lote tiene una relacion con el storage
+						.Include(al => al.Auction)
+						.FirstOrDefaultAsync(al =>
+							al.LotId == lotId &&
+							al.Auction.Status == AuctionStatus.Storage);
+
+					if (storageAuctionLot != null)
 					{
-						AuctionId = editLotDto.AuctionId,
-						LotId = lotId,
-						IsOriginalAuction = true,
-						CreatedAt = DateTime.UtcNow,
-						UpdatedAt = DateTime.UtcNow
-					};
+						_db.AuctionLots.Remove(storageAuctionLot); // Borramos referencia con el Storage
+					}
 
-					_db.AuctionLots.Add(newAuctionLot);
+					var exists = await _db.AuctionLots // Checkea si ya existe alguna relacion auction <-> lot con los datos del dto
+						.AnyAsync(al => al.AuctionId == editLotDto.AuctionId && al.LotId == lotId);
+
+					if (!exists) // sino existe la crea
+					{
+						var newAuctionLot = new AuctionLot
+						{
+							AuctionId = editLotDto.AuctionId,
+							LotId = lotId,
+							IsOriginalAuction = true,
+							CreatedAt = DateTime.UtcNow,
+							UpdatedAt = DateTime.UtcNow
+						};
+
+						_db.AuctionLots.Add(newAuctionLot);
+					}
+					else
+					{
+						var existingAuctionLot = await _db.AuctionLots
+							.FirstAsync(al => al.AuctionId == editLotDto.AuctionId && al.LotId == lotId);
+
+						existingAuctionLot.IsOriginalAuction = true;
+						existingAuctionLot.UpdatedAt = DateTime.UtcNow;
+					}
 				}
 
 				await _db.SaveChangesAsync();
@@ -513,51 +539,8 @@ namespace BDfy.Controllers
 		{
 			try
 			{
-				var bids = await _db.Bids
-					.Include(b => b.Lot)
-					.Include(b => b.Buyer)
-						.ThenInclude(ud => ud.User)
-					.Where(b => b.LotId == lotId)
-					.ToListAsync();
-
-				var autoBids = await _db.AutoBidConfigs
-					.Include(ab => ab.Lot)
-					.Include(ab => ab.Buyer)
-						.ThenInclude(ud => ud.User)
-					.Where(b => b.LotId == lotId)
-					.ToListAsync();
-
-				var BidsDto = bids.Select(b => new BiddingHistoryDto
-				{
-					Winner = new WinnerDto
-					{
-						FirstName = b.Buyer.User.FirstName,
-						LastName = b.Buyer.User.LastName
-					},
-					Amount = b.Amount,
-					Time = b.Time,
-					IsAutoBid = false
-				});
-
-				var AutoBidsDto = autoBids.Select(ab => new BiddingHistoryDto
-				{
-					Winner = new WinnerDto
-					{
-						FirstName = ab.Buyer.User.FirstName,
-						LastName = ab.Buyer.User.LastName
-					},
-					Amount = ab.IncreasePrice,
-					Time = ab.UpdatedAt,
-					IsAutoBid = true
-				});
-
-				var BiddingHistory = BidsDto
-					.Concat(AutoBidsDto)
-					.OrderByDescending(b => b.Time)
-					.ToList();
-
-				return Ok(BiddingHistory);
-
+				var biddingHistory = await _bh.GetAllBidsByLotId(lotId);
+				return Ok(biddingHistory);
 			}
 			catch (Exception ex)
 			{

@@ -71,15 +71,22 @@ namespace BDfy.Services
                                     ?? throw new InvalidOperationException("No storage auction found for the auctioneer."
                                 );
 
-                            dbContext.AuctionLots.Add(new AuctionLot // Creamos una nueva instancia en la tabla donde guardaremos el lote al storage (indicando que no es su subasta original)
+                            var existsInStorage = await dbContext.AuctionLots
+                                .AnyAsync(al => al.AuctionId == storageAuction.Id && al.LotId == lot.Id, cancellationToken: stoppingToken);
+
+                            if (!existsInStorage)
                             {
-                                AuctionId = storageAuction.Id,
-                                LotId = lot.Id,
-                                IsOriginalAuction = false
-                            });
+                                dbContext.AuctionLots.Add(new AuctionLot
+                                {
+                                    AuctionId = storageAuction.Id,
+                                    LotId = lot.Id,
+                                    IsOriginalAuction = false,
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                });
 
-                            _logger.LogInformation("Lote {LotId} movido a Storage.", lot.Id);
-
+                                _logger.LogInformation("Lote {LotId} movido a Storage.", lot.Id);
+                            }
                         }
                     }
                     _logger.LogInformation("Closed auction {AuctionId}", auction.Id);

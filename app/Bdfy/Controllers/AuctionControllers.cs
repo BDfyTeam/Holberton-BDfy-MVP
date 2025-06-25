@@ -22,6 +22,12 @@ namespace BDfy.Controllers
             {
                 var startAtUtc = Dto.StartAt.UtcDateTime;
                 var endAtUtc = Dto.EndAt.UtcDateTime;
+                Console.WriteLine($"Lo que le mando: {Dto.StartAt}");
+                Console.WriteLine($"Transforma a: {startAtUtc}");
+                Console.WriteLine($"Actual en el back: {DateTime.UtcNow.AddMinutes(-5)}");
+                Console.WriteLine($"Comparacion start < al actual: {startAtUtc < DateTime.UtcNow.AddMinutes(-5)}");
+                Console.WriteLine($"Comparacion start >= end: {startAtUtc >= endAtUtc}");
+
 
                 var userClaims = HttpContext.User;
                 var userIdFromToken = userClaims.FindFirst("Id")?.Value;
@@ -155,7 +161,7 @@ namespace BDfy.Controllers
                     Direction = a.Direction,
                     AuctioneerId = a.Auctioneer.UserId,
                     Lots = a.AuctionLots
-                    .Where(al => al.IsOriginalAuction)
+                    //.Where(al => al.IsOriginalAuction)  Esto evita mandar las que estan en el storage
                     .Select(al => new LotGetDto
                     {
                         Id = al.LotId,

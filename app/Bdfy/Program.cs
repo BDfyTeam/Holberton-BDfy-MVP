@@ -160,6 +160,7 @@ builder.Services.AddScoped<AppSettings>();
 
 builder.Services.AddScoped<AuctionServices>(); // Servicio para editar una subasta // Servicio para editar una subasta
 builder.Services.AddScoped<IAutoBidService, AutoBidService>(); // Servicio para hacer Auto-bids
+builder.Services.AddScoped<BiddingHistoryService>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
