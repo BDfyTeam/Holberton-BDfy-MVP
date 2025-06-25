@@ -8,6 +8,7 @@ using BDfy.Dtos;
 using BDfy.Models;
 using BDfy.Hub;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BDfy.Services
 {
@@ -16,20 +17,29 @@ namespace BDfy.Services
         private readonly ILogger<BidConsumerService> _logger;
         private readonly IServiceScopeFactory _scopeFactory; // Para crear ambitos, para obtener servicios scoped en un BackgroundService
         private readonly IHubContext<BdfyHub, IClient> _hubContext; // Hub de SignalR
+        private readonly IConfiguration _configuration;
 
-        public BidConsumerService(IServiceScopeFactory scopeFactory, IHubContext<BdfyHub, IClient> hubContext, ILogger<BidConsumerService> logger) // Constructor
+        public BidConsumerService(IServiceScopeFactory scopeFactory, IHubContext<BdfyHub, IClient> hubContext, ILogger<BidConsumerService> logger, IConfiguration configuration) // Constructor
         {
             _scopeFactory = scopeFactory;
             _hubContext = hubContext;
             _logger = logger;
+            _configuration = configuration;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) // El proceso del Consumer
         // Tarea para consumir la bid, guarda los datos en la db y lo manda al hub de SignalR
         // stoppingToken funciona para terminar el servicio en caso de error o de finalizado el uso, de forma limpia y segura
         {
-            var factory = new ConnectionFactory // Conexion RabbitMQ
+            var rabbitMQConfig = _configuration.GetSection("RabbitMQ");
+            var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
+            var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
+            var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
+
+            var factory = new ConnectionFactory
             {
-                HostName = "localhost",
+                HostName = hostName,
+                UserName = userName,
+                Password = password,
                 Port = 5672
             };
             IConnection connection = await factory.CreateConnectionAsync(stoppingToken); // El token es para finalizarlo de forma limpia y segura en caso de error
