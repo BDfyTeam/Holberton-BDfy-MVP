@@ -37,11 +37,6 @@ namespace BDfy.Models
         [Column("sold")]
         public bool Sold { get; set; }
 
-        [Required]
-        [Column("auction_id")]
-        public Guid AuctionId { get; set; } // AuctionId puede ser, auctioneerId
-        public Auction Auction { get; set; } = null!; // Auction, auctioneer
-
         [Column("winner_id")]
         public Guid? WinnerId { get; set; }
         public UserDetails? Winner { get; set; }
@@ -49,6 +44,8 @@ namespace BDfy.Models
         public List<Bid> BiddingHistory { get; set; } = [];
         
         public List<AutoBidConfig> AutoBidHistory { get; set; } = [];
+
+        public List<AuctionLot> AuctionLots { get; set; } = [];
 
         public Lot() { } // EF
     }

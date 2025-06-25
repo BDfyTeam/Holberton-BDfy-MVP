@@ -100,45 +100,37 @@ namespace BDfy.Services
                     }
 
                     var bids = await db.Bids
-                        .Include(b => b.Lot)
-                        .Include(b => b.Buyer)
-                            .ThenInclude(ud => ud.User)
                         .Where(b => b.LotId == bidDto.LotId)
+                        .Select(b => new BiddingHistoryDto
+                        {
+                            Winner = new WinnerDto
+                            {
+                                FirstName = b.Buyer.User.FirstName,
+                                LastName = b.Buyer.User.LastName
+                            },
+                            Amount = b.Amount,
+                            Time = b.Time,
+                            IsAutoBid = false
+                        })
                         .ToListAsync();
 
                     var autoBids = await db.AutoBidConfigs
-                        .Include(ab => ab.Lot)
-                        .Include(ab => ab.Buyer)
-                            .ThenInclude(ud => ud.User)
-                        .Where(b => b.LotId == bidDto.LotId)
+                        .Where(ab => ab.LotId == bidDto.LotId)
+                        .Select(ab => new BiddingHistoryDto
+                        {
+                            Winner = new WinnerDto
+                            {
+                                FirstName = ab.Buyer.User.FirstName,
+                                LastName = ab.Buyer.User.LastName
+                            },
+                            Amount = ab.IncreasePrice,
+                            Time = ab.UpdatedAt,
+                            IsAutoBid = true
+                        })
                         .ToListAsync();
 
-                    var BidsDto = bids.Select(b => new BiddingHistoryDto
-                    {
-                        Winner = new WinnerDto
-                        {
-                            FirstName = b.Buyer.User.FirstName,
-                            LastName = b.Buyer.User.LastName
-                        },
-                        Amount = b.Amount,
-                        Time = b.Time,
-                        IsAutoBid = false
-                    });
-
-                    var AutoBidsDto = autoBids.Select(ab => new BiddingHistoryDto
-                    {
-                        Winner = new WinnerDto
-                        {
-                            FirstName = ab.Buyer.User.FirstName,
-                            LastName = ab.Buyer.User.LastName
-                        },
-                        Amount = ab.IncreasePrice,
-                        Time = ab.UpdatedAt,
-                        IsAutoBid = true
-                    });
-
-                    var BiddingHistory = BidsDto
-                        .Concat(AutoBidsDto)
+                    var BiddingHistory = bids
+                        .Concat(autoBids)
                         .OrderByDescending(b => b.Time)
                         .ToList();
 

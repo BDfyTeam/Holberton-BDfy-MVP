@@ -29,7 +29,7 @@ namespace BDfy.Models
         public DateTime EndAt { get; set; }
 
         [Column("category")]
-        public  int[]? Category { get; set; } = [];
+        public int[]? Category { get; set; } = [];
 
         [Required]
         [Column("status")]
@@ -49,7 +49,7 @@ namespace BDfy.Models
         public AuctioneerDetails Auctioneer { get; set; } = null!;
 
         [Required]
-        public List<Lot> Lots { get; set; } = [];
+        public List<AuctionLot> AuctionLots { get; set; } = [];
 
         public Auction() { } // EF
 

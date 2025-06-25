@@ -16,19 +16,27 @@ namespace BDfy.Services
                 using var scope = _scopeFactory.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<BDfyDbContext>(); // Obtenemos la DB a traves de un Scope
 
-                var auctionsToClose = await dbContext.Auctions // Buscamos las Subastas activas y que su EndAt sea menor o igual que el actual
-                    .Include(a => a.Auctioneer)
-                    .Include(a => a.Lots)
-                        .ThenInclude(l => l.BiddingHistory)
-                            .ThenInclude(b => b.Buyer)
+                var auctionLotsToClose = await dbContext.AuctionLots // Buscamos las Subastas activas y que su EndAt sea menor o igual que el actual
+                    .Include(al => al.Auction) // Incluimos las subastas de la tabla intermedia
+                        .ThenInclude(a => a.Auctioneer) // El subsatador de la subasta
+                    .Include(al => al.Lot) // Los lotes de la tabla intermedia
+                        .ThenInclude(l => l.BiddingHistory) // Historial
+                            .ThenInclude(b => b.Buyer) // Comprador
+                    .Where(al => al.Auction.Status == AuctionStatus.Active && al.Auction.EndAt <= DateTime.UtcNow) // Buscamos dentro de la tabla intermedia las subastas activas que se hayan terminado
                     .AsSplitQuery() // Rendimiento
-                    .Where(a => a.Status == AuctionStatus.Active && a.EndAt <= DateTime.UtcNow)
                     .ToListAsync(cancellationToken: stoppingToken);
 
-                foreach (var auction in auctionsToClose)
+                var groupedAuctions = auctionLotsToClose.GroupBy(al => al.AuctionId); // Agrupamos todas las subastas por su auction id
+
+                foreach (var auctionGroup in groupedAuctions) // Iteramos sobre las subastas
                 {
-                    foreach (var lot in auction.Lots)
+                    var auctionId = auctionGroup.Key;
+                    var auction = auctionGroup.First().Auction;
+
+                    foreach (var al in auctionGroup) // Iteramos sobre los lotes de una subasta ---> al == subasta
                     {
+                        var lot = al.Lot;
+
                         if (lot.BiddingHistory != null && lot.BiddingHistory.Any())
                         {
                             var winner = lot.BiddingHistory
@@ -57,23 +65,27 @@ namespace BDfy.Services
 
                             var storageAuction = await dbContext.Auctions
                                 .Include(a => a.Auctioneer)
-                                    .ThenInclude(ad => ad.User)
-                                .FirstOrDefaultAsync(a => a.Status == AuctionStatus.Storage &&
-                                a.Auctioneer.UserId == auctioneerUserId, cancellationToken: stoppingToken)
-                                ?? throw new InvalidOperationException("No storage auction found for the auctioneer.");
+                                .FirstOrDefaultAsync(a =>
+                                    a.Status == AuctionStatus.Storage &&
+                                    a.Auctioneer.UserId == auctioneerUserId, cancellationToken: stoppingToken)
+                                    ?? throw new InvalidOperationException("No storage auction found for the auctioneer."
+                                );
 
-                            lot.Auction = storageAuction;
-                            lot.AuctionId = storageAuction.Id;
+                            dbContext.AuctionLots.Add(new AuctionLot // Creamos una nueva instancia en la tabla donde guardaremos el lote al storage (indicando que no es su subasta original)
+                            {
+                                AuctionId = storageAuction.Id,
+                                LotId = lot.Id,
+                                IsOriginalAuction = false
+                            });
 
                             _logger.LogInformation("Lote {LotId} movido a Storage.", lot.Id);
 
                         }
                     }
-                    _logger.LogInformation("Closed auction {AuctionId} with {AuctionLotsCount} lots.", auction.Id, auction.Lots.Count);
+                    _logger.LogInformation("Closed auction {AuctionId}", auction.Id);
                     auction.Status = AuctionStatus.Closed;
+                    await dbContext.SaveChangesAsync(stoppingToken);
                 }
-
-                await dbContext.SaveChangesAsync(stoppingToken);
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }

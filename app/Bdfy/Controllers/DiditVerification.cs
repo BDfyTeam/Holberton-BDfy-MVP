@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestSharp;
 using BDfy.Configurations;
-using System.Net.Http.Headers;
-using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace BDfy.Controllers
@@ -107,14 +105,17 @@ namespace BDfy.Controllers
             var json = System.Text.Json.JsonDocument.Parse(response.Content);
             if (json.RootElement.TryGetProperty("status", out var Status))
             {
-                if (Status.GetString() == "Approved") { user.UserDetails.IsVerified = true; }
-                else{ user.UserDetails.IsVerified = false; }
+                if (Status.GetString() == "Approved")
+                {
+                    user.UserDetails.IsVerified = true;
+                }
+                else { user.UserDetails.IsVerified = false; }
+                await _db.SaveChangesAsync();
 
                 return Ok(new
                 {
                     Status = Status.GetString()!,
                 });
-                
             }
             else
             {
