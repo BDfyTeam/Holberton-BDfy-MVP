@@ -11,8 +11,12 @@ type LotForm = {
 };
 
 export default function CreateLotButton({ className }: LotForm) {
-  const [auctionOptions, setAuctionOptions] = useState<{ id: number; title: string }[]>([]);
-  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(null);
+  const [auctionOptions, setAuctionOptions] = useState<
+    { id: number; title: string }[]
+  >([]);
+  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(
+    null
+  );
   const [showForm, setShowForm] = useState(false);
   const [lotNumber, setLotNumber] = useState("");
   const [description, setDescription] = useState("");
@@ -32,12 +36,16 @@ export default function CreateLotButton({ className }: LotForm) {
         try {
           const auctions = await getAuctionsByAuctioneer();
 
-          const combined = [
-            ...auctions.map((auction: { id: number; title: string }) => ({
+          const combined = auctions
+            .filter(
+              (auction: { status: number; title: string }) =>
+                auction.status === 2 || auction.status === 3
+            )
+            .map((auction: { id: string; title: string }) => ({
               id: auction.id,
               title: auction.title,
-            })),
-          ];
+            }));
+
           setAuctionOptions(combined);
         } catch (error) {
           console.error("Error cargando opciones de subasta", error);
