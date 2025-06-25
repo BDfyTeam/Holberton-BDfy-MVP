@@ -16,13 +16,13 @@ type BidUpdate = {
 };
 
 type BiddingHistoryDto = {
-  winner: {
-    firstName: string;
-    lastName: string;
+  Winner: {
+    FirstName: string;
+    LastName: string;
   };
-  amount: number;
-  time: string;
-  isAutoBid: boolean;
+  Amount: number;
+  Time: string;
+  IsAutoBid: boolean;
 };
 
 export default function AuctionPage() {
@@ -33,10 +33,13 @@ export default function AuctionPage() {
     useState<string>("Disconnected");
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   // Nuevo estado para rastrear el ID del lote al que estamos escuchando activamente
-  const [activeListeningLotId, setActiveListeningLotId] = useState<string | null>(null);
+  const [activeListeningLotId, setActiveListeningLotId] = useState<
+    string | null
+  >(null);
   const [selectLot, setselectLot] = useState<Lot | null>(null);
-  const [biddingHistory, setBiddingHistory] = useState<BiddingHistoryDto[]>([]); 
-
+  const [biddingHistories, setBiddingHistories] = useState<
+    Record<string, BiddingHistoryDto[]>
+  >({});
 
   useEffect(() => {
     if (selectLot) {
@@ -49,7 +52,7 @@ export default function AuctionPage() {
       try {
         const data = await getAuctionById(String(id));
         setAuction(data);
-        
+
         if (data.lots && data.lots.length > 0) {
           setActiveListeningLotId(data.lots[0].id);
         }
@@ -80,9 +83,16 @@ export default function AuctionPage() {
     });
   }, []);
 
-  const handleBiddingHistory = useCallback((history: BiddingHistoryDto[]) => { // 
-  setBiddingHistory(history);
-}, []);
+  const handleBiddingHistory = useCallback(
+    (history: BiddingHistoryDto[]) => {
+      if (!activeListeningLotId) return;
+      setBiddingHistories((prev) => ({
+        ...prev,
+        [activeListeningLotId]: history,
+      }));
+    },
+    [activeListeningLotId]
+  );
 
   useEffect(() => {
     if (!auction || !selectLot) return;
@@ -190,7 +200,6 @@ export default function AuctionPage() {
     connection.on("ReceiveMessage", handleMessage);
     connection.on("ReceiveBiddingHistory", handleBiddingHistory);
 
-
     connection.onclose((error) => {
       if (isMounted) {
         console.error("Conexión cerrada:", error);
@@ -277,6 +286,8 @@ export default function AuctionPage() {
     if (lote) setselectLot(lote);
   };
 
+  const history = selectLot ? biddingHistories[selectLot.id] || [] : [];
+
   return (
     <div className="p-6 text-white">
       <div className="mb-4 flex justify-between items-center">
@@ -306,6 +317,27 @@ export default function AuctionPage() {
               onBidInitiated={suscribirseAlLote}
               className="text-black"
             />
+
+            {/* Historial */}
+            {history.length > 0 && (
+              <div className="mt-4 p-4 bg-gray-100 rounded text-black">
+                <h2 className="text-xl font-semibold mb-2">
+                  Historial de pujas
+                </h2>
+                <ul className="space-y-1">
+                  {history.map((entry, index) => (
+                    <li key={index} className="border-b pb-1">
+                      <span className="font-bold">
+                        {entry.Winner.FirstName} {entry.Winner.LastName}
+                      </span>{" "}
+                      ofreció ${entry.Amount} a las{" "}
+                      {new Date(entry.Time).toLocaleTimeString()}{" "}
+                      {entry.IsAutoBid ? "(Auto)" : ""}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       )}
