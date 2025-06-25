@@ -1,5 +1,10 @@
 import { getToken, getUserIdFromToken } from "./handleToken";
-import type { AuctionCard, RegisterUserPayload, LotCard, CompleteLot} from "./types";
+import type {
+  AuctionCard,
+  RegisterUserPayload,
+  LotCard,
+  CompleteLot,
+} from "./types";
 import type { RegisterAuctioneerPayload } from "./types";
 
 // LOGUEAR UN USUARIO
@@ -95,11 +100,11 @@ export async function getUserById(userId: string) {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
-      }
+      },
     });
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || "Error al obtener el usuario.")
+      throw new Error(errorData.message || "Error al obtener el usuario.");
     }
     return await response.json();
   } catch (error) {
@@ -189,8 +194,6 @@ export async function createAuction(payload: AuctionCard) {
   }
 }
 
-
-
 // GET TODAS LAS SUBASTAS DE UN USUARIO
 export async function getAuctionsByAuctioneer() {
   try {
@@ -220,9 +223,9 @@ export async function getAuctionsByAuctioneer() {
         errorData.message || "Error al obtener el almacenamiento."
       );
     }
-    
+
     const data = await response.json();
-    
+
     return data;
   } catch (error) {
     console.error("Error al obtener el almacenamiento:", error);
@@ -233,12 +236,15 @@ export async function getAuctionsByAuctioneer() {
 // TRAER UNA SUBASTA ESPESIFICA
 export async function getAuctionById(id: string) {
   try {
-    const response = await fetch(`http://127.0.0.1:5015/api/1.0/auctions/specific/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/auctions/specific/${id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
-    });
+    );
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || "Error al obtener la subasta.");
@@ -290,14 +296,17 @@ export async function createLot(payload: LotCard) {
       throw new Error("No se encontró el token de autenticación.");
     }
     const auctionId = payload.auctionId;
-    const response = await fetch(`http://127.0.0.1:5015/api/1.0/lots/${auctionId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // Enviamos el token de autenticación
-      },
-      body: JSON.stringify(payload)
-    });
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/lots/${auctionId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Enviamos el token de autenticación
+        },
+        body: JSON.stringify(payload),
+      }
+    );
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || "Error al crear el lote.");
@@ -311,22 +320,25 @@ export async function createLot(payload: LotCard) {
 }
 
 // TRAER UN LOTE ESPESIFICO
-export async function getLotById(lotId:string) {
+export async function getLotById(lotId: string) {
   const token = getToken();
   if (!token) throw new Error("No se encontró el token de autenticación.");
-  
+
   try {
-    const response = await fetch(`http://127.0.0.1:5015/api/1.0/lots/specific/${lotId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-    });
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/lots/specific/${lotId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || "Lote no encontrado.")
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Lote no encontrado.");
     }
 
     return await response.json();
@@ -343,20 +355,23 @@ export async function updateLot(payload: LotCard) {
       throw new Error("No se encontró el token de autenticación.");
     }
     const lotId = payload.id;
-    const response = await fetch(`http://127.0.0.1:5015/api/1.0/lots/${lotId}/edit`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        lotNumber: payload.lotNumber,
-        description: payload.description,
-        details: payload.details,
-        startingPrice: payload.startingPrice,
-        auctionId: payload.auctionId
-      })
-    });
+    const response = await fetch(
+      `http://127.0.0.1:5015/api/1.0/lots/${lotId}/edit`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          lotNumber: payload.lotNumber,
+          description: payload.description,
+          details: payload.details,
+          startingPrice: payload.startingPrice,
+          auctionId: payload.auctionId,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -411,11 +426,14 @@ export async function getAllStorageLots() {
 
 // HACER UNA PUJA EN UN LOTE
 export async function makeBid(lotId: string, bid: number) {
-  const token = getToken();
-
   try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("No se encontró el token de autenticación.");
+    }
     const dateNow = new Date();
-    const response = await fetch(`http://127.0.0.1:5016/api/1.0/lots/bid/${lotId}`,
+    const response = await fetch(
+      `http://127.0.0.1:5016/api/1.0/lots/bid/${lotId}`,
       {
         method: "POST",
         headers: {
@@ -442,4 +460,48 @@ export async function makeBid(lotId: string, bid: number) {
     console.error("Error al enviar la puja:", err);
     return `❌ ${err.message}`;
   }
-};
+}
+
+// HACER UNA AUTOPUJA
+export async function makeAutoBid(
+  lotId: string,
+  maxBid: number,
+  increasePrice: number
+) {
+  try {
+    const token = getToken();
+    if (!token) {
+      throw new Error("No se encontró el token de autenticación.");
+    }
+    const buyerId = getUserIdFromToken();
+    if (!buyerId) {
+      throw new Error("No se pudo obtener el ID del usario desde el token.");
+    }
+
+    const response = await fetch(
+      `http://127.0.0.1:5016/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          increasePrice: increasePrice,
+          maxBid: maxBid,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Error desconocido al hacer la autopuja."
+      );
+    }
+    return "✅ Autopuja realizada con éxito";
+  } catch (error) {
+    console.error("Error al hacer la autopuja:", error);
+    throw error;
+  }
+}

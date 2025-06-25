@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Lot } from "../services/types";
-import { makeBid } from "~/services/fetchService";
+import { makeAutoBid, makeBid } from "~/services/fetchService";
 
 interface LotCardProps {
   lot: Lot;
@@ -12,6 +12,8 @@ export default function LotCard({ lot, onBidInitiated, className }: LotCardProps
   const [bid, setBid] = useState<number>((lot.currentPrice ?? lot.startingPrice) + 1);
   const [message, setMessage] = useState("");
   const [base, setBase] = useState(lot.currentPrice ?? lot.startingPrice);
+  const [autoMaxBid, setAutoMaxBid] = useState<number | undefined>(undefined);
+
 
   // Este useEffect asegura que el input de la puja se actualice
   // cuando el precio del lote cambie (debido a actualizaciones de SignalR).
@@ -58,6 +60,23 @@ export default function LotCard({ lot, onBidInitiated, className }: LotCardProps
     };
   });
 
+  const minIncrement = Math.min(...botones.map((b) => b.incremento));
+
+
+  const handleAutoBid = async () => {
+    if (autoMaxBid === undefined || autoMaxBid <= base) {
+      setMessage("❌ La autopuja debe tener un valor máximo mayor al actual e incremento positivo.");
+      return;
+    }
+  
+    try {
+      const msg = await makeAutoBid(lot.id, autoMaxBid, minIncrement);
+      setMessage(msg);
+    } catch (err: any) {
+      setMessage(`❌ ${err.message}`);
+    }
+  };
+
   return (
     <div className={className}>
       <p className="font-semibold text-lg">{lot.description}</p>
@@ -100,6 +119,24 @@ export default function LotCard({ lot, onBidInitiated, className }: LotCardProps
               }}
               className="w-full border border-gray-300 rounded p-1"
             />
+          </div>
+          <div className="mt-4 border-t pt-4">
+            <h3 className="font-semibold mb-2 text-sm">Autopuja</h3>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <input
+                type="text"
+                placeholder="Puja máxima"
+                className="border p-1 rounded"
+                onChange={(e) => setAutoMaxBid(parseInt(e.target.value))}
+              />
+            </div>
+            <button
+              type="button"
+              className="bg-green-600 text-white px-3 py-1 rounded"
+              onClick={handleAutoBid}
+            >
+              Activar Autopuja
+            </button>
           </div>
         </div>
         {message && <p className="text-sm text-gray-700">{message}</p>}
