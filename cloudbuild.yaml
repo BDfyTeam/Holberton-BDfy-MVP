@@ -1,12 +1,12 @@
 steps:
   # Backend (.NET)
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/bdfy-backend', '-f', 'Dockerfile', '.']
+    args: ['build', '-f', 'Dockerfile', '-t', 'gcr.io/$PROJECT_ID/bdfy-backend', '.']
     dir: 'app/Bdfy'
 
   # Frontend (Node)
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/bdfy-frontend', '-f', 'Dockerfile', '.']
+    args: ['build', '-f', 'Dockerfile', '-t', 'gcr.io/$PROJECT_ID/bdfy-frontend', '.']
     dir: 'app/BDfy-Frontend'
 
 images:
