@@ -2,7 +2,8 @@ import { Splide, SplideSlide } from "@splidejs/react-splide";
 import { Link } from "react-router";
 import type { AuctionCard } from "~/services/types";
 import { useEffect, useRef } from "react";
-import pengu from "app/public/assets/ConfusedPengu.png"
+import pengu from "app/public/assets/ConfusedPengu.png";
+import categorys from "~/services/categorys";
 
 type CarouselAuctionCardProps = {
   auction: AuctionCard[];
@@ -10,7 +11,11 @@ type CarouselAuctionCardProps = {
   className?: string;
 };
 
-export default function CarouselAuctionCard({ auction, renderAction, className, }: CarouselAuctionCardProps) {
+export default function CarouselAuctionCard({
+  auction,
+  renderAction,
+  className,
+}: CarouselAuctionCardProps) {
   const promptButton = "Ver Subasta";
   // Esto es para que "breakpoints" funcione correctamente en Splide
   const splideRef = useRef<any>(null); // Referencia para Splide
@@ -25,11 +30,7 @@ export default function CarouselAuctionCard({ auction, renderAction, className, 
   if (!auction || auction.length === 0) {
     return (
       <div className="max-w-screen-xl mx-auto py-20 flex flex-col items-center text-center space-y-6">
-        <img
-          src={pengu}
-          alt="Sin subastas"
-          className="w-48 h-48 opacity-70"
-        />
+        <img src={pengu} alt="Sin subastas" className="w-48 h-48 opacity-70" />
         <p className="text-lg text-gray-400 font-medium">
           No hay subastas disponibles en este momento.
         </p>
@@ -56,7 +57,8 @@ export default function CarouselAuctionCard({ auction, renderAction, className, 
         }}
       >
         {/* Style necesario para mover las flechas hacia afuera */}
-        <style>{` 
+        <style>
+          {` 
           .splide__arrow--prev {
           left: -4rem;
           }
@@ -90,14 +92,17 @@ export default function CarouselAuctionCard({ auction, renderAction, className, 
                     Categorías:
                   </span>
                   <div className="flex flex-wrap gap-2">
-                    {auction.category.map((cat, index) => (
-                      <span
-                        key={index}
-                        className="bg-[#59b9e2]/20 text-[#59b9e2] text-xs font-medium px-3 py-1 rounded-full border border-[#59b9e2]/40"
-                      >
-                        {cat}
-                      </span>
-                    ))}
+                    {auction.category.map((catId, index) => {
+                      const name = categorys[catId as keyof typeof categorys];
+                      return (
+                        <span
+                          key={index}
+                          className="bg-[#59b9e2]/20 text-[#59b9e2] text-xs font-medium px-3 py-1 rounded-full border border-[#59b9e2]/40"
+                        >
+                          {name ?? `Categoría ${catId}`}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
 

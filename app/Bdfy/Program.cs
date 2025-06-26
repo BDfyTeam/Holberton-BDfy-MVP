@@ -58,7 +58,7 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 "https://localhost:3000", "https://127.0.1:3000", // Frontend
-                "http://localhost:5015", "http://127.0.0.1:5015") // Específicos
+                "http://localhost:5016", "http://127.0.0.1:5016") // Específicos
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
@@ -160,6 +160,7 @@ builder.Services.AddScoped<AppSettings>();
 
 builder.Services.AddScoped<AuctionServices>(); // Servicio para editar una subasta // Servicio para editar una subasta
 builder.Services.AddScoped<IAutoBidService, AutoBidService>(); // Servicio para hacer Auto-bids
+builder.Services.AddScoped<BiddingHistoryService>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

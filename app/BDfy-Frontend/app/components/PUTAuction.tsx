@@ -4,25 +4,41 @@ import type { AuctionCard } from "~/services/types";
 import "../app.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import categorys from "~/services/categorys";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxButton,
+  ComboboxOptions,
+  ComboboxOption,
+} from "@headlessui/react";
+import { CheckIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
+import clsx from "clsx";
 
 type UpdateAuctionButtonProps = {
   auction: AuctionCard;
   onClose?: () => void;
 };
 
-export default function UpdateAuctionButton({ auction, onClose }: UpdateAuctionButtonProps) {
+export default function UpdateAuctionButton({
+  auction,
+  onClose,
+}: UpdateAuctionButtonProps) {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startAt, setStartAt] = useState<Date | null>(null);
   const [endAt, setEndAt] = useState<Date | null>(null);
-  const [category, setCategory] = useState<number | "">("");
   const [status, setStatus] = useState(2);
   const [street, setStreet] = useState("");
   const [streetNumber, setStreetNumber] = useState(0);
   const [corner, setCorner] = useState("");
   const [zipCode, setZipCode] = useState(0);
   const [department, setDepartment] = useState("");
+  const [query, setQuery] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<
+    { id: number; name: string }[]
+  >([]);
 
   useEffect(() => {
     if (auction) {
@@ -30,13 +46,20 @@ export default function UpdateAuctionButton({ auction, onClose }: UpdateAuctionB
       setDescription(auction.description);
       setStartAt(new Date(auction.startAt));
       setEndAt(auction.endAt ? new Date(auction.endAt) : null);
-      setCategory(auction.category?.[0] || "");
       setStatus(auction.status);
       setStreet(auction.direction?.street || "");
       setStreetNumber(auction.direction?.streetNumber || 0);
       setCorner(auction.direction?.corner || "");
       setZipCode(auction.direction?.zipCode || 0);
       setDepartment(auction.direction?.department || "");
+  
+      // 👇 Seteamos las categorías ya asignadas
+      setSelectedCategories(
+        auction.category?.map((id) => ({
+          id,
+          name: categorys[id as keyof typeof categorys],
+        })) || []
+      );
     }
   }, [auction]);
 
@@ -54,7 +77,7 @@ export default function UpdateAuctionButton({ auction, onClose }: UpdateAuctionB
       description,
       startAt: startAt ? startAt.toISOString() : "",
       endAt: endAt ? endAt.toISOString() : "",
-      category: category === "" ? [] : [category],
+      category: selectedCategories.map((c) => c.id),
       status,
       direction: {
         street,
@@ -71,6 +94,11 @@ export default function UpdateAuctionButton({ auction, onClose }: UpdateAuctionB
       alert("Subasta editada con éxito");
     }
   };
+
+  const categoryOptions = Object.entries(categorys).map(([key, label]) => ({
+    id: parseInt(key),
+    name: label,
+  }));
 
   return (
     <div>
@@ -118,76 +146,107 @@ export default function UpdateAuctionButton({ auction, onClose }: UpdateAuctionB
           ></textarea>
 
           {/* Fecha de inicio */}
-          <label
-            htmlFor="startAt"
-            className="block text-sm font-medium text-gray-900"
-          >
-            Fecha de inicio
-          </label>
-          <DatePicker
-            selected={startAt}
-            onChange={(date: Date | null) => setStartAt(date)}
-            showTimeSelect // Permite seleccionar la hora
-            dateFormat="Pp" // Formato de fecha y hora
-            className="border border-gray-300 p-2 mb-4 w-full text-black"
-            wrapperClassName="w-full" // Asegura que el DatePicker ocupe todo el ancho del contenedor
-            placeholderText="06/09/2025, 4:00 PM"
-          />
+          <div className="relative z-65 w-full mb-6 group font-[Inter]">
+            <DatePicker
+              selected={startAt}
+              onChange={(date: Date | null) => setStartAt(date)}
+              showTimeSelect
+              dateFormat="Pp"
+              placeholderText="06/09/2025, 4:00 PM"
+              className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+              wrapperClassName="w-full"
+              popperClassName="datepicker-z"
+              id="startAt"
+            />
+            <label
+              htmlFor="startAt"
+              className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200
+                          peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60
+                          peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+            >
+              Fecha de inicio
+            </label>
+          </div>
 
           {/* Fecha de fin */}
-          <label
-            htmlFor="endAt"
-            className="block text-sm font-medium text-gray-900"
-          >
-            Fecha de fin
-          </label>
-          <DatePicker
-            selected={endAt}
-            onChange={(date: Date | null) => setEndAt(date)}
-            showTimeSelect
-            dateFormat="Pp"
-            className="border border-gray-300 p-2 mb-4 w-full text-black"
-            wrapperClassName="w-full"
-            placeholderText="06/09/2025, 4:00 PM"
-          />
+          <div className="relative z-60 w-full mb-6 group font-[Inter]">
+            <DatePicker
+              selected={endAt}
+              onChange={(date: Date | null) => setEndAt(date)}
+              showTimeSelect
+              dateFormat="Pp"
+              placeholderText="06/09/2025, 4:00 PM"
+              className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+              wrapperClassName="w-full"
+              id="endAt"
+            />
+            <label
+              htmlFor="endAt"
+              className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200
+                          peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60
+                          peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
+            >
+              Fecha de fin
+            </label>
+          </div>
 
           {/* Categoría */}
-          <label
-            htmlFor="category"
-            className="block text-sm font-medium text-gray-900"
-          >
-            Categoría
-          </label>
-          <select
-            id="category"
-            name="category"
-            value={category}
-            onChange={(e) =>
-              setCategory(e.target.value === "" ? "" : parseInt(e.target.value))
-            }
-            className="border border-gray-300 p-2 mb-4 w-full text-black"
-          >
-            <option value="">Tekenlogia</option>
-            <option value="1">Muebles</option>
-            <option value="2">Celulares</option>
-            <option value="3">Deportes</option>
-            <option value="4">Camas</option>
-            <option value="5">Cafe</option>
-            <option value="6">Arte</option>
-            <option value="7">Joyeria</option>
-            <option value="8">Autos</option>
-            <option value="9">Construccion</option>
-            <option value="10">Limpieza</option>
-            <option value="11">VideoJuegos</option>
-            <option value="12">Comida</option>
-            <option value="13">Cobiertos</option>
-            <option value="14">Estufas</option>
-            <option value="15">Terrenos</option>
-            <option value="16">Ganado</option>
-            <option value="17">Pesca</option>
-            <option value="18">Tacuarembó</option>
-            <option value="19">Treinta y Tres</option>
-          </select>
+          <div className="relative z-50 w-full mb-6 group font-[Inter]">
+            <label className="block mb-2 text-sm text-[#81fff9]">
+              Categorías
+            </label>
+
+            <Combobox
+              value={selectedCategories}
+              onChange={(selected) => setSelectedCategories(selected)}
+              multiple
+            >
+              <div className="relative">
+                <ComboboxInput
+                  className="w-full rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 py-2 text-sm text-white focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50"
+                  onChange={(event) => setQuery(event.target.value)}
+                  displayValue={(selected: { name: string }[]) =>
+                    selected.map((s) => s.name).join(", ")
+                  }
+                />
+                <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronDownIcon className="w-4 h-4 text-white" />
+                </ComboboxButton>
+              </div>
+
+              <ComboboxOptions className="absolute top-full left-0 z-[999] mt-1 max-h-60 w-full overflow-auto rounded-lg bg-[#1B3845] border border-[#59b9e2]/50 py-1 text-sm shadow-lg">
+                {categoryOptions
+                  .filter((option) =>
+                    option.name.toLowerCase().includes(query.toLowerCase())
+                  )
+                  .map((option) => (
+                    <ComboboxOption
+                      key={option.id}
+                      value={option}
+                      className={({ active, selected }) =>
+                        clsx(
+                          "cursor-pointer select-none px-4 py-2",
+                          active && "bg-[#59b9e2]/20",
+                          selected && "font-semibold text-[#81fff9]"
+                        )
+                      }
+                    >
+                      {({ selected }) => (
+                        <div className="flex items-center gap-2">
+                          <CheckIcon
+                            className={clsx(
+                              "w-4 h-4",
+                              selected ? "visible text-[#81fff9]" : "invisible"
+                            )}
+                          />
+                          {option.name}
+                        </div>
+                      )}
+                    </ComboboxOption>
+                  ))}
+              </ComboboxOptions>
+            </Combobox>
+          </div>
 
           {/* Estado */}
           <label
