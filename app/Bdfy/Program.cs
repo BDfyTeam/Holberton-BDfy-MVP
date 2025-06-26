@@ -58,7 +58,7 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 "https://localhost:3000", "https://127.0.1:3000", // Frontend
-                "http://localhost:5015", "http://127.0.0.1:5015") // Específicos
+                "http://127.0.0.1:5016", "http://localhost:5016") // Arreglando las cagadas del Fabri
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
