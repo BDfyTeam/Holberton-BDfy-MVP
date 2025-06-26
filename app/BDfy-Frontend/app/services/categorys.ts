@@ -1,4 +1,4 @@
-const categorys = {
+const categorys: Record<number, string> = {
     1: "Ropa y Accesorios",
     2: "Inmuebles en Venta",
     3: "Autos y Motos",

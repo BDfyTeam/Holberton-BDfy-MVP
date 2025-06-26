@@ -5,6 +5,16 @@ import "../app.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Gavel } from "lucide-react";
+import categorys from "~/services/categorys";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxButton,
+  ComboboxOptions,
+  ComboboxOption,
+} from "@headlessui/react";
+import { CheckIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
+import clsx from "clsx";
 
 type AuctionForm = {
   className?: string;
@@ -16,13 +26,15 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
   const [description, setDescription] = useState("");
   const [startAt, setStartAt] = useState<Date | null>(null);
   const [endAt, setEndAt] = useState<Date | null>(null);
-  const [category, setCategory] = useState<number | "">("");
-  const [status, setStatus] = useState(2);
+  const [status] = useState(2);
   const [street, setStreet] = useState("");
   const [streetNumber, setStreetNumber] = useState("");
   const [corner, setCorner] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [department, setDepartment] = useState("");
+  const [query, setQuery] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<{ id: number; name: string }[]>([]);
+
 
   const openForm = () => {
     setShowForm(true);
@@ -39,7 +51,7 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
       description,
       startAt: startAt ? startAt.toISOString() : "",
       endAt: endAt ? endAt.toISOString() : "",
-      category: category === "" ? [] : [category],
+      category: selectedCategories.map((c) => c.id),
       status,
       direction: {
         street,
@@ -57,6 +69,12 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
     }
   };
 
+  // Necesario manejar las categorias asi para usarse con HeadLessUI
+  const categoryOptions = Object.entries(categorys).map(([key, label]) => ({
+    id: parseInt(key),
+    name: label,
+  }));
+
   return (
     <div className={className}>
       <button
@@ -66,7 +84,7 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
         <Gavel size={20} />
         <span>Crear Subasta</span>
       </button>
-      
+
       {/* Fondo oscuro */}
       {showForm && (
         <div
@@ -79,7 +97,7 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
         <div
           className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
           w-full max-w-xl bg-[#1B3845] text-white p-8 rounded-2xl shadow-2xl 
-          z-50 overflow-y-auto max-h-[90vh] border border-[#59b9e2]/50 backdrop-blur-sm"
+          z-50 max-h-[90vh] overflow-visible border border-[#59b9e2]/50 backdrop-blur-sm"
         >
           <button
             onClick={closeForm}
@@ -133,7 +151,7 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
             </div>
 
             {/* Fecha de inicio */}
-            <div className="relative w-full mb-6 group font-[Inter]">
+            <div className="relative z-65 w-full mb-6 group font-[Inter]">
               <DatePicker
                 selected={startAt}
                 onChange={(date: Date | null) => setStartAt(date)}
@@ -156,7 +174,7 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
             </div>
 
             {/* Fecha de fin */}
-            <div className="relative w-full mb-6 group font-[Inter]">
+            <div className="relative z-60 w-full mb-6 group font-[Inter]">
               <DatePicker
                 selected={endAt}
                 onChange={(date: Date | null) => setEndAt(date)}
@@ -178,78 +196,65 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
             </div>
 
             {/* Categoría */}
-            <div className="relative z-0 w-full mb-6 group font-[Inter]">
-              <select
-                id="category"
-                name="category"
-                value={category}
-                onChange={(e) =>
-                  setCategory(
-                    e.target.value === "" ? "" : parseInt(e.target.value)
-                  )
-                }
-                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-[#81fff9] focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
-              >
-                <option value="" disabled hidden></option>
-                <option value="1">Ropa y Accesorios</option>
-                <option value="2">Inmuebles en Venta</option>
-                <option value="3">Autos y Motos</option>
-                <option value="4">Camiones y Autobuses</option>
-                <option value="5">Maquinaria de Construcción</option>
-                <option value="6">Maquinaria Agrícola</option>
-                <option value="7">Equipos Industriales</option>
-                <option value="8">Movimiento y Transporte</option>
-                <option value="9">Tecnología y Gadgets</option>
-                <option value="10">Electrodomésticos</option>
-                <option value="11">Materiales de Construcción</option>
-                <option value="12">
-                  Cocinas y Equipamiento para Restaurantes
-                </option>
-                <option value="13">Hogar y Decoración</option>
-                <option value="14">Oportunidades Únicas</option>
-                <option value="15">Chatarra, Materiales y Residuos</option>
-                <option value="16">Antigüedades y Coleccionables</option>
-              </select>
-
-              <label
-                htmlFor="category"
-                className={`absolute left-4 px-1 bg-[#1B3845] text-sm text-[#81fff9] transition-all duration-200
-                  ${
-                    category === ""
-                      ? "top-4 text-base text-[#81fff9]/60"
-                      : "-top-3 text-sm"
-                  }`}
-              >
-                Categoría
+            <div className="relative z-50 w-full mb-6 group font-[Inter]">
+              <label className="block mb-2 text-sm text-[#81fff9]">
+                Categorías
               </label>
-            </div>
 
-            {/* Estado */}
-            <div className="relative z-0 w-full mb-6 group font-[Inter]">
-              <select
-                id="status"
-                name="status"
-                value={status}
-                onChange={(e) => setStatus(parseInt(e.target.value))}
-                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-3.5 pb-3.5 text-sm text-[#81fff9] focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
+              <Combobox
+                value={selectedCategories}
+                onChange={(selected) => setSelectedCategories(selected)}
+                multiple
               >
-                <option value="" disabled hidden></option>
-                <option value="1">Activo</option>
-                <option value="0">Cerrada</option>
-                <option value="2">Borrador</option>
-              </select>
+                <div className="relative">
+                  <ComboboxInput
+                    className="w-full rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 py-2 text-sm text-white focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50"
+                    onChange={(event) => setQuery(event.target.value)}
+                    displayValue={(selected: { name: string }[]) =>
+                      selected.map((s) => s.name).join(", ")
+                    }
+                  />
+                  <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <ChevronDownIcon className="w-4 h-4 text-white" />
+                  </ComboboxButton>
+                </div>
 
-              <label
-                htmlFor="status"
-                className={`absolute left-4 px-1 bg-[#1B3845] text-sm text-[#81fff9] transition-all duration-200
-                  ${
-                    status === 0
-                      ? "top-3 text-base text-[#81fff9]/60"
-                      : "-top-3 text-sm"
-                  }`}
-              >
-                Estado
-              </label>
+                <ComboboxOptions 
+                  className="absolute top-full left-0 z-[999] mt-1 max-h-60 w-full overflow-auto rounded-lg bg-[#1B3845] border border-[#59b9e2]/50 py-1 text-sm shadow-lg"
+                >
+                  {categoryOptions
+                    .filter((option) =>
+                      option.name.toLowerCase().includes(query.toLowerCase())
+                    )
+                    .map((option) => (
+                      <ComboboxOption
+                        key={option.id}
+                        value={option}
+                        className={({ active, selected }) =>
+                          clsx(
+                            "cursor-pointer select-none px-4 py-2",
+                            active && "bg-[#59b9e2]/20",
+                            selected && "font-semibold text-[#81fff9]"
+                          )
+                        }
+                      >
+                        {({ selected }) => (
+                          <div className="flex items-center gap-2">
+                            <CheckIcon
+                              className={clsx(
+                                "w-4 h-4",
+                                selected
+                                  ? "visible text-[#81fff9]"
+                                  : "invisible"
+                              )}
+                            />
+                            {option.name}
+                          </div>
+                        )}
+                      </ComboboxOption>
+                    ))}
+                </ComboboxOptions>
+              </Combobox>
             </div>
 
             {/* Dirección */}
