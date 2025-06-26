@@ -220,7 +220,7 @@ namespace BDfy.Controllers
                     Direction = a.Direction,
                     AuctioneerId = a.AuctioneerId,
                     Lots = a.AuctionLots
-                    .Where(al => al.IsOriginalAuction)
+                    //.Where(al => al.IsOriginalAuction)
                     .Select(al => new LotsDto
                     {
                         Id = al.LotId,
@@ -234,11 +234,17 @@ namespace BDfy.Controllers
                         Sold = al.Lot.Sold
                         
                     }).ToList() ?? new List<LotsDto>(), 
-                    Auctioneer = new AuctioneerDto
-                    {
-                        UserId = a.Auctioneer.UserId,
-                        Plate = a.Auctioneer.Plate
-                    }
+                        Auctioneer = a.Auctioneer is not null
+                            ? new AuctioneerDto
+                            {
+                                UserId = a.Auctioneer.UserId,
+                                Plate = a.Auctioneer.Plate
+                            }
+                            : new AuctioneerDto
+                            {
+                                UserId = Guid.Empty,
+                                Plate = 0
+                            }
                 }).ToList();
 
                 return Ok(auctionDtos);

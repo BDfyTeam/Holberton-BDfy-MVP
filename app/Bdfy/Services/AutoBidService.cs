@@ -68,12 +68,23 @@ namespace BDfy.Services
         }
         public async Task<bool> CancelAutoBidAsync(Guid configId, Guid buyerId) // Funcion para cancelar un AutoBid
         {
+            Console.WriteLine($"auto bid: {configId}");
+            Console.WriteLine($"Buyer: {buyerId}");
 
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<BDfyDbContext>();
 
+            var user = await db.Users
+                .Include(u => u.UserDetails)
+                .FirstOrDefaultAsync(ud =>ud.Id == buyerId);
+
+            if (user == null || user.UserDetails == null)
+            {
+                return false;
+            }
+
             var autoBid = await db.AutoBidConfigs
-                .FirstOrDefaultAsync(ad => ad.Id == configId && ad.BuyerId == buyerId);
+                .FirstOrDefaultAsync(ad => ad.Id == configId && ad.BuyerId == user.UserDetails.Id);
 
             if (autoBid == null) { return false; }
 

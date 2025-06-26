@@ -520,7 +520,11 @@ namespace BDfy.Controllers
 			try
 			{
 				var userIdFromToken = HttpContext.User.FindFirst("Id")?.Value;
+				var userRoleFromToken = HttpContext.User.FindFirst("Role")?.Value;
+
 				if (!Guid.TryParse(userIdFromToken, out Guid parsedUserId)) { return Unauthorized("Invalid user ID"); }
+
+				if (userRoleFromToken != UserRole.Buyer.ToString()) { return Forbid("Only buyers can do and cancel auto-bids"); }
 
 				var success = await _autoBidService.CancelAutoBidAsync(autoBidId, parsedUserId);
 
