@@ -31,6 +31,7 @@ namespace BDfy.Services
             Console.WriteLine($"UserName from config: '{userName}'");
             Console.WriteLine($"VirtualHost from config: '{virtualHost}'");
             Console.WriteLine($"Password length: {password?.Length ?? 0}");
+            Console.WriteLine($"Tamo con ssl mano");
             Console.WriteLine($"======================================");
 
             var factory = new ConnectionFactory
