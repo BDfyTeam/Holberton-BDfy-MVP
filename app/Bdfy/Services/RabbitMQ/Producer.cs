@@ -20,16 +20,17 @@ namespace BDfy.Services
         }
         public async Task InitializeAsync() // Tarea para inicializar la conexion, el canal y la queue
         {
-            var rabbitMQConfig = _configuration.GetSection("RabbitMQ");
-            var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
-            var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
-            var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
+            
+            var hostName = _configuration["RabbitMQ:HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
+            var userName = _configuration["RabbitMQ:UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
+            var password = _configuration["RabbitMQ:Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
 
             var factory = new ConnectionFactory // Seteamos los datos para la conexion
             {
                 HostName = hostName,
                 UserName = userName,
-                Password = password
+                Password = password,
+                Port = 5672
             };
             _connection = await factory.CreateConnectionAsync(); // Creamos la conexion
             _channel = await _connection.CreateChannelAsync(); // Creamos el canal dentro de la conexion

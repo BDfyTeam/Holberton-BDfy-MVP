@@ -14,6 +14,8 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddSignalR(options =>
 {
     // Configuraciones más estables para producción
