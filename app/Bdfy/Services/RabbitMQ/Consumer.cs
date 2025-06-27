@@ -40,6 +40,7 @@ namespace BDfy.Services
                 HostName = hostName,
                 UserName = userName,
                 Password = password,
+                VirtualHost = "gozumern",
                 Port = 5672
             };
             IConnection connection = await factory.CreateConnectionAsync(stoppingToken); // El token es para finalizarlo de forma limpia y segura en caso de error

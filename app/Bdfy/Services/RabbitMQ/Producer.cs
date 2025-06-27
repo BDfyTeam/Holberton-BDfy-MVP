@@ -30,6 +30,7 @@ namespace BDfy.Services
                 HostName = hostName,
                 UserName = userName,
                 Password = password,
+                VirtualHost = "gozumern",
                 Port = 5672
             };
             _connection = await factory.CreateConnectionAsync(); // Creamos la conexion
