@@ -1,0 +1,12 @@
+steps:
+  # Solo Backend (.NET)
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/bdfy-backend', '-f', './Dockerfile', '.']
+    dir: 'app/Bdfy'
+
+images:
+  - 'gcr.io/$PROJECT_ID/bdfy-backend'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  diskSizeGb: 100
