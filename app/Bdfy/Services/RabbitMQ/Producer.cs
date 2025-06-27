@@ -20,25 +20,11 @@ namespace BDfy.Services
         }
         public async Task InitializeAsync() // Tarea para inicializar la conexion, el canal y la queue
         {
-            var hostName = _configuration["RabbitMQ:HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
-            var userName = _configuration["RabbitMQ:UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
-            var password = _configuration["RabbitMQ:Password"]?? throw new InvalidOperationException("RabbitMQ Password is not configured");
-            var virtualHost = _configuration["RabbitMQ:VirtualHost"] ?? "/";
-            Console.WriteLine($">>>> VHOST CONFIG: {virtualHost}");
-
-
-            var factory = new ConnectionFactory // Seteamos los datos para la conexion
+            var factory = new ConnectionFactory()
             {
-                HostName = hostName,
-                UserName = userName,
-                Password = password,
-                VirtualHost = virtualHost,
-                Port = 5672
+                Uri = new Uri("amqps://gozumern:33BzwUJ4495rZmj93D_a2vOIQ0fb6las@albatross.rmq.cloudamqp.com/gozumern")
             };
-            Console.WriteLine($"RabbitMQ Config:");
-            Console.WriteLine($"Host: {factory.HostName}");
-            Console.WriteLine($"User: {factory.UserName}");
-            Console.WriteLine($"VirtualHost: {factory.VirtualHost}");
+
             _connection = await factory.CreateConnectionAsync(); // Creamos la conexion
             _channel = await _connection.CreateChannelAsync(); // Creamos el canal dentro de la conexion
             await _channel.QueueDeclareAsync
