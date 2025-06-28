@@ -15,7 +15,7 @@ namespace BDfy.Services
 
         public BidPublisher(ILogger<BidPublisher> logger, IConfiguration configuration)
         {
-            _logger = logger; // Informacion de la conexion (testing)
+            _logger = logger; // Informacion de la conexion
             _configuration = configuration;
         }
         public async Task InitializeAsync()
@@ -30,8 +30,7 @@ namespace BDfy.Services
             Console.WriteLine($"HostName from config: '{hostName}'");
             Console.WriteLine($"UserName from config: '{userName}'");
             Console.WriteLine($"VirtualHost from config: '{virtualHost}'");
-            Console.WriteLine($"Password length: {password?.Length ?? 0}");
-            Console.WriteLine($"Tamo con ssl mano");
+            Console.WriteLine($"Password length: {password.Length}");
             Console.WriteLine($"======================================");
 
             var factory = new ConnectionFactory
