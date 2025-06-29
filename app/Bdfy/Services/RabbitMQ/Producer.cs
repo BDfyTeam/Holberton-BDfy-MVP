@@ -32,12 +32,7 @@ namespace BDfy.Services
                 UserName = userName,
                 Password = password,
                 VirtualHost = virtualHost,
-                Port = 5672,
-                Ssl = new SslOption
-                {
-                    Enabled = true,
-                    ServerName = hostName
-                }
+                Port = 5672
             };
             _connection = await factory.CreateConnectionAsync(); // Creamos la conexion
             _channel = await _connection.CreateChannelAsync(); // Creamos el canal dentro de la conexion
