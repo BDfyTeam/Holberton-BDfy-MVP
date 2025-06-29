@@ -24,12 +24,20 @@ namespace BDfy.Services
             var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
             var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
             var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
+            var virtualHost = rabbitMQConfig["VirtualHost"] ?? "/";
 
             var factory = new ConnectionFactory // Seteamos los datos para la conexion
             {
                 HostName = hostName,
                 UserName = userName,
-                Password = password
+                Password = password,
+                VirtualHost = virtualHost,
+                Port = 5672,
+                Ssl = new SslOption
+                {
+                    Enabled = true,
+                    ServerName = hostName
+                }
             };
             _connection = await factory.CreateConnectionAsync(); // Creamos la conexion
             _channel = await _connection.CreateChannelAsync(); // Creamos el canal dentro de la conexion

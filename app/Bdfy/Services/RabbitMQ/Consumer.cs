@@ -34,12 +34,14 @@ namespace BDfy.Services
             var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
             var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
             var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
+            var virtualHost = rabbitMQConfig["VirtualHost"] ?? "/";
 
             var factory = new ConnectionFactory
             {
                 HostName = hostName,
                 UserName = userName,
                 Password = password,
+                VirtualHost = virtualHost,
                 Port = 5672
             };
             IConnection connection = await factory.CreateConnectionAsync(stoppingToken); // El token es para finalizarlo de forma limpia y segura en caso de error
