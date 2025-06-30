@@ -51,7 +51,7 @@ namespace BDfy.Controllers
 				if (auction.Auctioneer.UserId != userId) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
 				var checkLot = await _db.AuctionLots // Busco en la tabla intermedia por algun lote que cumpla las caracteristicas
-				 	.Include(al => al.Lot)
+					.Include(al => al.Lot)
 					.AnyAsync(al => al.Lot.LotNumber == Dto.LotNumber && al.AuctionId == auctionId && al.IsOriginalAuction);
 
 				if (checkLot) { return BadRequest($"Lot number {Dto.LotNumber} already exists"); }
@@ -78,9 +78,10 @@ namespace BDfy.Controllers
 				_db.AuctionLots.Add(auctionLot);
 				await _db.SaveChangesAsync();
 
-				return Created($"/api/1.0/lots/{lot.Id}", new { 
+				return Created($"/api/1.0/lots/{lot.Id}", new
+				{
 					message = "Lot registered successfully",
-					lotId = lot.Id 
+					lotId = lot.Id
 				});
 			}
 			catch (Exception ex)
@@ -200,7 +201,6 @@ namespace BDfy.Controllers
 				var auctionLots = await _db.AuctionLots
 				.Include(al => al.Auction)
 				.Include(al => al.Lot)
-				.Where(al => al.IsOriginalAuction)
 				.ToListAsync();
 
 				var lotsDto = auctionLots.Select(al => new LotGetDto
@@ -287,10 +287,11 @@ namespace BDfy.Controllers
 					await autoBidService.ProcessAutoBidAsync(lotId, bid.Amount);
 				});
 
-				return Created($"/api/lots/{lotId}", new { 
+				return Created($"/api/lots/{lotId}", new
+				{
 					message = "Bid created successfully",
 					lotId = lotId,
-					amount = bid.Amount 
+					amount = bid.Amount
 				});
 			}
 			catch (Exception ex)
@@ -334,7 +335,7 @@ namespace BDfy.Controllers
 		{
 			try
 			{
-				
+
 				if (!ModelState.IsValid)
 				{
 					return BadRequest(ModelState);
@@ -458,7 +459,7 @@ namespace BDfy.Controllers
 
 				await _db.SaveChangesAsync();
 
-				return Ok(new { message = "Lot updated successfully", lotId = lotId} );
+				return Ok(new { message = "Lot updated successfully", lotId = lotId });
 			}
 			catch (Exception ex)
 			{
@@ -551,6 +552,56 @@ namespace BDfy.Controllers
 				return StatusCode(500, new { error = ex.Message });
 			}
 		}
+		[Authorize]
+		[HttpDelete("{lotId}")]
+
+		public async Task<IActionResult> DeleteLot([FromRoute] Guid lotId)
+		{
+			using var transaction = await _db.Database.BeginTransactionAsync();
+
+			try
+			{
+				if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+				var auctioneerClaims = HttpContext.User;
+				var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+				var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
+
+				if (!Guid.TryParse(auctioneerIdFromToken, out var auctioneerId)) { return Unauthorized("Invalid auctioneer token"); }
+
+				var auctionLot = await _db.AuctionLots
+					.Include(al => al.Lot)
+					.Include(al => al.Auction)
+					.FirstOrDefaultAsync(al => al.LotId == lotId);
+
+				if (auctionLot == null)
+				{
+					return NotFound("AuctionLot not found");
+				}
+
+				var lot = await _db.Lots.FirstOrDefaultAsync(l => l.Id == lotId);
+
+				if (lot == null)
+				{
+					return NotFound("Lot not found");
+				}
+
+				if (auctionLot.Auction.Status != AuctionStatus.Closed)
+				{
+					_db.AuctionLots.Remove(auctionLot);
+					_db.Lots.Remove(lot);
+					await _db.SaveChangesAsync();
+				}
+
+				await transaction.CommitAsync();
+
+				return Ok(new { message = "Lot deleted successfully" });
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { error = ex.Message });
+			}
+		}
 	}
-}        
+}
 	

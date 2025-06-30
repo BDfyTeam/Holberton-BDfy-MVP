@@ -10,10 +10,9 @@ namespace BDfy.Controllers
 {
     [ApiController]
     [Route("api/1.0/auctions")]
-    public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices)  : BaseController(db)
+    public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices) : BaseController(db)
     {
         protected readonly AuctionServices _auctionServices = auctionServices;
-       
         [Authorize]
         [HttpPost("{userId}")]
         public async Task<ActionResult> Register([FromRoute] Guid userId, [FromBody] RegisterAuctionDto Dto)
@@ -110,8 +109,8 @@ namespace BDfy.Controllers
                         CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
                         EndingPrice = al.Lot.EndingPrice ?? 0,
                         Sold = al.Lot.Sold
-                        
-                    }).ToList() ?? new List<LotsDto>(), 
+
+                    }).ToList() ?? new List<LotsDto>(),
                     Auctioneer = new AuctioneerDto
                     {
                         UserId = a.Auctioneer.UserId,
@@ -147,7 +146,7 @@ namespace BDfy.Controllers
                     .Where(a => a.Auctioneer.UserId == auctioneerId)
                     .ToListAsync();
                 var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
-                
+
 
                 var auctionsDto = auctions.Select(a => new AuctionDtoId
                 {
@@ -232,9 +231,9 @@ namespace BDfy.Controllers
                         CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
                         EndingPrice = al.Lot.EndingPrice ?? 0,
                         Sold = al.Lot.Sold
-                        
-                    }).ToList() ?? new List<LotsDto>(), 
-                        Auctioneer = a.Auctioneer is not null
+
+                    }).ToList() ?? new List<LotsDto>(),
+                    Auctioneer = a.Auctioneer is not null
                             ? new AuctioneerDto
                             {
                                 UserId = a.Auctioneer.UserId,
@@ -263,7 +262,7 @@ namespace BDfy.Controllers
                 var auctionById = await _db.Auctions
                         .Include(ad => ad.Auctioneer)
                         .Include(a => a.AuctionLots)
-                            .ThenInclude(al => al.Lot) 
+                            .ThenInclude(al => al.Lot)
                         .FirstOrDefaultAsync(a => a.Id == auctionId);
 
                 if (auctionById == null) { return NotFound("Auction not found"); }
@@ -292,8 +291,8 @@ namespace BDfy.Controllers
                         CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
                         EndingPrice = al.Lot.EndingPrice ?? 0,
                         Sold = al.Lot.Sold
-                        
-                    }).ToList() ?? new List<LotsDto>(), 
+
+                    }).ToList() ?? new List<LotsDto>(),
                     Auctioneer = new AuctioneerDto
                     {
                         UserId = auctionById.Auctioneer.UserId,
@@ -383,7 +382,7 @@ namespace BDfy.Controllers
                 if (string.IsNullOrEmpty(auctioneerIdFromToken) || !Guid.TryParse(auctioneerIdFromToken, out var auctioneerId)) { return Unauthorized("Invalid user token"); }
 
                 if (auctioneerRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
-                 { return Forbid("Access denied: Only auctioneers or adminscan update auctions"); }
+                { return Forbid("Access denied: Only auctioneers or adminscan update auctions"); }
 
                 var result = await _auctionServices.EditAuction(auctionId, auctioneerId, dto);
 
@@ -397,5 +396,89 @@ namespace BDfy.Controllers
             }
         }
 
+
+        [Authorize]
+        [HttpDelete("{auctionId}")]
+        
+        public async Task<ActionResult> DeleteAuctionById([FromRoute] Guid auctionId)
+        {
+            using var transaction = await _db.Database.BeginTransactionAsync();
+            
+            try
+            {
+                var auctioneerClaims = HttpContext.User;
+                var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
+                var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+
+                if (string.IsNullOrEmpty(auctioneerIdFromToken) || !Guid.TryParse(auctioneerIdFromToken, out var auctioneerId))
+                    return Unauthorized("Invalid user token");
+
+                if (auctioneerRoleFromToken != UserRole.Auctioneer.ToString())
+                    return Unauthorized("Access Denied: Only Auctioneers can delete Auctions");
+
+                var auction = await _db.Auctions
+                    .Include(a => a.AuctionLots)
+                    .FirstOrDefaultAsync(a => a.Id == auctionId && a.Auctioneer.UserId == auctioneerId);
+
+                if (auction == null)
+                    return NotFound("Required information not found");
+
+                if (auction.Status != AuctionStatus.Draft)
+                    return BadRequest("Auction can only be deleted if it is in draft status");
+
+                var auctionLotsToDelete = await _db.AuctionLots
+                    .Where(al => al.AuctionId == auctionId && al.IsOriginalAuction)
+                    .ToListAsync();
+
+                var lotIds = auctionLotsToDelete.Select(al => al.LotId).ToList();
+
+                _db.AuctionLots.RemoveRange(auctionLotsToDelete);
+
+                Console.WriteLine($"Este es el auctioner id del token: {auctioneerId}");
+
+                var storage = await _db.Auctions
+                    .Include(a => a.Auctioneer)
+                    .FirstOrDefaultAsync(a => a.Auctioneer.UserId == auctioneerId && a.Status == AuctionStatus.Storage);
+
+                if (storage != null)
+                {
+                    Console.WriteLine($"Entra al if...");
+                    foreach (var lotId in lotIds)
+                    { 
+                        Console.WriteLine($"Id del lote iterando: {lotId}");
+                        bool isMissing = !_db.AuctionLots.Local.Any(al => al.LotId == lotId);
+
+                        Console.WriteLine($"Is missing: {isMissing}");
+
+                        if (isMissing)
+                        {
+                            var newAuctionLot = new AuctionLot
+                            {
+                                AuctionId = storage.Id,
+                                LotId = lotId,
+                                IsOriginalAuction = false,
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            };
+
+                            _db.AuctionLots.Add(newAuctionLot);
+                        }
+                    }
+                }
+
+                await _db.SaveChangesAsync();
+
+                _db.Auctions.Remove(auction);
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return NoContent();
+
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
     }
 }
