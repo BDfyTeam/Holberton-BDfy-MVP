@@ -20,11 +20,7 @@ namespace BDfy.Services
         }
         public async Task InitializeAsync()
         {
-            var hostName = _configuration["RabbitMQ:HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
-            var userName = _configuration["RabbitMQ:UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
-            var password = _configuration["RabbitMQ:Password"]?? throw new InvalidOperationException("RabbitMQ Password is not configured");
-            var virtualHost = _configuration["RabbitMQ:VirtualHost"] ?? "/";
-            
+        
             // LOGGING DETALLADO
             Console.WriteLine($"=== RABBITMQ CONFIGURATION DEBUG ===");
             Console.WriteLine($"HostName from config: '{hostName}'");
@@ -32,6 +28,12 @@ namespace BDfy.Services
             Console.WriteLine($"VirtualHost from config: '{virtualHost}'");
             Console.WriteLine($"Password length: {password.Length}");
             Console.WriteLine($"======================================");
+            
+            var rabbitMQConfig = _configuration.GetSection("RabbitMQ");
+            var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
+            var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
+            var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
+            var virtualHost = rabbitMQConfig["VirtualHost"] ?? "/";
 
             var factory = new ConnectionFactory
             {
@@ -39,12 +41,12 @@ namespace BDfy.Services
                 UserName = userName,
                 Password = password,
                 VirtualHost = virtualHost,
-                Port = 5671,
                 Ssl = new SslOption
                 {
                     Enabled = true,
                     ServerName = hostName
-                }
+                },
+                Port = 5672
             };
 
             try 
