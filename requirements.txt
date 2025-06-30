@@ -62,4 +62,4 @@ npm install @headlessui/react @heroicons/react clsx  # Headlessui para component
 
 # Dependencias de tailwind
 npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
+npx tailwindcss init -p 

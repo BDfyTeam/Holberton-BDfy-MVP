@@ -44,6 +44,12 @@ namespace BDfy.Services
                 VirtualHost = virtualHost,
                 Port = 5672
             };
+            Console.WriteLine(">> VHOST CONFIG: " + _configuration["RabbitMQ:VirtualHost"]);
+            Console.WriteLine($"RabbitMQ Config:");
+            Console.WriteLine($"Host: {factory.HostName}");
+            Console.WriteLine($"User: {factory.UserName}");
+            Console.WriteLine($"VirtualHost: {factory.VirtualHost}");
+
             IConnection connection = await factory.CreateConnectionAsync(stoppingToken); // El token es para finalizarlo de forma limpia y segura en caso de error
             IChannel channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken); // Lo mismo, por si hay un error
 

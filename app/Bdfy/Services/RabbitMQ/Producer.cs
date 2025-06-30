@@ -15,34 +15,58 @@ namespace BDfy.Services
 
         public BidPublisher(ILogger<BidPublisher> logger, IConfiguration configuration)
         {
-            _logger = logger; // Informacion de la conexion (testing)
+            _logger = logger; // Informacion de la conexion
             _configuration = configuration;
         }
-        public async Task InitializeAsync() // Tarea para inicializar la conexion, el canal y la queue
+        public async Task InitializeAsync()
         {
+        
             var rabbitMQConfig = _configuration.GetSection("RabbitMQ");
             var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
             var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
             var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
             var virtualHost = rabbitMQConfig["VirtualHost"] ?? "/";
 
-            var factory = new ConnectionFactory // Seteamos los datos para la conexion
+             // LOGGING DETALLADO
+            Console.WriteLine($"=== RABBITMQ CONFIGURATION DEBUG ===");
+            Console.WriteLine($"HostName from config: '{hostName}'");
+            Console.WriteLine($"UserName from config: '{userName}'");
+            Console.WriteLine($"VirtualHost from config: '{virtualHost}'");
+            Console.WriteLine($"Password length: {password.Length}");
+            Console.WriteLine($"======================================");
+
+            var factory = new ConnectionFactory
             {
                 HostName = hostName,
                 UserName = userName,
                 Password = password,
                 VirtualHost = virtualHost,
+                Ssl = new SslOption
+                {
+                    Enabled = true,
+                    ServerName = hostName
+                },
                 Port = 5672
             };
-            _connection = await factory.CreateConnectionAsync(); // Creamos la conexion
-            _channel = await _connection.CreateChannelAsync(); // Creamos el canal dentro de la conexion
-            await _channel.QueueDeclareAsync
-            (
-                queue: "bids", // Key de la queue
-                durable: true, // Para que no se borre en caso de reinicio del servidor de RabbitMQ
-                exclusive: false, // Exclusive sirve para declarar cuantas conexiones pueden usar esta cola (false es para multiples conexiones)
-                autoDelete: false // False hace que la cola no se eliminie despues del ultimo consumidor
-            );
+
+            try 
+            {
+                Console.WriteLine("Attempting to create connection...");
+                _connection = await factory.CreateConnectionAsync();
+                Console.WriteLine("Connection created successfully!");
+                
+                _channel = await _connection.CreateChannelAsync();
+                Console.WriteLine("Channel created successfully!");
+                
+                await _channel.QueueDeclareAsync("bids", true, false, false);
+                Console.WriteLine("Queue declared successfully!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Connection failed: {ex.Message}");
+                Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
+                throw;
+            }
         }
 
         public async Task Publish(SendBidDto bid) // Creamos el producer
