@@ -164,7 +164,7 @@ def create_tables():
                 updated_at TIMESTAMPTZ NOT NULL,
                 PRIMARY KEY (auction_id, lot_id),
                 FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE,
-                FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE
+                FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE RESTRICT;
             )
         """)
 
