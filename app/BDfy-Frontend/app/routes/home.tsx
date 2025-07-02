@@ -1,13 +1,12 @@
 import type { Route } from "./+types/home";
 import { useEffect, useState } from "react";
 import "@splidejs/react-splide/css";
-import type { AuctionCard } from "../services/types";
-import CarouselAuctionCard from "~/components/auctionCard";
+import type { Auction, AuctionCard } from "../services/types";
+import BanerCarousel from "~/components/BanerCarousel";
 import { getAllAuctions, fetchRole } from "~/services/fetchService";
 import CreateAuctionButton from "~/components/POSTAuction";
 import CreateLotButton from "~/components/POSTLots";
 import { useAuth } from "~/context/authContext";
-
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,19 +16,18 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const [auctions, setAuctions] = useState<AuctionCard[]>([]);
+  const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<number | null>(null);
   const { isAuthenticated } = useAuth();
-  
 
   useEffect(() => {
     async function fetchAuctions() {
       try {
         const data = await getAllAuctions();
         const activeAuctions = data.filter(
-          (auction: AuctionCard) => auction.status === 1
+          (auction: Auction) => auction.status === 1
         );
         setAuctions(activeAuctions);
       } catch (err) {
@@ -63,8 +61,8 @@ export default function Home() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] text-white space-y-4">
-        <div className="w-12 h-12 border-4 border-[#59b9e2] border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xl font-semibold text-[#59b9e2] animate-pulse">
+        <div className="w-12 h-12 border-4 border-[#0D4F61] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-xl font-semibold text-[#0D4F61] animate-pulse">
           Cargando subastas...
         </p>
       </div>
@@ -73,16 +71,11 @@ export default function Home() {
 
   return (
     <main>
-      <div className="p-6 text-white">
-        <h1 className="text-3xl font-bold mb-6 flex flex-col text-center">
-          Subastas disponibles
-        </h1>
-        <div>
-          <CarouselAuctionCard 
-            auction={auctions}
-            className="max-w-screen-xl mx-auto rounded-xl border border-[#59b9e2] bg-[#1b3845]/60 shadow-lg p-4 mb-8"
-            />
-        </div>
+      <div>
+        <BanerCarousel
+          auction={auctions}
+          className=""
+        />
       </div>
       <div className="">
         {isAuthenticated && role === 1 && (
