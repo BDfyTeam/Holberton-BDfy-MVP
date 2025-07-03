@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import BanerCarousel from "~/components/BanerCarousel";
 import AddLot from "~/components/addLot";
 import { getAuctionsByAuctioneer } from "~/services/fetchService";
-import type { Auction, AuctionCard } from "~/services/types";
+import type { Auction } from "~/services/types";
 import UpdateAuctionButton from "~/components/PUTAuction";
+import CarouselAuctionCard from "~/components/GenericCarousel";
 
 export default function MyAuctions() {
   const [activeAuct, setActiveAuct] = useState<Auction[]>([]);
@@ -51,7 +52,7 @@ export default function MyAuctions() {
 
       <div className="p-4 text-white ">
         <h2 className="text-2xl font-bold mb-4">Subastas en Borrador</h2>
-        <BanerCarousel
+        <CarouselAuctionCard
           auction={draftedAuct}
           renderAction={(auction: Auction) => (
             <>

@@ -1,12 +1,14 @@
 import type { Route } from "./+types/home";
 import { useEffect, useState } from "react";
 import "@splidejs/react-splide/css";
-import type { Auction, AuctionCard } from "../services/types";
+import type { Auction } from "../services/types";
 import BanerCarousel from "~/components/BanerCarousel";
 import { getAllAuctions, fetchRole } from "~/services/fetchService";
 import CreateAuctionButton from "~/components/POSTAuction";
 import CreateLotButton from "~/components/POSTLots";
 import { useAuth } from "~/context/authContext";
+import FiltersIcons from "~/components/FiltersIcons";
+import HotCarusel from "~/components/HotCarusel";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -16,7 +18,8 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [banerAuctions, setBanerAuctions] = useState<Auction[]>([]);
+  const [hotAuctions, setHotAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<number | null>(null);
@@ -29,7 +32,29 @@ export default function Home() {
         const activeAuctions = data.filter(
           (auction: Auction) => auction.status === 1
         );
-        setAuctions(activeAuctions);
+
+        const now = new Date();
+        const oneWeekLater = now.getTime() + 7 * 24 * 60 * 60 * 1000;
+
+        const hotAuctions = activeAuctions.filter((auction: Auction) => {
+          const endDate = auction.endAt ? new Date(auction.endAt).getTime() : 0;
+          return endDate < oneWeekLater;
+        });
+
+        // Ordenar las subastas según el startingPrice del lote más caro
+        const sortedAuctions = activeAuctions.sort((a: Auction, b: Auction) => {
+          const highestLotA = Math.max(
+            ...a.lots.map((lot) => lot.startingPrice)
+          );
+          const highestLotB = Math.max(
+            ...b.lots.map((lot) => lot.startingPrice)
+          );
+          return highestLotB - highestLotA; // Compara el precio más alto entre los lotes
+        });
+        // Tomar solo las 3 subastas con el startingPrice más alto en su lote
+        const topThreeAuctions = sortedAuctions.slice(0, 3);
+        setBanerAuctions(topThreeAuctions);
+        setHotAuctions(hotAuctions);
       } catch (err) {
         console.error("Error al cargar las subastas:", err);
         setError("Error al cargar las subastas");
@@ -70,13 +95,27 @@ export default function Home() {
   }
 
   return (
-    <main>
+    <>
       <div>
         <BanerCarousel
-          auction={auctions}
-          className=""
+          auction={banerAuctions}
+          className="w-full overflow-hidden"
         />
       </div>
+
+      <div className="w-3/4 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
+
+      <div className="w-6/8 mx-auto mb-8">
+        <FiltersIcons className="grid grid-cols-6 gap-1" />
+      </div>
+
+      <div className="w-3/4 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
+
+      <HotCarusel
+        auction={hotAuctions}
+        className="w-full p-20 shadow-lg mx-auto my-20 "
+      />
+
       <div className="">
         {isAuthenticated && role === 1 && (
           <div className="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
@@ -85,6 +124,6 @@ export default function Home() {
           </div>
         )}
       </div>
-    </main>
+    </>
   );
 }

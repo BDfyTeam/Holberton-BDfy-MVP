@@ -5,7 +5,7 @@ import type { Auction, BasicCardItem, Lot } from "~/services/types";
 import LotCard from "~/components/LotCard";
 import * as signalR from "@microsoft/signalr";
 import { getToken } from "~/services/handleToken";
-import GaleryOfCards from "~/components/galeryOfCards";
+import GaleryOfCards from "~/components/galeryOfLotCards";
 import categorys from "~/services/categorys";
 
 type BidUpdate = {

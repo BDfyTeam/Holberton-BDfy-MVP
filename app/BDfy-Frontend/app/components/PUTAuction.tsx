@@ -57,7 +57,8 @@ export default function UpdateAuctionButton({
       setSelectedCategories(
         auction.category?.map((id) => ({
           id,
-          name: categorys[id as keyof typeof categorys],
+          name: categorys[id].name,
+          icon: categorys[id].icon, // Aseguramos que los íconos se asignen
         })) || []
       );
     }
@@ -104,7 +105,8 @@ export default function UpdateAuctionButton({
 
   const categoryOptions = Object.entries(categorys).map(([key, label]) => ({
     id: parseInt(key),
-    name: label,
+    name: label.name,
+    icon: label.icon, // Incluir el icono
   }));
 
   return (

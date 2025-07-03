@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import GaleryOfCards from "~/components/galeryOfCards";
+import GaleryOfLotCards from "~/components/galeryOfLotCards";
 import UpdateLots from "~/components/PUTLots";
 import { getAllStorageLots } from "~/services/fetchService";
 import type { BasicCardItem, CompleteLot, Lot } from "~/services/types";
@@ -40,7 +40,7 @@ export default function MyLots({ className }: Props) {
   return (
     <div className={className}>
       <h1>Inventario</h1>
-      <GaleryOfCards
+      <GaleryOfLotCards
         items={items}
         onCardClick={handleCardClick}
         className="bg-[#DDE9F0] text-black p-4 rounded-lg shadow space-y-2 space-x-4 w-full flex flex-col justify-between"

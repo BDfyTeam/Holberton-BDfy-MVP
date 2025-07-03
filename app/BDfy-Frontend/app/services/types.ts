@@ -103,7 +103,7 @@ export interface Lot {
   details: string;
   startingPrice: number;
   endingPrice?: number;
-  currentPrice?: number; // opcional si lo calculás en tiempo real
+  currentPrice?: number; 
   winner?: string | null;
 }
 
