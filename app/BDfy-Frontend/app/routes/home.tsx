@@ -9,6 +9,9 @@ import CreateLotButton from "~/components/POSTLots";
 import { useAuth } from "~/context/authContext";
 import FiltersIcons from "~/components/FiltersIcons";
 import HotCarusel from "~/components/HotCarusel";
+import AuctionCard from "~/components/AuctionCard";
+import Galetys from "~/components/Galerys";
+
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,6 +23,7 @@ export function meta({}: Route.MetaArgs) {
 export default function Home() {
   const [banerAuctions, setBanerAuctions] = useState<Auction[]>([]);
   const [hotAuctions, setHotAuctions] = useState<Auction[]>([]);
+  const [allAuctions, setAllAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<number | null>(null);
@@ -55,6 +59,7 @@ export default function Home() {
         const topThreeAuctions = sortedAuctions.slice(0, 3);
         setBanerAuctions(topThreeAuctions);
         setHotAuctions(hotAuctions);
+        setAllAuctions(activeAuctions);
       } catch (err) {
         console.error("Error al cargar las subastas:", err);
         setError("Error al cargar las subastas");
@@ -113,7 +118,13 @@ export default function Home() {
 
       <HotCarusel
         auction={hotAuctions}
-        className="w-full p-20 shadow-lg mx-auto my-20 "
+        className="w-full p-20 shadow-lg mx-auto my-20"
+      />
+
+      <Galetys 
+        auctions={allAuctions}
+        component={AuctionCard}
+        className="my-10 w-3/4"
       />
 
       <div className="">

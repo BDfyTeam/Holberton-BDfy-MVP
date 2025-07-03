@@ -89,7 +89,7 @@ export default function HotCarusel({ auction, className, options }: Props) {
           return (
             <SplideSlide key={auctionItem.id}>
               <Link to={url}>
-                <div className="flex w-full h-[400px] bg-[#0D4F61] rounded-2xl overflow-hidden border-4 border-[#D3E3EB]">
+                <div className="flex w-full h-[400px] bg-[#0D4F61] rounded-2xl shadow-xl overflow-hidden border-4 border-[#D3E3EB] ">
                   {/* 50% Imagen de la subasta */}
                   <div className="w-3/7">
                     <img
