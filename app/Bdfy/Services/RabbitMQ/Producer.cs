@@ -21,26 +21,26 @@ namespace BDfy.Services
         public async Task InitializeAsync()
         {
         
-            // var rabbitMQConfig = _configuration.GetSection("RabbitMQ");
-            // var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
-            // var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
-            // var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
-            // var virtualHost = rabbitMQConfig["VirtualHost"] ?? "/";
+            var rabbitMQConfig = _configuration.GetSection("RabbitMQ");
+            var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
+            var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
+            var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
+            var virtualHost = rabbitMQConfig["VirtualHost"] ?? "/";
 
             //  // LOGGING DETALLADO
-            // Console.WriteLine($"=== RABBITMQ CONFIGURATION DEBUG ===");
-            // Console.WriteLine($"HostName from config: '{hostName}'");
-            // Console.WriteLine($"UserName from config: '{userName}'");
-            // Console.WriteLine($"VirtualHost from config: '{virtualHost}'");
-            // Console.WriteLine($"Password length: {password.Length}");
-            // Console.WriteLine($"======================================");
+            Console.WriteLine($"=== RABBITMQ CONFIGURATION DEBUG ===");
+            Console.WriteLine($"HostName from config: '{hostName}'");
+            Console.WriteLine($"UserName from config: '{userName}'");
+            Console.WriteLine($"VirtualHost from config: '{virtualHost}'");
+            Console.WriteLine($"Password length: {password.Length}");
+            Console.WriteLine($"======================================");
 
             var factory = new ConnectionFactory
             {
                 HostName = "localhost", 
-                // UserName = userName,
-                // Password = password,
-                // VirtualHost = virtualHost,
+                UserName = userName,
+                Password = password,
+                VirtualHost = virtualHost,
                 Port = 5672
             };
 
