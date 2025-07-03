@@ -2,7 +2,6 @@ steps:
   # Frontend (Node)
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/directed-potion-461814-a6/bdfy-frontend', '-f', './Dockerfile', '.']
-    dir: 'app/BDfy-Frontend'
 
 images:
   - 'gcr.io/directed-potion-461814-a6/bdfy-frontend'
