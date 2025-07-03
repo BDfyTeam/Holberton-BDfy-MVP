@@ -168,7 +168,7 @@ builder.Services.AddScoped<IAutoBidService, AutoBidService>(); // Servicio para 
 builder.Services.AddScoped<BiddingHistoryService>();
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
