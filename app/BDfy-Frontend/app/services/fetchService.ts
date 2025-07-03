@@ -11,7 +11,7 @@ import type { RegisterAuctioneerPayload } from "./types";
 export async function loginUser(email: string, password: string) {
   try {
     // Llamamos al back con los datos del formulario
-    const response = await fetch("http://127.0.0.1:5015/api/1.0/users/login", {
+    const response = await fetch("http://34.39.142.249/api/1.0/users/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json", // Le decimos que enviamos JSON
@@ -38,7 +38,7 @@ export async function loginUser(email: string, password: string) {
 export async function registerUser(payload: RegisterUserPayload) {
   try {
     const response = await fetch(
-      "http://127.0.0.1:5015/api/1.0/users/register",
+      "http://34.39.142.249/api/1.0/users/register",
       {
         method: "POST",
         headers: {
@@ -66,7 +66,7 @@ export async function registerUser(payload: RegisterUserPayload) {
 export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
   try {
     const response = await fetch(
-      "http://127.0.0.1:5015/api/1.0/users/register",
+      "http://34.39.142.249/api/1.0/users/register",
       {
         method: "POST",
         headers: {
@@ -122,7 +122,7 @@ export async function fetchRole() {
     }
 
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/users/${userId}`
+      `http://34.39.142.249/api/1.0/users/${userId}`
     );
     const data = await response.json();
 
@@ -138,7 +138,7 @@ export async function fetchRole() {
 // ENTRAR EN UNA SUBASTA (GET all auctions)
 export async function getAllAuctions() {
   try {
-    const response = await fetch("http://127.0.0.1:5015/api/1.0/auctions", {
+    const response = await fetch("http://34.39.142.249/api/1.0/auctions", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -172,7 +172,7 @@ export async function createAuction(payload: AuctionCard) {
     }
 
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/auctions/${userId}`,
+      `http://34.39.142.249/api/1.0/auctions/${userId}`,
       {
         method: "POST",
         headers: {
@@ -207,7 +207,7 @@ export async function getAuctionsByAuctioneer() {
     }
 
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/auctions/auctioneer/${userId}`,
+      `http://34.39.142.249/api/1.0/auctions/auctioneer/${userId}`,
       {
         method: "GET",
         headers: {
@@ -237,7 +237,7 @@ export async function getAuctionsByAuctioneer() {
 export async function getAuctionById(id: string) {
   try {
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/auctions/specific/${id}`,
+      `http://34.39.142.249/api/1.0/auctions/specific/${id}`,
       {
         method: "GET",
         headers: {
@@ -265,7 +265,7 @@ export async function updateAuction(payload: AuctionCard) {
     }
     const auctionId = payload.id;
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/auctions/${auctionId}`,
+      `http://34.39.142.249/api/1.0/auctions/${auctionId}`,
       {
         method: "PUT",
         headers: {
@@ -297,7 +297,7 @@ export async function createLot(payload: LotCard) {
     }
     const auctionId = payload.auctionId;
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/lots/${auctionId}`,
+      `http://34.39.142.249/api/1.0/lots/${auctionId}`,
       {
         method: "POST",
         headers: {
@@ -326,7 +326,7 @@ export async function getLotById(lotId: string) {
 
   try {
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/lots/specific/${lotId}`,
+      `http://34.39.142.249/api/1.0/lots/specific/${lotId}`,
       {
         method: "GET",
         headers: {
@@ -356,7 +356,7 @@ export async function updateLot(payload: LotCard) {
     }
     const lotId = payload.id;
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/lots/${lotId}/edit`,
+      `http://34.39.142.249/api/1.0/lots/${lotId}/edit`,
       {
         method: "PUT",
         headers: {
@@ -396,7 +396,7 @@ export async function getAllStorageLots() {
   }
   try {
     const response = await fetch(
-      `http://127.0.0.1:5015/api/1.0/lots/${auctioneer_id}`,
+      `http://34.39.142.249/api/1.0/lots/${auctioneer_id}`,
       {
         method: "GET",
         headers: {
@@ -433,7 +433,7 @@ export async function makeBid(lotId: string, bid: number) {
     }
     const dateNow = new Date();
     const response = await fetch(
-      `http://127.0.0.1:5016/api/1.0/lots/bid/${lotId}`,
+      `http://34.39.142.249/api/1.0/lots/bid/${lotId}`,
       {
         method: "POST",
         headers: {
@@ -479,7 +479,7 @@ export async function makeAutoBid(
     }
 
     const response = await fetch(
-      `http://127.0.0.1:5016/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
+      `http://34.39.142.249/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
       {
         method: "POST",
         headers: {
