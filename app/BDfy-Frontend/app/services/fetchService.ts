@@ -95,7 +95,7 @@ export async function getUserById(userId: string) {
   try {
     const token = getToken();
 
-    const response = await fetch(`/api/1.0/users/${userId}`, {
+    const response = await fetch(`https://34.39.142.249/api/1.0/users/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
