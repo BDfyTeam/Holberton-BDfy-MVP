@@ -2,6 +2,7 @@ using BDfy.Services;
 using BDfy.Data;
 using BDfy.Models;
 using BDfy.Hub;
+using BDfy.Dtos;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
