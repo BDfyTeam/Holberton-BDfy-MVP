@@ -8,7 +8,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BDfyDatabase;Username=root;Password=1234
-      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__HostName=albatross.rmq.cloudamqp.com
+      - RabbitMQ__UserName=gozumern
+      - RabbitMQ__Password=33BzwUJ4495rZmj93D_a2vOlQ0fb6las
+      - RabbitMQ__VirtualHost=gozumern
+      - RabbitMQ__UseSsl=true
+      - RabbitMQ__Port=5671
     depends_on:
       db:
         condition: service_healthy
@@ -47,22 +52,6 @@ services:
       - bidify-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U root -d BDfyDatabase"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    networks:
-      - bidify-net
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 5s
       timeout: 5s
       retries: 5
