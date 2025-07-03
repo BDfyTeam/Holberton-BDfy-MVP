@@ -22,11 +22,11 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      - name: Restore dependencies # Restaura dependencias del backend y los tests
+      - name: Restore dependencies # Restaura dependencias del backend y tests
         run: dotnet restore ./app/BDfy.sln
-      - name: Build # Compila el backend y los tests
+      - name: Build # Compila el backend y el proyecto de pruebas
         run: dotnet build --no-restore ./app/BDfy.sln
-      - name: Test # Ejecuta los Bdfy.Tests
+      - name: Test # Ejecuta los tests del backend
         run: dotnet test --no-build --verbosity normal ./app/Bdfy.Tests/Bdfy.Tests.csproj
 
   frontend:
