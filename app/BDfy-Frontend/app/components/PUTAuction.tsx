@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { updateAuction } from "~/services/fetchService";
-import type { AuctionCard } from "~/services/types";
+import type { Auction } from "~/services/types";
 import "../app.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -16,7 +16,7 @@ import { CheckIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 
 type UpdateAuctionButtonProps = {
-  auction: AuctionCard;
+  auction: Auction;
   onClose?: () => void;
 };
 
@@ -57,7 +57,8 @@ export default function UpdateAuctionButton({
       setSelectedCategories(
         auction.category?.map((id) => ({
           id,
-          name: categorys[id as keyof typeof categorys],
+          name: categorys[id].name,
+          icon: categorys[id].icon, // Aseguramos que los íconos se asignen
         })) || []
       );
     }
@@ -71,7 +72,7 @@ export default function UpdateAuctionButton({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload: AuctionCard = {
+    const payload: Auction = {
       id: auction.id,
       title,
       description,
@@ -86,6 +87,13 @@ export default function UpdateAuctionButton({
         zipCode,
         department,
       },
+      auctioneer: {
+        id: 0,
+        first_name: "",
+        last_name: "",
+        email: ""
+      },
+      lots: []
     };
 
     const success = await updateAuction(payload);
@@ -97,7 +105,8 @@ export default function UpdateAuctionButton({
 
   const categoryOptions = Object.entries(categorys).map(([key, label]) => ({
     id: parseInt(key),
-    name: label,
+    name: label.name,
+    icon: label.icon, // Incluir el icono
   }));
 
   return (
