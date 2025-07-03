@@ -37,11 +37,11 @@ namespace BDfy.Services
 
             var factory = new ConnectionFactory
             {
-                HostName = "localhost", 
+                HostName = hostName, 
                 UserName = userName,
                 Password = password,
                 VirtualHost = virtualHost,
-                Port = 5672
+                Port = 5671
             };
 
             try 

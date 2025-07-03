@@ -38,7 +38,7 @@ namespace BDfy.Services
 
             var factory = new ConnectionFactory
             {
-                HostName = "localhost",
+                HostName = hostName,
                 UserName = userName,
                 Password = password,
                 VirtualHost = virtualHost,
