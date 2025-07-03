@@ -3,11 +3,11 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-DB_HOST = "35.199.73.96"
+DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"
-DB_USER = "lucas"
-DB_PASSWORD = "BdfyAdmin123!"
+DB_USER = "franco"
+DB_PASSWORD = "1234"
 
 def create_tables():
     try:
@@ -32,7 +32,8 @@ def create_tables():
                 reputation INT NOT NULL CHECK (reputation BETWEEN 0 AND 100),
                 phone TEXT NOT NULL,
                 role INT NOT NULL, -- UserRole: Buyer=0, Auctioneer=1
-
+                is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                
                 -- Propiedad embebida Direction
                 direction_street TEXT NOT NULL,
                 direction_street_number INT NOT NULL,
@@ -164,7 +165,7 @@ def create_tables():
                 updated_at TIMESTAMPTZ NOT NULL,
                 PRIMARY KEY (auction_id, lot_id),
                 FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE,
-                FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE
+                FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE RESTRICT
             )
         """)
 

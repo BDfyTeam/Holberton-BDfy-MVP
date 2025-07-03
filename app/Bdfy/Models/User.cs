@@ -57,6 +57,9 @@ namespace BDfy.Models
         [Column("direction")]
         public Direction Direction { get; set; } = null!;
 
+        [Column("is_active")]
+        public bool IsActive { get; set; } = true;
+
         [JsonIgnore]
         public UserDetails? UserDetails { get; set; }
         [JsonIgnore]

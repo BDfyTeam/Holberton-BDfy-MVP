@@ -51,6 +51,7 @@ namespace BDfy.Controllers
                 Role = dto.Role,
                 Reputation = dto.Reputation,
                 Direction = dto.Direction,
+                IsActive = true,
                 Password = PasswordHashed
             };
 
@@ -66,6 +67,7 @@ namespace BDfy.Controllers
                     UserId = user.Id,
                     IsAdmin = details.IsAdmin,
                     IsVerified = details.IsVerified
+                    //IsActive = details.IsActive
                 });
             }
             else if (dto.Role == UserRole.Auctioneer && dto.AuctioneerDetails != null)
@@ -115,7 +117,7 @@ namespace BDfy.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserById(Guid userId)
+        public async Task<IActionResult> GetUserById([FromRoute] Guid userId)
         {
             var user = await _db.Users
                 .Include(u => u.UserDetails)
@@ -253,6 +255,36 @@ namespace BDfy.Controllers
             }
 
             catch (Exception ex) { return StatusCode(500, "Internal Server Error: " + ex.Message); }
+        }
+
+        [Authorize]
+        [HttpPut("{userId}/deactivate-account")]
+        public async Task<IActionResult> DeleteAuctioneer([FromRoute] Guid userId)
+        {
+            try
+            {
+                var userClaims = HttpContext.User;
+                var userIdFromToken = userClaims.FindFirst("Id")?.Value;
+                if (userIdFromToken != userId.ToString())
+                {
+                    return Unauthorized("You do not have permission.");
+                }
+                
+                var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    return NotFound("User does not exist in our registry.");
+                }
+
+                user.IsActive = false;
+                await _db.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
         }
   
         private bool IsValidEmail(string email)
