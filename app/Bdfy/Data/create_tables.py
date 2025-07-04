@@ -32,7 +32,7 @@ def create_tables():
                 reputation INT NOT NULL CHECK (reputation BETWEEN 0 AND 100),
                 phone TEXT NOT NULL,
                 role INT NOT NULL, -- UserRole: Buyer=0, Auctioneer=1
-                image_url TEXT NOT NULL,
+                image_url TEXT,
                 is_active BOOLEAN NOT NULL DEFAULT TRUE,
                 
                 -- Propiedad embebida Direction

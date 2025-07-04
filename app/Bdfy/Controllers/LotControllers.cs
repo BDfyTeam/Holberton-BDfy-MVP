@@ -23,7 +23,7 @@ namespace BDfy.Controllers
 
 		[Authorize]
 		[HttpPost("{auctionId}")]
-		public async Task<ActionResult> RegisterLot([FromRoute] Guid auctionId, [FromBody] RegisterLot Dto)
+		public async Task<ActionResult> RegisterLot([FromRoute] Guid auctionId, [FromForm] RegisterLot Dto)
 		{
 			try
 			{
@@ -190,6 +190,7 @@ namespace BDfy.Controllers
 						EndAt = auctionLotById.Auction.EndAt,
 						Category = auctionLotById.Auction.Category,
 						Status = auctionLotById.Auction.Status,
+						WinnerId = auctionLotById.Lot.Winner?.Id ?? Guid.Empty,
 						AuctioneerId = auctionLotById.Auction.AuctioneerId,
 						Auctioneer = new AuctioneerDto
 						{
@@ -345,7 +346,7 @@ namespace BDfy.Controllers
 		}
 		[Authorize]
 		[HttpPut("{lotId}/edit")]
-		public async Task<ActionResult> EditLot([FromRoute] Guid lotId, [FromBody] EditLotDto editLotDto)
+		public async Task<ActionResult> EditLot([FromRoute] Guid lotId, [FromForm] EditLotDto editLotDto)
 		{
 			try
 			{

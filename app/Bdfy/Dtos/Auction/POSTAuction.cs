@@ -111,6 +111,8 @@ namespace BDfy.Dtos
         [Required]
         public AuctionStatus Status { get; set; }
 
+        public Guid? WinnerId { get; set; }
+
         [Required]
         public Guid AuctioneerId { get; set; }
 

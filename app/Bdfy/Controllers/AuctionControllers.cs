@@ -17,7 +17,7 @@ namespace BDfy.Controllers
 
         [Authorize]
         [HttpPost("{userId}")]
-        public async Task<ActionResult> Register([FromRoute] Guid userId, [FromBody] RegisterAuctionDto Dto)
+        public async Task<ActionResult> Register([FromRoute] Guid userId, [FromForm] RegisterAuctionDto Dto)
         {
             try
             {
@@ -450,7 +450,7 @@ namespace BDfy.Controllers
 
         [Authorize]
         [HttpPut("{auctionId}")]
-        public async Task<ActionResult> UpdateAuctionById([FromRoute] Guid auctionId, [FromBody] EditAuctionDto dto)
+        public async Task<ActionResult> UpdateAuctionById([FromRoute] Guid auctionId, [FromForm] EditAuctionDto dto)
         {
             try
             {

@@ -132,7 +132,7 @@ namespace BDfy.Controllers
         [Authorize]
         [HttpPut("{auctioneerId}")]
 
-        public async Task<IActionResult> EditAuctioneer([FromBody] EditAuctioneerDto dto, [FromRoute] Guid auctioneerId)
+        public async Task<IActionResult> EditAuctioneer([FromForm] EditAuctioneerDto dto, [FromRoute] Guid auctioneerId)
         {
             try
             {
