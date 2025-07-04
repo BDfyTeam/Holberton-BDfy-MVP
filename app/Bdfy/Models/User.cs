@@ -53,8 +53,11 @@ namespace BDfy.Models
         [Column("role")]
         public UserRole Role { get; set; }
 
+        [Column("image_url")]
+        [StringLength(100, ErrorMessage = "The image URL cannot have more than 100 characters")]
+        public string ImageUrl { get; set; } = null!;
+
         [Required(ErrorMessage = "The direction is mandatory")]
-        [Column("direction")]
         public Direction Direction { get; set; } = null!;
 
         [Column("is_active")]
