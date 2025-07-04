@@ -65,7 +65,7 @@ builder.Services.AddCors(options =>
                 "https://localhost:3000", "https://127.0.1:3000", // Frontend
                 "http://localhost:5016", "http://127.0.0.1:5016",
                 "https://bdfy-frontend-946201117375.southamerica-east1.run.app",
-                "https://bdfy.tech", "http://bdfy.tech", "https://bdfy-frontend-us-946201117375.us-central1.run.app/") 
+                "https://bdfy.tech/", "http://bdfy.tech/", "https://bdfy-frontend-us-946201117375.us-central1.run.app/") 
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
