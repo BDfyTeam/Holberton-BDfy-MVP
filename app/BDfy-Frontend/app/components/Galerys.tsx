@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import type { Auction, Lot } from "~/services/types";
 
 type Props = {
@@ -5,18 +6,19 @@ type Props = {
   lots?: Lot[];
   component: React.ElementType;  
   className?: string;
+  internalClassName?: string;
 };
 
-export default function Galerys({ auctions, lots, component: Component, className }: Props) {
+export default function Galerys({ auctions, lots, component: Component, className, internalClassName }: Props): ReactElement {
   return (
     <div className={className}>
       {/* Renderizar subastas */}
       {auctions && auctions.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className={internalClassName}>
           {auctions.map((auction) => (
             <div key={auction.id}>
               {/* Pasa la subasta como prop */}
-              <Component auction={auction} />
+              <Component auction={auction} className="" />
             </div>
           ))}
         </div>
@@ -24,11 +26,11 @@ export default function Galerys({ auctions, lots, component: Component, classNam
 
       {/* Renderizar lotes */}
       {lots && lots.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className={internalClassName}>
           {lots.map((lot) => (
             <div key={lot.id}>
               {/* Pasa el lote como prop */}
-              <Component lot={lot} />
+              <Component lot={lot} className="" />
             </div>
           ))}
         </div>

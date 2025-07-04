@@ -31,7 +31,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[rgb(60,63,96)] to-[rgb(28,148,180)]">
+    <div className="min-h-screen flex flex-col">
       {/* Contenido principal */}
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="flex bg-white/10 rounded-xl shadow-xl overflow-hidden max-w-6xl w-full">

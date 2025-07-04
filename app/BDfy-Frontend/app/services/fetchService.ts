@@ -95,13 +95,16 @@ export async function getUserById(userId: string) {
   try {
     const token = getToken();
 
-    const response = await fetch(`https://api.bdfy.tech/api/1.0/users/${userId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/users/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || "Error al obtener el usuario.");
@@ -478,6 +481,7 @@ export async function makeAutoBid(
       throw new Error("No se pudo obtener el ID del usario desde el token.");
     }
 
+    // AUTOPUJA
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
       {
@@ -503,5 +507,33 @@ export async function makeAutoBid(
   } catch (error) {
     console.error("Error al hacer la autopuja:", error);
     throw error;
+  }
+}
+
+// SELECCIONAR TODOS LAS SUBASTAS POR CATEGORIA
+export async function getAuctionsByCategory(categoryId: number) {
+  try {
+    const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/auctions/category/${categoryId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Error al obtener las subastas por categoria."
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error("Error al obtener las subastas por categoria:", err);
+    throw new Error("Error al obtener las subastas por categoria");
   }
 }

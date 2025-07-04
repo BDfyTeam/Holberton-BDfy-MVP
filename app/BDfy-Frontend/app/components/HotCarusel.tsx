@@ -72,6 +72,9 @@ export default function HotCarusel({ auction, className, options }: Props) {
           "radial-gradient(circle, rgba(39, 119, 145, 1) 13%, rgba(13, 79, 97, 1) 58%, rgba(6, 44, 56, 1) 100%)",
       }}
     >
+      <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center text-[#D3E3EB] mb-15">
+        ULTIIMA OPORTUNIDAD
+      </h2>
       <Splide
         options={{
           type: "loop",

@@ -72,7 +72,9 @@ export type LotCard = {
 // LOTE COMPLETO
 export type CompleteLot = {
   id: string;
+  title: string;
   lotNumber: number;
+  imageUrl: string;
   description: string;
   details: string;
   startingPrice: number;
@@ -98,6 +100,8 @@ export type CompleteLot = {
 // Type para lot y tipar correctamente el useState
 export interface Lot {
   id: string;
+  title: string;
+  imageUrl: string;
   lotNumber: number;
   description: string;
   details: string;
@@ -111,6 +115,7 @@ export interface Lot {
 export interface Auction {
   id?: string;
   title: string;
+  imageUrl: string;
   description: string;
   category: number[];
   startAt: string;
@@ -138,5 +143,5 @@ export type BasicCardItem = {
   title: string;
   description: string;
   category?: number[];
-  image?: string;
+  imageUrl?: string;
 }
