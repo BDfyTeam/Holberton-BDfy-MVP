@@ -6,8 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BDfy.Services
 {
-    public class AuctionServices(BDfyDbContext db)
+    public class AuctionServices(BDfyDbContext db, GcsImageService imageService)
     {
+        private GcsImageService _imgService = imageService;
         public async Task<bool> EditAuction(Guid auctionId, Guid auctioneerId, EditAuctionDto dto)
         {
             // Len de title < 50
@@ -33,6 +34,26 @@ namespace BDfy.Services
             {
                 if (dto.Title.Length > 50) { return false; } // BadRequest
                 auction.Title = dto.Title;
+            }
+            // Image
+            if (dto.Image != null && dto.Image.Length > 0)
+            {
+                if (auction.ImageUrl != null)
+                {
+                    var newHash = await _imgService.CalculateHashAsync(dto.Image.OpenReadStream()); // Calcula hash de la nueva imagen
+                    var oldStream = await _imgService.DownloadImageAsync(auction.ImageUrl); // Descarga la imagen de la subasta
+                    var oldHash = await _imgService.CalculateHashAsync(oldStream); // Calcula hash de la imagen de la subasta
+
+                    if (newHash != oldHash) // Compara hashs ---> si son diferentes significa que es otra imagen
+                    {
+                        await _imgService.DeleteImageAsync(auction.ImageUrl); // Borra la anituga foto
+                        auction.ImageUrl = await _imgService.UploadImageAsync(dto.Image, "auctions"); // Actualiza a la nueva imagen
+                    }
+                }
+                else
+                {
+                    auction.ImageUrl = await _imgService.UploadImageAsync(dto.Image, "auctions"); // Si la subasta no tenia imagen sube la neuva foto
+                }
             }
             // Description
             if (dto.Description != null)

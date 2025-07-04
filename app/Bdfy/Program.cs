@@ -167,7 +167,9 @@ builder.Services.AddScoped<AppSettings>();
 
 builder.Services.AddScoped<AuctionServices>(); // Servicio para editar una subasta // Servicio para editar una subasta
 builder.Services.AddScoped<IAutoBidService, AutoBidService>(); // Servicio para hacer Auto-bids
-builder.Services.AddScoped<BiddingHistoryService>();
+builder.Services.AddScoped<BiddingHistoryService>(); // Servicio para buscar el historial de ofertas en un lote
+builder.Services.AddScoped<GcsImageService>(); // Servicio de imagenes de Cloud
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
@@ -212,7 +214,6 @@ app.Use(async (context, next) =>
 });
 
 // Middleware
-app.UseCors("SignalRCorsPolicy");
 app.UseRouting();
 
 app.UseRateLimiter();       // Activate the rate limiter
