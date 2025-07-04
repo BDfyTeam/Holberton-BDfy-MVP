@@ -3,11 +3,11 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-DB_HOST = "localhost"
+DB_HOST = "35.199.73.96"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"
-DB_USER = "moto"
-DB_PASSWORD = "1234"
+DB_USER = "lucas"
+DB_PASSWORD = "BdfyAdmin123!"
 
 def create_tables():
     try:
