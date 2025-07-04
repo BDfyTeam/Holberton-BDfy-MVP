@@ -10,7 +10,7 @@ import { useAuth } from "~/context/authContext";
 import FiltersIcons from "~/components/FiltersIcons";
 import HotCarusel from "~/components/HotCarusel";
 import AuctionCard from "~/components/AuctionCard";
-import Galetys from "~/components/Galerys";
+import Galerys from "~/components/Galerys";
 
 
 export function meta({}: Route.MetaArgs) {
@@ -121,7 +121,7 @@ export default function Home() {
         className="w-full p-20 shadow-lg mx-auto my-20"
       />
 
-      <Galetys 
+      <Galerys 
         auctions={allAuctions}
         component={AuctionCard}
         className="my-10 w-3/4"
