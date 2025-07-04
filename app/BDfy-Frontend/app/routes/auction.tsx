@@ -2,7 +2,7 @@ import { useParams } from "react-router";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { getAuctionById } from "~/services/fetchService";
 import type { Auction, BasicCardItem, Lot } from "~/services/types";
-import LotCard from "~/components/LotCard";
+import LotCard from "~/components/LotToBid";
 import * as signalR from "@microsoft/signalr";
 import { getToken } from "~/services/handleToken";
 import GaleryOfCards from "~/components/galeryOfLotCards";

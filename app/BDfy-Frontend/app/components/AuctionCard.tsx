@@ -15,7 +15,7 @@ export default function AuctionCard({ auction, className }: Props) {
     <div className={className ? className : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8"}>
       <Link to={`/auction/specific/${auction.id}`}>
         <div
-          className="flex w-[350px] h-[400px] bg-[#0D4F61] rounded-2xl shadow-3xl
+          className="w-[350px] h-[400px] bg-[#0D4F61] rounded-2xl
           overflow-hidden border-4 border-[#D3E3EB] my-10 hover:transform 
           hover:scale-107 transition-all duration-400"
         >
