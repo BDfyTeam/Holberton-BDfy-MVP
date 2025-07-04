@@ -6,7 +6,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"
-DB_USER = "franco"
+DB_USER = "moto"
 DB_PASSWORD = "1234"
 
 def create_tables():
@@ -32,6 +32,7 @@ def create_tables():
                 reputation INT NOT NULL CHECK (reputation BETWEEN 0 AND 100),
                 phone TEXT NOT NULL,
                 role INT NOT NULL, -- UserRole: Buyer=0, Auctioneer=1
+                image_url TEXT NOT NULL,
                 is_active BOOLEAN NOT NULL DEFAULT TRUE,
                 
                 -- Propiedad embebida Direction
@@ -76,10 +77,11 @@ def create_tables():
             CREATE TABLE IF NOT EXISTS auctions (
                 id UUID PRIMARY KEY,
                 title TEXT NOT NULL,
+                image_url TEXT NOT NULL,
                 description TEXT NOT NULL,
                 start_at TIMESTAMPTZ NOT NULL,
                 end_at TIMESTAMPTZ NOT NULL,
-                category INTEGER[],
+                category INTEGER[] NOT NULL DEFAULT ARRAY [99],
                 status INT NOT NULL, -- AuctionStatus: Closed=0, Active=1, Draft=2
 
                 -- Propiedad embebida Direction
@@ -100,6 +102,8 @@ def create_tables():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS lots (
                 id UUID PRIMARY KEY,
+                title TEXT NOT NULL,
+                image_url TEXT NOT NULL,
                 lot_number INT NOT NULL CHECK (lot_number > 0),
                 description TEXT NOT NULL,
                 details TEXT NOT NULL,

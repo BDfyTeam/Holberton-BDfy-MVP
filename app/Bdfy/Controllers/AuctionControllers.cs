@@ -21,12 +21,6 @@ namespace BDfy.Controllers
             {
                 var startAtUtc = Dto.StartAt.UtcDateTime;
                 var endAtUtc = Dto.EndAt.UtcDateTime;
-                Console.WriteLine($"Lo que le mando: {Dto.StartAt}");
-                Console.WriteLine($"Transforma a: {startAtUtc}");
-                Console.WriteLine($"Actual en el back: {DateTime.UtcNow.AddMinutes(-5)}");
-                Console.WriteLine($"Comparacion start < al actual: {startAtUtc < DateTime.UtcNow.AddMinutes(-5)}");
-                Console.WriteLine($"Comparacion start >= end: {startAtUtc >= endAtUtc}");
-
 
                 var userClaims = HttpContext.User;
                 var userIdFromToken = userClaims.FindFirst("Id")?.Value;
@@ -48,13 +42,18 @@ namespace BDfy.Controllers
 
                 if (auctioneer == null || auctioneer.AuctioneerDetails == null) { return NotFound("User not found"); }
 
+                if (Dto.Category == null || Dto.Category.Length == 0)
+                {
+                    Dto.Category = [99];
+                }
+
                 var auction = new Auction
                 {
                     Title = Dto.Title,
                     Description = Dto.Description,
                     StartAt = startAtUtc,
                     EndAt = endAtUtc,
-                    Category = Dto.Category ?? [],
+                    Category = Dto.Category,
                     Status = Dto.Status,
                     Direction = Dto.Direction,
                     AuctioneerId = auctioneer.AuctioneerDetails.UserId,
@@ -366,6 +365,66 @@ namespace BDfy.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+        [HttpGet("category/{Category}")]
+        public async Task<ActionResult> GetCategoryByNumber([FromRoute] int Category)
+        {
+            try
+            {
+                var auctionByCategory = await _db.Auctions
+                    .Include(a => a.AuctionLots)
+                        .ThenInclude(al => al.Lot)
+                    .Include(a => a.Auctioneer)
+                    .Where(a => a.Category != null && a.Category.Contains(Category) && a.Status != AuctionStatus.Storage)
+                    .ToListAsync();
+                if (auctionByCategory == null)
+                {
+                    return BadRequest($"No auctions for this category {Category}");
+                }
+
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
+
+
+                var auctionsDto = auctionByCategory.Select(a => new AuctionDto
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
+                    EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
+                    Category = a.Category ?? [],
+                    Status = a.Status,
+                    Direction = a.Direction,
+                    AuctioneerId = a.AuctioneerId,
+                    Lots = a.AuctionLots.Where(al => al.IsOriginalAuction).Select(al => new LotsDto
+                    {
+                        Id = al.LotId,
+                        LotNumber = al.Lot.LotNumber,
+                        Description = al.Lot.Description,
+                        Details = al.Lot.Details,
+                        AuctionId = al.AuctionId,
+                        StartingPrice = al.Lot.StartingPrice,
+                        CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
+                        EndingPrice = al.Lot.EndingPrice ?? 0,
+                        Sold = al.Lot.Sold
+
+                    }).ToList() ?? new List<LotsDto>(),
+                    Auctioneer = new AuctioneerDto
+                    {
+                        UserId = a.Auctioneer.UserId,
+                        Plate = a.Auctioneer.Plate
+                    }
+
+                });
+
+                return Ok(auctionsDto);
+                
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
         [Authorize]
         [HttpPut("{auctionId}")]
         public async Task<ActionResult> UpdateAuctionById([FromRoute] Guid auctionId, [FromBody] EditAuctionDto dto)

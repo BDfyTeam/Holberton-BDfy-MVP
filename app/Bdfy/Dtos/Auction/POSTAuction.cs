@@ -19,7 +19,8 @@ namespace BDfy.Dtos
         [Required]
         public DateTimeOffset EndAt { get; set; }
 
-        public int[]? Category { get; set; } = [];
+        [Required]
+        public int[] Category { get; set; } = [];
 
         [Required]
         public AuctionStatus Status { get; set; }
@@ -56,7 +57,8 @@ namespace BDfy.Dtos
         [Required]
         public DateTime EndAt { get; set; }
 
-        public int[]? Category { get; set; } = [];
+        [Required]
+        public int[] Category { get; set; } = [];
 
         [Required]
         public AuctionStatus Status { get; set; }
