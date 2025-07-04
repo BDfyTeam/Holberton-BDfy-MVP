@@ -6,6 +6,13 @@ namespace BDfy.Dtos
     public class EditLotDto// Edit Lot DTO
     {
         [Required]
+        [StringLength(100, ErrorMessage = "The title cannot have more than 100 characters")]
+        public string Title { get; set; } = null!;
+
+        [Required]
+        public IFormFile Image { get; set; } = null!;
+        
+        [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Lot number must be greater than 0")]
         public int LotNumber { get; set; }
 

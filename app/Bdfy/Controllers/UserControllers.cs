@@ -3,18 +3,9 @@ using BDfy.Dtos;
 using BDfy.Data;
 using BDfy.Models;
 using BDfy.Services;
-using BDfy.Configurations;
-using Microsoft.Extensions.Options;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.AspNetCore.Identity;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System.Xml;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authorization;
 
 namespace BDfy.Controllers
@@ -23,9 +14,10 @@ namespace BDfy.Controllers
     [Route("api/1.0/users")]
     public class BaseController(BDfyDbContext db) : ControllerBase { protected readonly BDfyDbContext _db = db; }
 
-    public class UsersController(BDfyDbContext db, Storage storageService, [FromServices] GenerateJwtToken jwtService) : BaseController(db)
+    public class UsersController(BDfyDbContext db, Storage storageService, [FromServices] GenerateJwtToken jwtService, GcsImageService imageService) : BaseController(db)
     {
         private readonly Storage _storageService = storageService;
+        private GcsImageService _imgService = imageService;
 
         [EnableRateLimiting("register_policy")]
         [HttpPost("register")]
@@ -67,7 +59,6 @@ namespace BDfy.Controllers
                     UserId = user.Id,
                     IsAdmin = details.IsAdmin,
                     IsVerified = details.IsVerified
-                    //IsActive = details.IsActive
                 });
             }
             else if (dto.Role == UserRole.Auctioneer && dto.AuctioneerDetails != null)
@@ -215,6 +206,25 @@ namespace BDfy.Controllers
                     auctioneer.Phone = dto.Phone;
                 }
 
+                if (dto.Image != null && dto.Image.Length > 0)
+                {
+                    if (auctioneer.ImageUrl != null)
+                    {
+                        var newHash = await _imgService.CalculateHashAsync(dto.Image.OpenReadStream()); // Calcula hash de la nueva imagen
+                        var oldStream = await _imgService.DownloadImageAsync(auctioneer.ImageUrl); // Descarga la imagen del subastador
+                        var oldHash = await _imgService.CalculateHashAsync(oldStream); // Calcula hash de la imagen del subastador
+
+                        if (newHash != oldHash) // Compara hashs ---> si son diferentes significa que es otra imagen
+                        {
+                            await _imgService.DeleteImageAsync(auctioneer.ImageUrl); // Borra la anituga foto
+                            auctioneer.ImageUrl = await _imgService.UploadImageAsync(dto.Image, "users"); // Actualiza a la nueva imagen
+                        }
+                    }
+                    else
+                    {
+                        auctioneer.ImageUrl = await _imgService.UploadImageAsync(dto.Image, "users"); // Si el subastador no tenia imagen sube la neuva foto
+                    }
+                }
 
                 if (dto.Direction != null)
                 {
@@ -259,22 +269,23 @@ namespace BDfy.Controllers
 
         [Authorize]
         [HttpPut("{userId}/deactivate-account")]
-        public async Task<IActionResult> DeleteAuctioneer([FromRoute] Guid userId)
+        public async Task<IActionResult> DeleteUser([FromRoute] Guid userId)
         {
             try
             {
                 var userClaims = HttpContext.User;
                 var userIdFromToken = userClaims.FindFirst("Id")?.Value;
+
                 if (userIdFromToken != userId.ToString())
                 {
-                    return Unauthorized("You do not have permission.");
+                    return Forbid("Diffrent user as the login");
                 }
                 
                 var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
                 if (user == null)
                 {
-                    return NotFound("User does not exist in our registry.");
+                    return NotFound("The povide User does not exist");
                 }
 
                 user.IsActive = false;
