@@ -27,7 +27,7 @@ export default function FiltersIcons({ className }: Props) {
       {/* Icono de búsqueda */}
       <div 
         className="col-span-2 w-95 h-16 mt-1.5 ml-10 flex items-center justify-between p-1 border-3 
-        border-[#0D4F61] rounded-full bg-transparent transition-transform duration-300 hover:scale-110"
+        border-[#0D4F61] rounded-full bg-transparent transition-transform duration-300 hover:scale-110" 
       >
         <input
           type="text"
