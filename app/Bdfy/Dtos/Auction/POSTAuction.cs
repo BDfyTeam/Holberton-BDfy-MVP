@@ -18,8 +18,9 @@ namespace BDfy.Dtos
 
         [Required]
         public DateTimeOffset EndAt { get; set; }
-
-        public int[]? Category { get; set; } = [];
+        
+        [Required]
+        public int[] Category { get; set; } = [];
 
         [Required]
         public AuctionStatus Status { get; set; }
@@ -56,7 +57,8 @@ namespace BDfy.Dtos
         [Required]
         public DateTime EndAt { get; set; }
 
-        public int[]? Category { get; set; } = [];
+        [Required]
+        public int[] Category { get; set; } = [];
 
         [Required]
         public AuctionStatus Status { get; set; }
@@ -88,12 +90,17 @@ namespace BDfy.Dtos
         public string Description { get; set; } = null!;
 
         [Required]
+        [StringLength(100, ErrorMessage = "The image URL cannot have more than 100 characters")]
+        public string ImageUrl { get; set; } = null!;
+
+        [Required]
         public DateTime StartAt { get; set; }
 
         [Required]
         public DateTime EndAt { get; set; }
 
-        public int[]? Category { get; set; } = [];
+        [Required]
+        public int[] Category { get; set; } = [];
 
         [Required]
         public AuctionStatus Status { get; set; }

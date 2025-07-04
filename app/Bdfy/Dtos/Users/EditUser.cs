@@ -9,6 +9,8 @@ namespace BDfy.Dtos
 
 		public string? Email { get; set; } = null!;
 
+		public IFormFile? Image { get; set; } = null!;
+
 		public string? Password { get; set; }
 
 		public string? Phone { get; set; } = null!;

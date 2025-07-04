@@ -6,7 +6,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"
-DB_USER = "rodrigo"
+DB_USER = "moto"
 DB_PASSWORD = "1234"
 
 def create_tables():
@@ -81,7 +81,7 @@ def create_tables():
                 description TEXT NOT NULL,
                 start_at TIMESTAMPTZ NOT NULL,
                 end_at TIMESTAMPTZ NOT NULL,
-                category INTEGER[],
+                category INTEGER[] NOT NULL DEFAULT ARRAY [99],
                 status INT NOT NULL, -- AuctionStatus: Closed=0, Active=1, Draft=2
 
                 -- Propiedad embebida Direction

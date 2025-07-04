@@ -55,7 +55,7 @@ namespace BDfy.Models
 
         [Column("image_url")]
         [StringLength(100, ErrorMessage = "The image URL cannot have more than 100 characters")]
-        public string ImageUrl { get; set; } = null!;
+        public string? ImageUrl { get; set; }
 
         [Required(ErrorMessage = "The direction is mandatory")]
         public Direction Direction { get; set; } = null!;

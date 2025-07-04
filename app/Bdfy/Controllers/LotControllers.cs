@@ -14,7 +14,7 @@ namespace BDfy.Controllers
 	[ApiController]
 	[Route("api/1.0/lots")]
 	public class BaseControllerLots(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
-	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher, IAutoBidService autoBidService, BiddingHistoryService biddingHistoryService) : BaseControllerLots(db) // Heredamos la DB para poder usarla
+	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher, IAutoBidService autoBidService, BiddingHistoryService biddingHistoryService, GcsImageService imageService) : BaseControllerLots(db) // Heredamos la DB para poder usarla
 	{
 		private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
 		private readonly BidPublisher _bidPublisher = bidPublisher;
@@ -56,11 +56,17 @@ namespace BDfy.Controllers
 
 				if (checkLot) { return BadRequest($"Lot number {Dto.LotNumber} already exists"); }
 
+				if (Dto.Image == null || Dto.Image.Length == 0) { return BadRequest("The lot must contain a image"); }
+
+				var urlImage = await imageService.UploadImageAsync(Dto.Image, "lots");
+
 				var lot = new Lot // Creamos el lote
 				{
+					Title = Dto.Title,
 					LotNumber = Dto.LotNumber,
 					Description = Dto.Description,
 					Details = Dto.Details,
+					ImageUrl = urlImage,
 					StartingPrice = Dto.StartingPrice,
 					CurrentPrice = Dto.StartingPrice,
 					Sold = false
@@ -103,9 +109,11 @@ namespace BDfy.Controllers
 					.Select(al => new GetLotByIdDto
 					{
 						Id = al.Lot.Id,
+						Title = al.Lot.Title,
 						LotNumber = al.Lot.LotNumber,
 						Description = al.Lot.Description,
 						Details = al.Lot.Details,
+						ImageUrl = al.Lot.ImageUrl,
 						StartingPrice = al.Lot.StartingPrice,
 						CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
 						EndingPrice = al.Lot.EndingPrice ?? 0,
@@ -117,7 +125,8 @@ namespace BDfy.Controllers
 							Description = al.Auction.Description,
 							StartAt = al.Auction.StartAt,
 							EndAt = al.Auction.EndAt,
-							Category = al.Auction.Category ?? Array.Empty<int>(),
+							Category = al.Auction.Category,
+							ImageUrl = al.Auction.ImageUrl,
 							Status = al.Auction.Status,
 							AuctioneerId = al.Auction.AuctioneerId,
 							Auctioneer = new AuctioneerDto
@@ -162,6 +171,8 @@ namespace BDfy.Controllers
 				var lotDto = new GetLotByIdDto
 				{
 					Id = auctionLotById.LotId,
+					Title = auctionLotById.Lot.Title,
+					ImageUrl = auctionLotById.Lot.ImageUrl,
 					LotNumber = auctionLotById.Lot.LotNumber,
 					Description = auctionLotById.Lot.Description,
 					Details = auctionLotById.Lot.Details,
@@ -173,10 +184,11 @@ namespace BDfy.Controllers
 					{
 						Id = auctionLotById.Auction.Id,
 						Title = auctionLotById.Auction.Title,
+						ImageUrl = auctionLotById.Auction.ImageUrl,
 						Description = auctionLotById.Auction.Description,
 						StartAt = auctionLotById.Auction.StartAt,
 						EndAt = auctionLotById.Auction.EndAt,
-						Category = auctionLotById.Auction.Category ?? [],
+						Category = auctionLotById.Auction.Category,
 						Status = auctionLotById.Auction.Status,
 						AuctioneerId = auctionLotById.Auction.AuctioneerId,
 						Auctioneer = new AuctioneerDto
@@ -206,6 +218,8 @@ namespace BDfy.Controllers
 				var lotsDto = auctionLots.Select(al => new LotGetDto
 				{
 					Id = al.LotId,
+					Title = al.Lot.Title,
+					ImageUrl = al.Lot.ImageUrl,
 					LotNumber = al.Lot.LotNumber,
 					Description = al.Lot.Description,
 					Details = al.Lot.Details,
@@ -387,6 +401,40 @@ namespace BDfy.Controllers
 						return BadRequest("You cannot assign an auction that is not yours. Sorry.");
 					}
 				}
+				if (editLotDto.Image != null && editLotDto.Image.Length > 0)
+				{
+					string newHash;
+					using var newImageStream = editLotDto.Image.OpenReadStream();
+					newHash = await imageService.CalculateHashAsync(newImageStream);
+
+					if (!string.IsNullOrEmpty(auctionLot.Lot.ImageUrl))
+					{
+						try
+						{
+							using var oldImageStream = await imageService.DownloadImageAsync(auctionLot.Lot.ImageUrl);
+							var oldHash = await imageService.CalculateHashAsync(oldImageStream);
+
+							if (newHash != oldHash)
+							{
+								// si son diferentes se sube la nueva imagen
+								var newImageUrl = await imageService.UploadImageAsync(editLotDto.Image, "lots");
+								auctionLot.Lot.ImageUrl = newImageUrl;
+							}
+						}
+						catch
+						{
+							// si hay un erro al descargar la imagen anterior se sube la nueva
+							var imageUrlNew = await imageService.UploadImageAsync(editLotDto.Image, "lots");
+							auctionLot.Lot.ImageUrl = imageUrlNew;
+						}
+					}
+					else
+					{
+						// si no habia imagen en el lote
+						var nuevaUrl = await imageService.UploadImageAsync(editLotDto.Image, "lots");
+						auctionLot.Lot.ImageUrl = nuevaUrl;
+					}
+                }
 
 				if (editLotDto.LotNumber != auctionLot.Lot.LotNumber)
 				{
@@ -407,6 +455,7 @@ namespace BDfy.Controllers
 
 				if (finalAuction == null) { return BadRequest("Auction not found. Sorry"); }
 
+				auctionLot.Lot.Title = editLotDto.Title;
 				auctionLot.Lot.LotNumber = editLotDto.LotNumber;
 				auctionLot.Lot.Description = editLotDto.Description;
 				auctionLot.Lot.Details = editLotDto.Details;
@@ -539,7 +588,7 @@ namespace BDfy.Controllers
 				return StatusCode(500, new { error = ex.Message });
 			}
 		}
-		[HttpGet("/_internal/{lotId}/bidding-history")]
+		[HttpGet("{lotId}/bidding-history")]
 		public async Task<ActionResult<BiddingHistoryDto>> GetAllBidsByLotId([FromRoute] Guid lotId)
 		{
 			try
@@ -584,6 +633,18 @@ namespace BDfy.Controllers
 				if (lot == null)
 				{
 					return NotFound("Lot not found");
+				}
+
+				if (!string.IsNullOrEmpty(lot.ImageUrl))
+				{
+					try
+					{
+						await imageService.DeleteImageAsync(lot.ImageUrl);
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine($"Error al borrar la imagen: {ex.Message}");
+					}
 				}
 
 				if (auctionLot.Auction.Status != AuctionStatus.Closed)
