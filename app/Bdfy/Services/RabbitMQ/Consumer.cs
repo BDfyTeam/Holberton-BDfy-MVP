@@ -30,18 +30,18 @@ namespace BDfy.Services
         // Tarea para consumir la bid, guarda los datos en la db y lo manda al hub de SignalR
         // stoppingToken funciona para terminar el servicio en caso de error o de finalizado el uso, de forma limpia y segura
         {
-            // var rabbitMQConfig = _configuration.GetSection("RabbitMQ");
-            // var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
-            // var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
-            // var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
-            // var virtualHost = rabbitMQConfig["VirtualHost"] ?? "/";
+            var rabbitMQConfig = _configuration.GetSection("RabbitMQ");
+            var hostName = rabbitMQConfig["HostName"] ?? throw new InvalidOperationException("RabbitMQ HostName is not configured");
+            var userName = rabbitMQConfig["UserName"] ?? throw new InvalidOperationException("RabbitMQ UserName is not configured");
+            var password = rabbitMQConfig["Password"] ?? throw new InvalidOperationException("RabbitMQ Password is not configured");
+            var virtualHost = rabbitMQConfig["VirtualHost"] ?? "/";
 
             var factory = new ConnectionFactory
             {
-                HostName = "localhost",
-                // UserName = userName,
-                // Password = password,
-                // VirtualHost = virtualHost,
+                HostName = hostName,
+                UserName = userName,
+                Password = password,
+                VirtualHost = virtualHost,
                 Port = 5672
             };
             // Console.WriteLine(">> VHOST CONFIG: " + _configuration["RabbitMQ:VirtualHost"]);

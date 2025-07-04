@@ -1,43 +1,21 @@
 import { Splide, SplideSlide } from "@splidejs/react-splide";
 import { Link } from "react-router";
-import type { AuctionCard } from "~/services/types";
+import type { Auction, AuctionCard } from "~/services/types";
 import { useEffect, useRef } from "react";
 import pengu from "app/public/assets/ConfusedPengu.png";
 import categorys from "~/services/categorys";
 
-type Props = {
-  auction: AuctionCard[];
-  renderAction?: (auction: AuctionCard) => React.ReactNode;
+type CarouselAuctionCardProps = {
+  auction: Auction[];
+  renderAction?: (auction: Auction) => React.ReactNode;
   className?: string;
-  options?: {
-    type?: string;
-    perPage?: number;
-    arrows?: boolean;
-    gap?: string;
-    focus?: string;
-    speed?: number;
-    breakpoints?: {
-      [key: number]: {
-        perPage?: number;
-        gap?: string;
-      };
-    };
-  };
 };
 
-const defaultOptions = {
-  type: "loop",
-  perPage: 1,
-  arrows: true,
-  speed: 1500,
-};
-
-export default function GenericCarousel({
+export default function CarouselAuctionCard({
   auction,
   renderAction,
   className,
-  options,
-}: Props) {
+}: CarouselAuctionCardProps) {
   const promptButton = "Ver Subasta";
   // Esto es para que "breakpoints" funcione correctamente en Splide
   const splideRef = useRef<any>(null); // Referencia para Splide
@@ -64,30 +42,67 @@ export default function GenericCarousel({
     <div className={className}>
       <Splide
         key={auction.length}
-        options={options ? options : defaultOptions}
+        options={{
+          type: "loop",
+          perPage: 4,
+          arrows: true,
+          gap: "1rem",
+          focus: "center",
+          speed: 1500,
+          breakpoints: {
+            640: { perPage: 1, gap: "1rem" },
+            768: { perPage: 2, gap: "1rem" },
+            1024: { perPage: 3, gap: "1rem" },
+          },
+        }}
       >
+        {/* Style necesario para mover las flechas hacia afuera */}
+        <style>
+          {` 
+          .splide__arrow--prev {
+          left: -4rem;
+          }
+
+          .splide__arrow--next {
+          right: -4rem;
+          }
+        `}
+        </style>
         {auction.map((auction) => {
           const url = `/auction/specific/${auction.id}`;
           return (
             <SplideSlide key={auction.id}>
               {/* Titulo */}
-              <div className="">
-                <h2 className="" style={{ fontFamily: "Montserrat" }}>
+              <div className="bg-[#1b3845]/70 text-white p-5 rounded-xl border border-[#59b9e2]/40 shadow-md backdrop-blur-sm h-[420px] w-full flex flex-col justify-between transform transition-transform duration-300 hover:scale-101 hover:z-10">
+                <h2
+                  className="text-2xl font-extrabold text-[#6cf2ff] mb-3 text-center tracking-wide"
+                  style={{ fontFamily: "Montserrat" }}
+                >
                   {auction.title}
                 </h2>
 
                 {/* Descripcion */}
-                <p className="">{auction.description}</p>
+                <p className="text-base text-center text-white font-medium leading-relaxed mb-4">
+                  {auction.description}
+                </p>
 
                 {/* Categorias */}
-                <div className="">
-                  <span className="">Categorías:</span>
-                  <div className="">
+                <div className="mb-4">
+                  <span className="block text-sm text-[#59b9e2] font-semibold mb-2">
+                    Categorías:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
                     {auction.category.map((catId, index) => {
-                      const name = categorys[catId as keyof typeof categorys];
+                      // Buscar la categoría por ID
+                      const category = categorys.find((c) => c.id === catId);
+
                       return (
-                        <span key={index} className="">
-                          {name ?? `Categoría ${catId}`}
+                        <span
+                          key={index}
+                          className="bg-[#59b9e2]/20 text-[#59b9e2] text-xs font-medium px-3 py-1 rounded-full border border-[#59b9e2]/40"
+                        >
+                          {/* Mostrar el nombre de la categoría si se encuentra, sino mostrar un valor por defecto */}
+                          {category ? category.name : `Categoría ${catId}`}
                         </span>
                       );
                     })}
@@ -95,9 +110,11 @@ export default function GenericCarousel({
                 </div>
 
                 {/* Direccion */}
-                <div className="">
-                  <span className="">Dirección:</span>
-                  <p className="">
+                <div className="mb-4">
+                  <span className="block text-sm text-[#59b9e2] font-semibold mb-2">
+                    Dirección:
+                  </span>
+                  <p className="text-sm text-white leading-relaxed">
                     {auction.direction.street} {auction.direction.streetNumber},{" "}
                     {auction.direction.corner}, {auction.direction.zipCode},{" "}
                     {auction.direction.department}

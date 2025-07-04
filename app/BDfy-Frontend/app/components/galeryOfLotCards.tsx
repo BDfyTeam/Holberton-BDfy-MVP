@@ -6,7 +6,7 @@ type CardProps = {
   className?: string;
 };
 
-export default function GaleryOfCards({ items, className, onCardClick }: CardProps) {
+export default function GaleryOfLotCards({ items, className, onCardClick }: CardProps) {
   return (
     <div className={className}>
       {items.map((item) => (
