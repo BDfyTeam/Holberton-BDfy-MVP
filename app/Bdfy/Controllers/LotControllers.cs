@@ -56,7 +56,7 @@ namespace BDfy.Controllers
 
 				if (checkLot) { return BadRequest($"Lot number {Dto.LotNumber} already exists"); }
 
-				if (Dto.Image == null || Dto.Image.Length == 0) { return BadRequest("The lot must contain a image"); }
+				if (Dto.Image == null || Dto.Image.Length == 0) { return BadRequest("The lot must contain an image"); }
 
 				var urlImage = await imageService.UploadImageAsync(Dto.Image, "lots");
 

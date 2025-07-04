@@ -10,9 +10,11 @@ namespace BDfy.Controllers
 {
     [ApiController]
     [Route("api/1.0/auctions")]
-    public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices) : BaseController(db)
+    public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices, GcsImageService imageService) : BaseController(db)
     {
         protected readonly AuctionServices _auctionServices = auctionServices;
+        
+
         [Authorize]
         [HttpPost("{userId}")]
         public async Task<ActionResult> Register([FromRoute] Guid userId, [FromBody] RegisterAuctionDto Dto)
@@ -47,6 +49,9 @@ namespace BDfy.Controllers
                     Dto.Category = [99];
                 }
 
+				if (Dto.Image == null || Dto.Image.Length == 0) { return BadRequest("The auction must contain an image"); }
+                var urlImage = await imageService.UploadImageAsync(Dto.Image, "auctions");
+
                 var auction = new Auction
                 {
                     Title = Dto.Title,
@@ -55,6 +60,7 @@ namespace BDfy.Controllers
                     EndAt = endAtUtc,
                     Category = Dto.Category,
                     Status = Dto.Status,
+                    ImageUrl = urlImage,
                     Direction = Dto.Direction,
                     AuctioneerId = auctioneer.AuctioneerDetails.UserId,
                     Auctioneer = auctioneer.AuctioneerDetails
@@ -89,6 +95,7 @@ namespace BDfy.Controllers
                 {
                     Id = a.Id,
                     Title = a.Title,
+                    ImageUrl = a.ImageUrl,
                     Description = a.Description,
                     StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
                     EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
@@ -100,6 +107,8 @@ namespace BDfy.Controllers
                     .Select(al => new LotsDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         LotNumber = al.Lot.LotNumber,
                         Description = al.Lot.Description,
                         Details = al.Lot.Details,
@@ -151,6 +160,7 @@ namespace BDfy.Controllers
                 {
                     Id = a.Id,
                     Title = a.Title,
+                    ImageUrl = a.ImageUrl,
                     Description = a.Description,
                     StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
                     EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
@@ -163,6 +173,8 @@ namespace BDfy.Controllers
                     .Select(al => new LotGetDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         StartingPrice = al.Lot.StartingPrice,
                         CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
                         Description = al.Lot.Description,
@@ -210,6 +222,7 @@ namespace BDfy.Controllers
                 {
                     Id = a.Id,
                     Title = a.Title,
+                    ImageUrl = a.ImageUrl,
                     Description = a.Description,
                     StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
                     EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
@@ -222,6 +235,8 @@ namespace BDfy.Controllers
                     .Select(al => new LotsDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         LotNumber = al.Lot.LotNumber,
                         Description = al.Lot.Description,
                         Details = al.Lot.Details,
@@ -272,6 +287,7 @@ namespace BDfy.Controllers
                 {
                     Id = auctionById.Id,
                     Title = auctionById.Title,
+                    ImageUrl = auctionById.ImageUrl,
                     Description = auctionById.Description,
                     StartAt = TimeZoneInfo.ConvertTimeFromUtc(auctionById.StartAt, tz),
                     EndAt = TimeZoneInfo.ConvertTimeFromUtc(auctionById.EndAt, tz),
@@ -282,6 +298,8 @@ namespace BDfy.Controllers
                     Lots = auctionById.AuctionLots.Where(al => al.IsOriginalAuction).Select(al => new LotsDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         LotNumber = al.Lot.LotNumber,
                         Description = al.Lot.Description,
                         Details = al.Lot.Details,
@@ -348,6 +366,8 @@ namespace BDfy.Controllers
                     .Select(al => new LotsDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         LotNumber = al.Lot.LotNumber,
                         Description = al.Lot.Description,
                         Details = al.Lot.Details,
@@ -388,6 +408,7 @@ namespace BDfy.Controllers
                 {
                     Id = a.Id,
                     Title = a.Title,
+                    ImageUrl = a.ImageUrl,
                     Description = a.Description,
                     StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
                     EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
@@ -398,6 +419,8 @@ namespace BDfy.Controllers
                     Lots = a.AuctionLots.Where(al => al.IsOriginalAuction).Select(al => new LotsDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         LotNumber = al.Lot.LotNumber,
                         Description = al.Lot.Description,
                         Details = al.Lot.Details,
@@ -485,6 +508,18 @@ namespace BDfy.Controllers
                 if (auction.Status != AuctionStatus.Draft)
                     return BadRequest("Auction can only be deleted if it is in draft status");
 
+                if (!string.IsNullOrEmpty(auction.ImageUrl))
+				{
+					try
+					{
+						await imageService.DeleteImageAsync(auction.ImageUrl);
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine($"Error al borrar la imagen: {ex.Message}");
+					}
+				}
+
                 var auctionLotsToDelete = await _db.AuctionLots
                     .Where(al => al.AuctionId == auctionId && al.IsOriginalAuction)
                     .ToListAsync();
@@ -493,21 +528,15 @@ namespace BDfy.Controllers
 
                 _db.AuctionLots.RemoveRange(auctionLotsToDelete);
 
-                Console.WriteLine($"Este es el auctioner id del token: {auctioneerId}");
-
                 var storage = await _db.Auctions
                     .Include(a => a.Auctioneer)
                     .FirstOrDefaultAsync(a => a.Auctioneer.UserId == auctioneerId && a.Status == AuctionStatus.Storage);
 
                 if (storage != null)
                 {
-                    Console.WriteLine($"Entra al if...");
                     foreach (var lotId in lotIds)
                     { 
-                        Console.WriteLine($"Id del lote iterando: {lotId}");
                         bool isMissing = !_db.AuctionLots.Local.Any(al => al.LotId == lotId);
-
-                        Console.WriteLine($"Is missing: {isMissing}");
 
                         if (isMissing)
                         {
