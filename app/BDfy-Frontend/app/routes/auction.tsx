@@ -178,7 +178,6 @@ export default function AuctionPage() {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl("https://api.bdfy.tech/BidHub", {
         accessTokenFactory: () => getToken() || "",
-        transport: signalR.HttpTransportType.WebSockets,
         skipNegotiation: false,
       })
       .withAutomaticReconnect({
