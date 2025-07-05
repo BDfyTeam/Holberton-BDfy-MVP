@@ -79,6 +79,7 @@ export type CompleteLot = {
   currentPrice: number;
   endingPrice: number;
   sold: boolean;
+  winner?: string | null;
   auction: {
     id: string;
     title: string;
