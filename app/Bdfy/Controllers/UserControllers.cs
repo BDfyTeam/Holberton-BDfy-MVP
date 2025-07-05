@@ -69,7 +69,8 @@ namespace BDfy.Controllers
                 _db.AuctioneerDetails.Add(new AuctioneerDetails
                 {
                     UserId = user.Id,
-                    Plate = details.Plate
+                    Plate = details.Plate,
+                    AuctionHouse = details.AuctionHouse
                 });
                 var storageAuction = await _storageService.CreateStorage(user.Id); // Storage para auctioneer
                 _db.Auctions.Add(storageAuction);
@@ -148,6 +149,7 @@ namespace BDfy.Controllers
                 { return Unauthorized("Only auctioneers can edit their profile."); }
 
                 var auctioneer = await _db.Users
+                    .Include(u => u.AuctioneerDetails)
                     .FirstOrDefaultAsync(u => u.Id == auctioneerId);
 
                 if (auctioneer == null) { return NotFound("Auctioneer do not exist in our registry."); }
@@ -204,6 +206,11 @@ namespace BDfy.Controllers
                 if (!string.IsNullOrWhiteSpace(dto.Phone))
                 {
                     auctioneer.Phone = dto.Phone;
+                }
+
+                if (dto.AuctionHouse != null && auctioneer.AuctioneerDetails != null)
+                {
+                    auctioneer.AuctioneerDetails.AuctionHouse = dto.AuctionHouse;
                 }
 
                 if (dto.Image != null && dto.Image.Length > 0)

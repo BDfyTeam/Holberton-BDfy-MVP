@@ -16,7 +16,7 @@ namespace BDfy.Dtos
     }
     public class BiddingHistoryDto
     {
-        public WinnerDto Winner { get; set; } = null!;
+        public WinnerDto User { get; set; } = null!;
         public decimal Amount { get; set; }
         public DateTime Time { get; set; }
         public bool IsAutoBid { get; set; }
