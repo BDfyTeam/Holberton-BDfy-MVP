@@ -5,6 +5,7 @@ import UserMenu from "./UserMenu";
 import { useAuth } from "~/context/authContext";
 import { Gavel } from "lucide-react";
 import ComonMenu from "./comonMenu";
+import logo from "~/public/assets/bdfyLogo.png"
 
 
 interface Props {
@@ -22,7 +23,7 @@ export default function Header({ className }: Props) {
       className={className}
       style={{
         background:
-          "linear-gradient(180deg, #0D4F61 0%, rgba(255, 255, 255, 0) 81%)",
+          "linear-gradient(180deg,rgba(39, 119, 145, 1) 17%, rgba(255, 255, 255, 0) 85%)",
       }}
     >
       {/* Izquierda: menú y logo */}
@@ -41,7 +42,11 @@ export default function Header({ className }: Props) {
             to="/"
             className="text-3xl mt-3 font-extrabold tracking-wide group-hover:drop-shadow-[0_0_6px_#ffffff] transition duration-300"
           >
-            BDfy
+            <img 
+              src={logo} 
+              alt="BDfy Logo" 
+              className="w-60 h-32 -mt-7 -ml-13" 
+            />
           </DynamicButton>
         </div>
       </div>
@@ -55,7 +60,7 @@ export default function Header({ className }: Props) {
 
         {!isAuthenticated ? (
           <div className="hidden md:flex space-x-4">
-            {(path === "/" || path === "/login") && (
+            {(path === "/" || path === "/login" || path.startsWith("/auction/specific/")) && (
               <NavBar 
                 to="/register"
                 className="flex mt-4 px-4 py-2 rounded-full border-2 border-grey-200 bg-transparent hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold"
@@ -63,7 +68,7 @@ export default function Header({ className }: Props) {
                 Registrarme
               </NavBar>
             )}
-            {(path === "/" || path === "/register") && (
+            {(path === "/" || path === "/register" || path.startsWith("/auction/specific/")) && (
               <NavBar 
                 to="/login"
                 className="flex mt-4 px-4 py-2 rounded-full border-2 border-grey-200 bg-transparent hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold"

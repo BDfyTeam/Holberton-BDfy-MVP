@@ -1,4 +1,4 @@
-import { Shirt, Home, Car, Bus, HardHat, Tractor, Factory, Truck, TabletSmartphone, Microwave, Hammer, CookingPot, Armchair, Award, Recycle, Amphora } from "lucide-react";
+import { Shirt, Home, Car, Bus, HardHat, Tractor, Factory, Truck, TabletSmartphone, Microwave, Hammer, CookingPot, Armchair, Award, Recycle, Amphora, Blocks } from "lucide-react";
 
 
 const categorys = [
@@ -18,6 +18,7 @@ const categorys = [
     { id: 14, name: "Oportunidades Únicas", icon: <Award size={32} /> },
     { id: 15, name: "Chatarra, Materiales y Residuos", icon: <Recycle size={32} /> },
     { id: 16, name: "Antigüedades y Coleccionables", icon: <Amphora size={32} /> },
+    { id: 99, name: "Otros", icon: <Blocks size={32} /> }
   ];
 
 export default categorys;

@@ -300,7 +300,21 @@ export default function AuctionPage() {
           onCardClick={handleCardClick}
           className="bg-[#DDE9F0] text-black p-4 rounded-lg shadow space-y-2 space-x-4 w-full flex flex-col justify-between"
         />
+
+        
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
       {selectLot && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded p-4 max-w-lg w-full relative">
