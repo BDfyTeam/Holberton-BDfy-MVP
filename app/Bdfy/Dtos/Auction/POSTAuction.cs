@@ -39,6 +39,9 @@ namespace BDfy.Dtos
 
         [Required]
         public int Plate { get; set; }
+        
+        [Required]
+        public string AuctionHouse { get; set; } = null!;
     }
 
     public class AuctionDto

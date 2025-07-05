@@ -132,7 +132,8 @@ namespace BDfy.Controllers
 							Auctioneer = new AuctioneerDto
 							{
 								UserId = al.Auction.Auctioneer.UserId,
-								Plate = al.Auction.Auctioneer.Plate
+								Plate = al.Auction.Auctioneer.Plate,
+								AuctionHouse = al.Auction.Auctioneer.AuctionHouse
 							}
 						}
 					})
@@ -195,7 +196,8 @@ namespace BDfy.Controllers
 						Auctioneer = new AuctioneerDto
 						{
 							UserId = auctionLotById.Auction.Auctioneer.UserId,
-							Plate = auctionLotById.Auction.Auctioneer.Plate
+							Plate = auctionLotById.Auction.Auctioneer.Plate,
+							AuctionHouse = auctionLotById.Auction.Auctioneer.AuctionHouse
 						}
 					}
 				};
