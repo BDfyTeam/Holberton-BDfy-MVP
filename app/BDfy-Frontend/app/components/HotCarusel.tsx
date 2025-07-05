@@ -1,4 +1,3 @@
-import logo from "app/public/assets/auctionHouses/subastasBerrios.png";
 import pengu from "app/public/assets/ConfusedPengu.png";
 import { useEffect, useRef, useState } from "react";
 import type { Auction } from "~/services/types";
@@ -96,7 +95,7 @@ export default function HotCarusel({ auction, className, options }: Props) {
                   {/* 50% Imagen de la subasta */}
                   <div className="w-3/7">
                     <img
-                      src={logo}
+                      src={auctionItem.imageUrl}
                       alt="Logo Subasta"
                       className="w-full h-full object-cover"
                     />
