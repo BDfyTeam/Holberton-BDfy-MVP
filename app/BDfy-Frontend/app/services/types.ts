@@ -138,6 +138,27 @@ export interface Auction {
   lots: Lot[];
 }
 
+// TIPO PARA EL TIPO QUE VENDE COSAS
+export type Auctioneer = {
+  firstName: string,
+  lastName: string,
+  email: string,
+  password: string,
+  ci: string,
+  reputation: number,
+  phone: string,
+  role: number,
+  imageUrl: string,
+  direction: {
+    street: string,
+    streetNumber: number,
+    corner: string,
+    zipCode: number,
+    department: string
+  },
+  id: string,
+}
+
 // TIPO BASICO PARA UNA CARD
 export type BasicCardItem = {
   id: string,
