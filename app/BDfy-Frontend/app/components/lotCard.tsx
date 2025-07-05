@@ -3,55 +3,48 @@ import { CheckCircle2, MapPin } from "lucide-react";
 import type { CompleteLot } from "~/services/types";
 import categorys from "~/services/categorys";
 
-type Props = {
-  lot: CompleteLot;
-  className?: string;
-};
+type Props = { lot: CompleteLot; className?: string };
 
 export default function LotCard({ lot, className }: Props) {
   return (
     <div className={className ?? "w-fit"}>
-      <Link to={`/lot/${lot.id}`}>
+      <Link to={`/lot/${lot.id}`} className="block">
         <div
-          className="w-[350px] bg-[#0D4F61] rounded-2xl overflow-hidden
-                     border-4 border-[#D3E3EB] my-8 hover:scale-105 
+          className="w-[350px] bg-primary rounded-2xl overflow-hidden
+                     border-4 border-accent my-8 hover:scale-105
                      transition-transform duration-300"
         >
-          <div className="p-5 text-white space-y-4 h-full flex flex-col">
-            {/* Nº de Lote  */}
-            <h3 className="text-xl font-bold">
-              Lote #{lot.lotNumber}
-            </h3>
+          <div className="p-5 text-white flex flex-col h-full space-y-4">
+            {/* Nº de lote */}
+            <h3 className="text-xl font-bold">Lote #{lot.lotNumber}</h3>
 
-            {/* Descripción breve */}
+            {/* Descripción */}
             <p className="text-sm text-justify line-clamp-3">
               {lot.description}
             </p>
 
-            {/* Detalles técnicos */}
+            {/* Detalles */}
             {lot.details && (
-              <p className="text-xs italic text-[#D3E3EB]/90">
-                {lot.details}
-              </p>
+              <p className="text-xs italic text-accent/90">{lot.details}</p>
             )}
 
             {/* Precios */}
             <div className="mt-auto text-sm space-y-1">
               <p>Inicio: ${lot.startingPrice}</p>
               <p>Actual: ${lot.currentPrice}</p>
-              <p>Tope: ${lot.endingPrice}</p>
+              <p>Tope : ${lot.endingPrice}</p>
             </div>
 
-            {/* Categorías (heredadas de la subasta) */}
+            {/* Categorías heredadas de la subasta */}
             <div className="flex flex-wrap gap-2 pt-2">
-              {lot.auction.category.map((catId) => {
-                const cat = categorys.find((c) => c.id === catId);
+              {lot.auction.category.map((id) => {
+                const cat = categorys.find((c) => c.id === id);
                 return (
                   <span
-                    key={catId}
+                    key={id}
                     className="flex items-center gap-1 px-2 py-1 rounded-full
-                               border border-[#D3E3EB]/40 bg-[#D3E3EB]/20
-                               text-xs text-[#D3E3EB]"
+                               border border-accent/40 bg-accent/20
+                               text-xs text-accent"
                   >
                     {cat?.icon}
                     {cat?.name}
@@ -60,13 +53,13 @@ export default function LotCard({ lot, className }: Props) {
               })}
             </div>
 
-            {/* Ubicación (de la subasta) */}
+            {/* Título de la subasta */}
             <div className="flex items-center gap-1 pt-3 text-sm">
-              <MapPin className="w-4 h-4 text-[#D3E3EB]" />
+              <MapPin className="w-4 h-4 text-accent" />
               {lot.auction.title}
             </div>
 
-            {/* Ganador y estado */}
+            {/* Estado */}
             <div className="pt-2 flex items-center gap-2">
               {lot.sold ? (
                 <>
