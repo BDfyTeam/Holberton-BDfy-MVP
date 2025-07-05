@@ -27,6 +27,7 @@ namespace BDfy.Services
             var Storage = new Auction
             {
                 Title = "Storage",
+                ImageUrl = "storage.png",
                 Description = "No Description",
                 StartAt = DateTime.UtcNow,
                 EndAt = DateTime.UtcNow,
