@@ -1,114 +1,155 @@
-# Bidify MVP
+<div align="center">
+   <img src="https://i.imgur.com/5FReqDz.png" height="150" width="150"><h1>BDfy MVP</h1></img>
+</div>
 
-Sistema de subastas en tiempo real desarrollado con .NET Core y React.
+## Tabla de Contenido
 
-## 🚀 Inicio Rápido
+1. [Tecnologías](#tecnologías)
+2. [Estructura del Proyecto](#️-estructura-del-proyecto)
+3. [Flujo](#flujo)
+4. [Setup](#setup)
+5. [Funcionalidades](#funcionalidades)
+6. [Documentación Técnica](#documentación-técnica)
+7. [Entorno de producción](#entorno-de-producción)
+8. [Autentificación](#autentificación)
+9. [Miembros del equipo](#miembros-del-equipo)
+---
 
-### 📦 Ejecutar con Docker
+## Tecnologías
 
-Esta es la forma más sencilla de ejecutar el proyecto, ya que Docker se encarga de toda la configuración.
+### Backend:
+- ASP.NET(C#) 
+- RabbitMQ
+- SignalR
+- CloudSQL
 
-#### Prerrequisitos
-
-- Docker
-- Docker Compose
-
-#### Pasos para ejecutar con Docker
-
-1. Clona el repositorio
-
-   ```bash
-   git clone [url-del-repositorio]
-   cd Holberton-Bidify-MVP
-   ```
-
-2. Inicia los contenedores
-
-   ```bash
-   docker compose up -d
-   ```
-
-3. Verifica que todos los servicios estén funcionando
-   ```bash
-   docker compose ps
-   ```
-
-Los servicios estarán disponibles en:
-
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5015
-- PostgreSQL: localhost:5432
-  - Database: BDfyDatabase
-  - Usuario: root
-  - Contraseña: 1234
-- RabbitMQ:
-  - Servicio: localhost:5672
-  - Panel de administración: http://localhost:15672
-  - Usuario: guest
-  - Contraseña: guest
-
-#### Comandos Docker útiles
-
-```bash
-# Ver logs de todos los servicios
-docker compose logs
-
-# Ver logs de un servicio específico
-docker compose logs backend
-docker compose logs frontend
-docker compose logs db
-docker compose logs rabbitmq
-
-# Reiniciar un servicio
-docker compose restart [servicio]
-
-# Detener todos los servicios
-docker compose down
-
-# Detener y eliminar volúmenes (borra la base de datos)
-docker compose down -v
-
-# Reconstruir las imágenes (después de cambios)
-docker compose build
-```
-
-### Resolución de problemas comunes con Docker
-
-1. Si el backend no se conecta a la base de datos:
-
-   - Espera unos segundos más, la base de datos puede tardar en inicializarse
-   - Verifica los logs: `docker compose logs db`
-   - Asegúrate de que los volúmenes se crearon correctamente
-
-2. Si el frontend no se conecta al backend:
-
-   - Verifica que el backend esté funcionando: `docker compose ps`
-   - Revisa los logs del backend: `docker compose logs backend`
-   - Asegúrate de que los puertos no estén en uso por otras aplicaciones
-
-3. Si necesitas reiniciar todo desde cero:
-   ```bash
-   docker compose down -v
-   docker compose build --no-cache
-   docker compose up -d
-   ```
+### Frontend:
+- React-router
+- Tailwind
+- TypeScript
+- Vite
+---
 
 ## 🛠️ Estructura del Proyecto
 
 ```
-app/
-├── Bdfy/               # Backend (.NET Core)
-│   ├── Controllers/    # Controladores API
-│   ├── Models/         # Modelos de datos
-│   └── Services/       # Servicios y lógica de negocio
-│
-└── BDfy-Frontend/      # Frontend (React)
-    |
-    ├── components/     # Componentes React
-    └── services/       # Servicios API
+───────────────────────────────────────────────────────────────────────────────────
+│app/
+│    ├── Bdfy/                 # Backend (.NET Core)
+│    │   ├── Controllers/      # Controladores API
+│    |   ├── Data/             # Configuraciones de la base de datos
+│    |   ├── Dtos/             # Almacena los Dtos (estructura de datos)
+│    |   ├── HUB/              # Logica de SignalR
+│    │   ├── Models/           # Modelos de datos
+│    │   ├── Services/         # Servicios
+│    |   ├── appsettings.json  # Configuracion del proyecto
+│    |   └── Program.cs        # Builder o iniciador de C#
+│    │
+│    └── BDfy-Frontend/      # Frontend (React)
+│        ├── components/     # Componentes React
+│        ├── public/         # Assets publicos
+│        ├── routes/         # Rutas del programa  
+│        └── services/       # Servicios API
+│ .gitignore
+│ cloudbuild.yaml            # Iniciador para el deploy en Cloud
+│ docker-compose.yml         # Docker compose que inicializa la app
+│ README.md                  # Readme del repositorio
+│ requirements.txt           # Detalles de los requerimientos del proyecto
+──────────────────────────────────────────────────────────────────────────────────
+```
+---
+
+## Flujo
+
+![image](https://github.com/user-attachments/assets/e5237534-0e8f-4716-b300-13e488d99145)
+
+---
+
+## Setup
+
+1- Clonar el repositorio
+```bash
+git clone <url del repositorio>
+cd Holberton-Bidify-MVP
+```
+2- Instalar dependencias de React (leer requirements.txt para mas información)
+```bash
+cd app
+cd BDfy-Frontend/app
+npm install
+```
+3- En la raiz del repositorio, ejecutar los siguientes comandos
+```bash
+docker compose build
+docker compose up
+```
+El `docker-compose.yaml` crea los contenedores dejando la applicación lista para ser usada
+
+*Nota
+- Tener instalado Docker for desktop o sus versiones para consola
+```bash
+apt get install docker.io
 ```
 
-## 📝 Notas Adicionales
+---
 
-- La configuración de Docker está optimizada para desarrollo y puede requerir ajustes para producción
-- Para contribuir al proyecto, por favor crea un branch y envía un pull request
+<h2>Funcionalidades</h2>
+<h4>Para los usuarios</h4>
+<ul>
+   <li>Registro/Login</li>
+   <li>Ver subastas activas</li>
+   <li>Ver información del subastador</li>
+   <li>Ofertar en un lote</li>
+   <li>Automatizar ofertas en un lote</li>
+   <li>Ver historial en un lote</li>
+</ul>
+<h4>Para los rematadores<h4>
+<ul>
+   <li>Registro/Login</li>
+   <li>Ver subastas activas</li>
+   <li>Ver historial en un lote</li>
+   <li>Ver su inventario</li>
+   <li>Reutilizar lotes en proximas subastas</li>
+   <li>Crear subastas</li>
+   <li>Crear lotes</li>
+</ul>
+   
+---
+
+<h2>Documentación Técnica</h2>
+<a href="https://docs.google.com/document/d/1otZBrP6yAiJaQfg6aJGTC2W4TJOyHt5vK8hkPa1jZvs/edit?usp=sharing"><p>Click para ir</p></a>
+
+---
+
+<h2>Entorno de producción</h2>
+<h4>URL del deploy</h4>
+
+```
+https://bdfy.tech/
+```
+
+<h4>URL de las API's</h4>
+
+```
+https://api.bdfy.tech/
+```
+---
+
+<h2>Autentificación</h2>
+
+<h4>Se utilizó JWT token para la autentificación de los endpoints</h4>
+
+```http
+Authorization: Bearer [your-JWT-token]
+```
+
+---
+
+## Miembros del equipo
+
+<img src="https://i.imgur.com/BiDivk1.png"></img>
+
+<h2><a href="https://github.com/lucas2mz" style="color:#D96E1C;" ><strong>Lucas Andrada |</strong></a>
+<a href="https://github.com/Ifabri31" style="color:#D91C87;" ><strong>Fabrizzio Oviedo |</strong></a>
+<a href="https://github.com/RodrigoFerrer" style="color:#81D91C;" ><strong>Rodrigo Reyes |</strong></a>
+<a href="https://github.com/Franco-byte" style="color:#38A3C7;" ><strong>Franco Reyes</strong></a></h2>
