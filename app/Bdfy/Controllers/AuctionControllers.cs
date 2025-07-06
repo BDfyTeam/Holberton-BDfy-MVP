@@ -10,24 +10,19 @@ namespace BDfy.Controllers
 {
     [ApiController]
     [Route("api/1.0/auctions")]
-    public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices)  : BaseController(db)
+    public class AuctionControllers(BDfyDbContext db, AuctionServices auctionServices, GcsImageService imageService) : BaseController(db)
     {
         protected readonly AuctionServices _auctionServices = auctionServices;
-       
+        
+
         [Authorize]
         [HttpPost("{userId}")]
-        public async Task<ActionResult> Register([FromRoute] Guid userId, [FromBody] RegisterAuctionDto Dto)
+        public async Task<ActionResult> Register([FromRoute] Guid userId, [FromForm] RegisterAuctionDto Dto)
         {
             try
             {
                 var startAtUtc = Dto.StartAt.UtcDateTime;
                 var endAtUtc = Dto.EndAt.UtcDateTime;
-                Console.WriteLine($"Lo que le mando: {Dto.StartAt}");
-                Console.WriteLine($"Transforma a: {startAtUtc}");
-                Console.WriteLine($"Actual en el back: {DateTime.UtcNow.AddMinutes(-5)}");
-                Console.WriteLine($"Comparacion start < al actual: {startAtUtc < DateTime.UtcNow.AddMinutes(-5)}");
-                Console.WriteLine($"Comparacion start >= end: {startAtUtc >= endAtUtc}");
-
 
                 var userClaims = HttpContext.User;
                 var userIdFromToken = userClaims.FindFirst("Id")?.Value;
@@ -49,14 +44,23 @@ namespace BDfy.Controllers
 
                 if (auctioneer == null || auctioneer.AuctioneerDetails == null) { return NotFound("User not found"); }
 
+                if (Dto.Category == null || Dto.Category.Length == 0)
+                {
+                    Dto.Category = [99];
+                }
+
+				if (Dto.Image == null || Dto.Image.Length == 0) { return BadRequest("The auction must contain an image"); }
+                var urlImage = await imageService.UploadImageAsync(Dto.Image, "auctions");
+
                 var auction = new Auction
                 {
                     Title = Dto.Title,
                     Description = Dto.Description,
                     StartAt = startAtUtc,
                     EndAt = endAtUtc,
-                    Category = Dto.Category ?? [],
+                    Category = Dto.Category,
                     Status = Dto.Status,
+                    ImageUrl = urlImage,
                     Direction = Dto.Direction,
                     AuctioneerId = auctioneer.AuctioneerDetails.UserId,
                     Auctioneer = auctioneer.AuctioneerDetails
@@ -91,6 +95,7 @@ namespace BDfy.Controllers
                 {
                     Id = a.Id,
                     Title = a.Title,
+                    ImageUrl = a.ImageUrl,
                     Description = a.Description,
                     StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
                     EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
@@ -102,6 +107,8 @@ namespace BDfy.Controllers
                     .Select(al => new LotsDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         LotNumber = al.Lot.LotNumber,
                         Description = al.Lot.Description,
                         Details = al.Lot.Details,
@@ -110,12 +117,13 @@ namespace BDfy.Controllers
                         CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
                         EndingPrice = al.Lot.EndingPrice ?? 0,
                         Sold = al.Lot.Sold
-                        
-                    }).ToList() ?? new List<LotsDto>(), 
+
+                    }).ToList() ?? new List<LotsDto>(),
                     Auctioneer = new AuctioneerDto
                     {
                         UserId = a.Auctioneer.UserId,
-                        Plate = a.Auctioneer.Plate
+                        Plate = a.Auctioneer.Plate,
+                        AuctionHouse = a.Auctioneer.AuctionHouse
                     }
                 }).ToList();
 
@@ -147,12 +155,13 @@ namespace BDfy.Controllers
                     .Where(a => a.Auctioneer.UserId == auctioneerId)
                     .ToListAsync();
                 var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
-                
+
 
                 var auctionsDto = auctions.Select(a => new AuctionDtoId
                 {
                     Id = a.Id,
                     Title = a.Title,
+                    ImageUrl = a.ImageUrl,
                     Description = a.Description,
                     StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
                     EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
@@ -165,6 +174,8 @@ namespace BDfy.Controllers
                     .Select(al => new LotGetDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         StartingPrice = al.Lot.StartingPrice,
                         CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
                         Description = al.Lot.Description,
@@ -212,6 +223,7 @@ namespace BDfy.Controllers
                 {
                     Id = a.Id,
                     Title = a.Title,
+                    ImageUrl = a.ImageUrl,
                     Description = a.Description,
                     StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
                     EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
@@ -224,6 +236,8 @@ namespace BDfy.Controllers
                     .Select(al => new LotsDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         LotNumber = al.Lot.LotNumber,
                         Description = al.Lot.Description,
                         Details = al.Lot.Details,
@@ -232,18 +246,20 @@ namespace BDfy.Controllers
                         CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
                         EndingPrice = al.Lot.EndingPrice ?? 0,
                         Sold = al.Lot.Sold
-                        
-                    }).ToList() ?? new List<LotsDto>(), 
-                        Auctioneer = a.Auctioneer is not null
+
+                    }).ToList() ?? new List<LotsDto>(),
+                    Auctioneer = a.Auctioneer is not null
                             ? new AuctioneerDto
                             {
                                 UserId = a.Auctioneer.UserId,
-                                Plate = a.Auctioneer.Plate
+                                Plate = a.Auctioneer.Plate,
+                                AuctionHouse = a.Auctioneer.AuctionHouse
                             }
                             : new AuctioneerDto
                             {
                                 UserId = Guid.Empty,
-                                Plate = 0
+                                Plate = 0,
+                                AuctionHouse = ""
                             }
                 }).ToList();
 
@@ -263,7 +279,7 @@ namespace BDfy.Controllers
                 var auctionById = await _db.Auctions
                         .Include(ad => ad.Auctioneer)
                         .Include(a => a.AuctionLots)
-                            .ThenInclude(al => al.Lot) 
+                            .ThenInclude(al => al.Lot)
                         .FirstOrDefaultAsync(a => a.Id == auctionId);
 
                 if (auctionById == null) { return NotFound("Auction not found"); }
@@ -274,6 +290,7 @@ namespace BDfy.Controllers
                 {
                     Id = auctionById.Id,
                     Title = auctionById.Title,
+                    ImageUrl = auctionById.ImageUrl,
                     Description = auctionById.Description,
                     StartAt = TimeZoneInfo.ConvertTimeFromUtc(auctionById.StartAt, tz),
                     EndAt = TimeZoneInfo.ConvertTimeFromUtc(auctionById.EndAt, tz),
@@ -284,6 +301,8 @@ namespace BDfy.Controllers
                     Lots = auctionById.AuctionLots.Where(al => al.IsOriginalAuction).Select(al => new LotsDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         LotNumber = al.Lot.LotNumber,
                         Description = al.Lot.Description,
                         Details = al.Lot.Details,
@@ -292,12 +311,13 @@ namespace BDfy.Controllers
                         CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
                         EndingPrice = al.Lot.EndingPrice ?? 0,
                         Sold = al.Lot.Sold
-                        
-                    }).ToList() ?? new List<LotsDto>(), 
+
+                    }).ToList() ?? new List<LotsDto>(),
                     Auctioneer = new AuctioneerDto
                     {
                         UserId = auctionById.Auctioneer.UserId,
-                        Plate = auctionById.Auctioneer.Plate
+                        Plate = auctionById.Auctioneer.Plate,
+                        AuctionHouse = auctionById.Auctioneer.AuctionHouse
                     }
                 };
 
@@ -350,6 +370,8 @@ namespace BDfy.Controllers
                     .Select(al => new LotsDto
                     {
                         Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
                         LotNumber = al.Lot.LotNumber,
                         Description = al.Lot.Description,
                         Details = al.Lot.Details,
@@ -367,9 +389,73 @@ namespace BDfy.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+        [HttpGet("category/{Category}")]
+        public async Task<ActionResult> GetCategoryByNumber([FromRoute] int Category)
+        {
+            try
+            {
+                var auctionByCategory = await _db.Auctions
+                    .Include(a => a.AuctionLots)
+                        .ThenInclude(al => al.Lot)
+                    .Include(a => a.Auctioneer)
+                    .Where(a => a.Category != null && a.Category.Contains(Category) && a.Status != AuctionStatus.Storage)
+                    .ToListAsync();
+                if (auctionByCategory == null)
+                {
+                    return BadRequest($"No auctions for this category {Category}");
+                }
+
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("Montevideo Standard Time");
+
+
+                var auctionsDto = auctionByCategory.Select(a => new AuctionDto
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    ImageUrl = a.ImageUrl,
+                    Description = a.Description,
+                    StartAt = TimeZoneInfo.ConvertTimeFromUtc(a.StartAt, tz),
+                    EndAt = TimeZoneInfo.ConvertTimeFromUtc(a.EndAt, tz),
+                    Category = a.Category ?? [],
+                    Status = a.Status,
+                    Direction = a.Direction,
+                    AuctioneerId = a.AuctioneerId,
+                    Lots = a.AuctionLots.Where(al => al.IsOriginalAuction).Select(al => new LotsDto
+                    {
+                        Id = al.LotId,
+                        Title = al.Lot.Title,
+                        ImageUrl = al.Lot.ImageUrl,
+                        LotNumber = al.Lot.LotNumber,
+                        Description = al.Lot.Description,
+                        Details = al.Lot.Details,
+                        AuctionId = al.AuctionId,
+                        StartingPrice = al.Lot.StartingPrice,
+                        CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
+                        EndingPrice = al.Lot.EndingPrice ?? 0,
+                        Sold = al.Lot.Sold
+
+                    }).ToList() ?? new List<LotsDto>(),
+                    Auctioneer = new AuctioneerDto
+                    {
+                        UserId = a.Auctioneer.UserId,
+                        Plate = a.Auctioneer.Plate,
+                        AuctionHouse = a.Auctioneer.AuctionHouse
+                    }
+
+                });
+
+                return Ok(auctionsDto);
+                
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
         [Authorize]
         [HttpPut("{auctionId}")]
-        public async Task<ActionResult> UpdateAuctionById([FromRoute] Guid auctionId, [FromBody] EditAuctionDto dto)
+        public async Task<ActionResult> UpdateAuctionById([FromRoute] Guid auctionId, [FromForm] EditAuctionDto dto)
         {
             try
             {
@@ -383,7 +469,7 @@ namespace BDfy.Controllers
                 if (string.IsNullOrEmpty(auctioneerIdFromToken) || !Guid.TryParse(auctioneerIdFromToken, out var auctioneerId)) { return Unauthorized("Invalid user token"); }
 
                 if (auctioneerRoleFromToken != UserRole.Auctioneer.ToString() && (user == null || user.UserDetails == null || !user.UserDetails.IsAdmin))
-                 { return Forbid("Access denied: Only auctioneers or adminscan update auctions"); }
+                { return Forbid("Access denied: Only auctioneers or adminscan update auctions"); }
 
                 var result = await _auctionServices.EditAuction(auctionId, auctioneerId, dto);
 
@@ -397,5 +483,95 @@ namespace BDfy.Controllers
             }
         }
 
+
+        [Authorize]
+        [HttpDelete("{auctionId}")]
+        
+        public async Task<ActionResult> DeleteAuctionById([FromRoute] Guid auctionId)
+        {
+            using var transaction = await _db.Database.BeginTransactionAsync();
+            
+            try
+            {
+                var auctioneerClaims = HttpContext.User;
+                var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
+                var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+
+                if (string.IsNullOrEmpty(auctioneerIdFromToken) || !Guid.TryParse(auctioneerIdFromToken, out var auctioneerId))
+                    return Unauthorized("Invalid user token");
+
+                if (auctioneerRoleFromToken != UserRole.Auctioneer.ToString())
+                    return Unauthorized("Access Denied: Only Auctioneers can delete Auctions");
+
+                var auction = await _db.Auctions
+                    .Include(a => a.AuctionLots)
+                    .FirstOrDefaultAsync(a => a.Id == auctionId && a.Auctioneer.UserId == auctioneerId);
+
+                if (auction == null)
+                    return NotFound("Required information not found");
+
+                if (auction.Status != AuctionStatus.Draft)
+                    return BadRequest("Auction can only be deleted if it is in draft status");
+
+                if (!string.IsNullOrEmpty(auction.ImageUrl))
+				{
+					try
+					{
+						await imageService.DeleteImageAsync(auction.ImageUrl);
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine($"Error al borrar la imagen: {ex.Message}");
+					}
+				}
+
+                var auctionLotsToDelete = await _db.AuctionLots
+                    .Where(al => al.AuctionId == auctionId && al.IsOriginalAuction)
+                    .ToListAsync();
+
+                var lotIds = auctionLotsToDelete.Select(al => al.LotId).ToList();
+
+                _db.AuctionLots.RemoveRange(auctionLotsToDelete);
+
+                var storage = await _db.Auctions
+                    .Include(a => a.Auctioneer)
+                    .FirstOrDefaultAsync(a => a.Auctioneer.UserId == auctioneerId && a.Status == AuctionStatus.Storage);
+
+                if (storage != null)
+                {
+                    foreach (var lotId in lotIds)
+                    { 
+                        bool isMissing = !_db.AuctionLots.Local.Any(al => al.LotId == lotId);
+
+                        if (isMissing)
+                        {
+                            var newAuctionLot = new AuctionLot
+                            {
+                                AuctionId = storage.Id,
+                                LotId = lotId,
+                                IsOriginalAuction = false,
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            };
+
+                            _db.AuctionLots.Add(newAuctionLot);
+                        }
+                    }
+                }
+
+                await _db.SaveChangesAsync();
+
+                _db.Auctions.Remove(auction);
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return NoContent();
+
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
     }
 }

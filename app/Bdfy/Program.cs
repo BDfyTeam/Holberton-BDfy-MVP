@@ -12,8 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://*:{port}");
+// var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+// builder.WebHost.UseUrls($"http://*:{port}");
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -63,7 +63,9 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 "https://localhost:3000", "https://127.0.1:3000", // Frontend
-                "http://localhost:5016", "http://127.0.0.1:5016") // Específicos
+                "http://localhost:5016", "http://127.0.0.1:5016",
+                "https://bdfy-frontend-946201117375.southamerica-east1.run.app",
+                "https://bdfy.tech", "http://bdfy.tech", "https://bdfy-frontend-us-946201117375.us-central1.run.app") 
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
@@ -165,10 +167,12 @@ builder.Services.AddScoped<AppSettings>();
 
 builder.Services.AddScoped<AuctionServices>(); // Servicio para editar una subasta // Servicio para editar una subasta
 builder.Services.AddScoped<IAutoBidService, AutoBidService>(); // Servicio para hacer Auto-bids
-builder.Services.AddScoped<BiddingHistoryService>();
+builder.Services.AddScoped<BiddingHistoryService>(); // Servicio para buscar el historial de ofertas en un lote
+builder.Services.AddScoped<GcsImageService>(); // Servicio de imagenes de Cloud
+
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
@@ -210,7 +214,6 @@ app.Use(async (context, next) =>
 });
 
 // Middleware
-app.UseCors("SignalRCorsPolicy");
 app.UseRouting();
 
 app.UseRateLimiter();       // Activate the rate limiter

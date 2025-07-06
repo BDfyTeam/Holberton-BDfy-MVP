@@ -1,30 +1,31 @@
 import { useState, useEffect } from "react";
-import CarouselAuctionCard from "~/components/auctionCard";
+import BanerCarousel from "~/components/BanerCarousel";
 import AddLot from "~/components/addLot";
 import { getAuctionsByAuctioneer } from "~/services/fetchService";
-import type { AuctionCard } from "~/services/types";
+import type { Auction } from "~/services/types";
 import UpdateAuctionButton from "~/components/PUTAuction";
+import CarouselAuctionCard from "~/components/GenericCarousel";
 
 export default function MyAuctions() {
-  const [activeAuct, setActiveAuct] = useState<AuctionCard[]>([]);
-  const [closedAuct, setClosedAuct] = useState<AuctionCard[]>([]);
-  const [draftedAuct, setDraftedAuct] = useState<AuctionCard[]>([]);
+  const [activeAuct, setActiveAuct] = useState<Auction[]>([]);
+  const [closedAuct, setClosedAuct] = useState<Auction[]>([]);
+  const [draftedAuct, setDraftedAuct] = useState<Auction[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [selectedAuction, setSelectedAuction] = useState<AuctionCard | null>(null);
-  const [auctionToEdit, setAuctionToEdit] = useState<AuctionCard | null>(null);
+  const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
+  const [auctionToEdit, setAuctionToEdit] = useState<Auction | null>(null);
 
   useEffect(() => {
     async function fetchAuctions() {
       try {
         const data = await getAuctionsByAuctioneer();
         const activeAuctions = data.filter(
-          (auction: AuctionCard) => auction.status === 1
+          (auction: Auction) => auction.status === 1
         );
         const closedAuctions = data.filter(
-          (auction: AuctionCard) => auction.status === 0
+          (auction: Auction) => auction.status === 0
         );
         const draftedAuctions = data.filter(
-          (auction: AuctionCard) => auction.status === 2
+          (auction: Auction) => auction.status === 2
         );
         setActiveAuct(activeAuctions);
         setClosedAuct(closedAuctions);
@@ -38,22 +39,22 @@ export default function MyAuctions() {
   }, []);
 
   return (
-    <>
+    <main>
       <div className="p-4 text-white">
         <h2 className="text-2xl font-bold mb-4">Subastas Activas</h2>
-        <CarouselAuctionCard auction={activeAuct} />
+        <BanerCarousel auction={activeAuct} />
       </div>
 
       <div className="p-4 text-white">
         <h2 className="text-2xl font-bold mb-4">Subastas Cerradas</h2>
-        <CarouselAuctionCard auction={closedAuct} />
+        <BanerCarousel auction={closedAuct} />
       </div>
 
       <div className="p-4 text-white ">
         <h2 className="text-2xl font-bold mb-4">Subastas en Borrador</h2>
         <CarouselAuctionCard
           auction={draftedAuct}
-          renderAction={(auction: AuctionCard) => (
+          renderAction={(auction: Auction) => (
             <>
               <button
                 onClick={() => {
@@ -88,6 +89,6 @@ export default function MyAuctions() {
           />
         )}
       </div>
-    </>
+    </main>
   );
 }

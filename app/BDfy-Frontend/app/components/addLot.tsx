@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { getAllStorageLots, updateLot } from "~/services/fetchService";
-import type { AuctionCard, CompleteLot, LotCard } from "~/services/types";
+import type { Auction, CompleteLot, LotCard } from "~/services/types";
 
 type AddLotProps = {
-  auction: AuctionCard;
+  auction: Auction;
   onClose?: () => void;
 };
 

@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using BDfy.Models;
 
 namespace BDfy.Dtos
 {
@@ -7,6 +6,9 @@ namespace BDfy.Dtos
 	{
 		[Required]
 		public int Plate { get; set; }
+
+		[Required]
+		public string AuctionHouse { get; set; } = null!;
 	}
 
 }

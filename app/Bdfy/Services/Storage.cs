@@ -27,6 +27,7 @@ namespace BDfy.Services
             var Storage = new Auction
             {
                 Title = "Storage",
+                ImageUrl = "storage.png",
                 Description = "No Description",
                 StartAt = DateTime.UtcNow,
                 EndAt = DateTime.UtcNow,
@@ -38,6 +39,32 @@ namespace BDfy.Services
             };
 
             return Storage;
+        }
+        public async Task<Auction> GetStorage(Guid auctioneerId)
+        {
+            var auction = await _db.Auctions
+                .Include(a => a.Auctioneer)
+                .FirstOrDefaultAsync(a => a.AuctioneerId == auctioneerId && a.Status == AuctionStatus.Storage);
+
+            if (auction == null)
+            {
+                throw new Exception("Storage not found for this auctioneer.");
+            }
+
+            return auction;
+        }
+        public async Task<bool> DeleteStorage(Guid auctioneerId)
+        {
+            var auction = await _db.Auctions
+                .FirstOrDefaultAsync(a => a.AuctioneerId == auctioneerId && a.Status == AuctionStatus.Storage);
+
+            if (auction == null)
+            {
+                throw new Exception("Storage not found for this auctioneer.");
+            }
+
+            _db.Auctions.Remove(auction);
+            return await _db.SaveChangesAsync() > 0;
         }
     }
 }

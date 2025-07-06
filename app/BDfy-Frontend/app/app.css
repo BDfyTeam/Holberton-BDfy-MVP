@@ -20,7 +20,7 @@ body {
 .splide__arrow {
   transform: translateY(-50%);
   top: 50%;
-  background-color: #59b9e2 !important;
+  background-color: #d6f2fdb0 !important;
   color: white !important;
   border-radius: 9999px;
   padding: 0.75rem;
@@ -29,7 +29,7 @@ body {
 
 
 .swiper-pagination-bullet {
-  background: #406a79;
+  background: #a1bcc5;
   opacity: 0.5;
   transition: all 0.3s ease;
 }
@@ -38,3 +38,5 @@ body {
   background: #81fff9 !important;
   opacity: 1;
 }
+
+  

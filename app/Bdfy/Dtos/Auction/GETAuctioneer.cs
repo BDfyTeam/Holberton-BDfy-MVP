@@ -11,6 +11,9 @@ namespace BDfy.Dtos
         [Required(ErrorMessage = "The Title is mandatory")]
         [StringLength(100, ErrorMessage = "The Title cannot have more than 100 characters")]
         public string Title { get; set; } = null!;
+        
+        [Required]
+        public string ImageUrl { get; set; } = null!;
 
         [Required]
         [StringLength(1200, ErrorMessage = "The Description cannot have more than 1200 characters")]
@@ -22,7 +25,8 @@ namespace BDfy.Dtos
         [Required]
         public DateTime EndAt { get; set; }
 
-        public int[]? Category { get; set; } = [];
+        [Required]
+        public int[] Category { get; set; } = [];
 
         [Required]
         public AuctionStatus Status { get; set; }

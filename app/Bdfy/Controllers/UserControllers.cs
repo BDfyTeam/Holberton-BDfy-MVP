@@ -3,18 +3,9 @@ using BDfy.Dtos;
 using BDfy.Data;
 using BDfy.Models;
 using BDfy.Services;
-using BDfy.Configurations;
-using Microsoft.Extensions.Options;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.AspNetCore.Identity;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System.Xml;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authorization;
 
 namespace BDfy.Controllers
@@ -23,9 +14,10 @@ namespace BDfy.Controllers
     [Route("api/1.0/users")]
     public class BaseController(BDfyDbContext db) : ControllerBase { protected readonly BDfyDbContext _db = db; }
 
-    public class UsersController(BDfyDbContext db, Storage storageService, [FromServices] GenerateJwtToken jwtService) : BaseController(db)
+    public class UsersController(BDfyDbContext db, Storage storageService, [FromServices] GenerateJwtToken jwtService, GcsImageService imageService) : BaseController(db)
     {
         private readonly Storage _storageService = storageService;
+        private GcsImageService _imgService = imageService;
 
         [EnableRateLimiting("register_policy")]
         [HttpPost("register")]
@@ -51,6 +43,7 @@ namespace BDfy.Controllers
                 Role = dto.Role,
                 Reputation = dto.Reputation,
                 Direction = dto.Direction,
+                IsActive = true,
                 Password = PasswordHashed
             };
 
@@ -76,7 +69,8 @@ namespace BDfy.Controllers
                 _db.AuctioneerDetails.Add(new AuctioneerDetails
                 {
                     UserId = user.Id,
-                    Plate = details.Plate
+                    Plate = details.Plate,
+                    AuctionHouse = details.AuctionHouse
                 });
                 var storageAuction = await _storageService.CreateStorage(user.Id); // Storage para auctioneer
                 _db.Auctions.Add(storageAuction);
@@ -115,7 +109,7 @@ namespace BDfy.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserById(Guid userId)
+        public async Task<IActionResult> GetUserById([FromRoute] Guid userId)
         {
             var user = await _db.Users
                 .Include(u => u.UserDetails)
@@ -139,7 +133,7 @@ namespace BDfy.Controllers
         [Authorize]
         [HttpPut("{auctioneerId}")]
 
-        public async Task<IActionResult> EditAuctioneer([FromBody] EditAuctioneerDto dto, [FromRoute] Guid auctioneerId)
+        public async Task<IActionResult> EditAuctioneer([FromForm] EditAuctioneerDto dto, [FromRoute] Guid auctioneerId)
         {
             try
             {
@@ -155,6 +149,7 @@ namespace BDfy.Controllers
                 { return Unauthorized("Only auctioneers can edit their profile."); }
 
                 var auctioneer = await _db.Users
+                    .Include(u => u.AuctioneerDetails)
                     .FirstOrDefaultAsync(u => u.Id == auctioneerId);
 
                 if (auctioneer == null) { return NotFound("Auctioneer do not exist in our registry."); }
@@ -213,6 +208,30 @@ namespace BDfy.Controllers
                     auctioneer.Phone = dto.Phone;
                 }
 
+                if (dto.AuctionHouse != null && auctioneer.AuctioneerDetails != null)
+                {
+                    auctioneer.AuctioneerDetails.AuctionHouse = dto.AuctionHouse;
+                }
+
+                if (dto.Image != null && dto.Image.Length > 0)
+                {
+                    if (auctioneer.ImageUrl != null)
+                    {
+                        var newHash = await _imgService.CalculateHashAsync(dto.Image.OpenReadStream()); // Calcula hash de la nueva imagen
+                        var oldStream = await _imgService.DownloadImageAsync(auctioneer.ImageUrl); // Descarga la imagen del subastador
+                        var oldHash = await _imgService.CalculateHashAsync(oldStream); // Calcula hash de la imagen del subastador
+
+                        if (newHash != oldHash) // Compara hashs ---> si son diferentes significa que es otra imagen
+                        {
+                            await _imgService.DeleteImageAsync(auctioneer.ImageUrl); // Borra la anituga foto
+                            auctioneer.ImageUrl = await _imgService.UploadImageAsync(dto.Image, "users"); // Actualiza a la nueva imagen
+                        }
+                    }
+                    else
+                    {
+                        auctioneer.ImageUrl = await _imgService.UploadImageAsync(dto.Image, "users"); // Si el subastador no tenia imagen sube la neuva foto
+                    }
+                }
 
                 if (dto.Direction != null)
                 {
@@ -253,6 +272,37 @@ namespace BDfy.Controllers
             }
 
             catch (Exception ex) { return StatusCode(500, "Internal Server Error: " + ex.Message); }
+        }
+
+        [Authorize]
+        [HttpPut("{userId}/deactivate-account")]
+        public async Task<IActionResult> DeleteUser([FromRoute] Guid userId)
+        {
+            try
+            {
+                var userClaims = HttpContext.User;
+                var userIdFromToken = userClaims.FindFirst("Id")?.Value;
+
+                if (userIdFromToken != userId.ToString())
+                {
+                    return Forbid("Diffrent user as the login");
+                }
+                
+                var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    return NotFound("The povide User does not exist");
+                }
+
+                user.IsActive = false;
+                await _db.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
         }
   
         private bool IsValidEmail(string email)
