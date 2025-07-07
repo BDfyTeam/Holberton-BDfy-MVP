@@ -15,6 +15,7 @@ import categorys from "~/services/categorys";
 import {
   CalendarIcon,
   CalendarOffIcon,
+  IdCard,
   LayoutList,
   MailIcon,
   MapPinIcon,
@@ -90,6 +91,8 @@ export default function AuctionPage() {
             department: user.direction.department,
           },
           id: user.id,
+          auctionHouse: user.auctioneerDetails.auctionHouse,
+          plate: user.auctioneerDetails.plate
         });
         setLots(data.lots);
 
@@ -321,7 +324,7 @@ export default function AuctionPage() {
     // category: lot.category
   }));
 
-  const handleCardClick = (item: BasicCardItem) => {
+  const handleCardClick = (item: BasicCardItem) => { // item ya no deberia ser un BasicCardItem, sino un CompleteLot, para poder recibir toda la info
     const lote = auction?.lots.find((l) => l.id === item.id);
     if (lote) setselectLot(lote);
   };
@@ -351,7 +354,7 @@ export default function AuctionPage() {
                   className="max-w-[90%] h-auto rounded-2xl mb-4"
                 />
                 <p className="text-white mb-2 text-center">
-                  Nombre de la casa de subastas
+                  {auctioneer?.auctionHouse}
                 </p>
               </div>
 
@@ -428,9 +431,15 @@ export default function AuctionPage() {
                 </h2>
 
                 {/* Reputación */}
-                <p className="flex items-center text-[#0D4F61] justify-center mb-4">
+                <p className="flex items-center text-[#0D4F61] justify-center mb-1">
                   <VerifiedIcon className="w-5 h-5 mr-2" />
                   {auctioneer?.reputation}%
+                </p>
+                
+                {/* placa */}
+                <p className="flex items-center text-[#0D4F61] justify-center mb-4">
+                  <IdCard className="w-5 h-5 mr-2 inline-block" />
+                  {auctioneer?.plate}
                 </p>
               </div>
             </div>

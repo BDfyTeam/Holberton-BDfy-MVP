@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import PostUser from "~/components/PostUser";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -56,6 +57,7 @@ export default function Register() {
           <ChevronRight size={32} />
         </div>
       </div>
+        <PostUser />
     </main>
   );
 }

@@ -1,11 +1,11 @@
 import { getToken, getUserIdFromToken } from "./handleToken";
 import type {
   AuctionCard,
-  RegisterUserPayload,
+  RegisterUser,
+  RegisterAuctioneer,
   LotCard,
   CompleteLot,
 } from "./types";
-import type { RegisterAuctioneerPayload } from "./types";
 
 // LOGUEAR UN USUARIO
 export async function loginUser(email: string, password: string) {
@@ -35,7 +35,7 @@ export async function loginUser(email: string, password: string) {
 }
 
 // REGISTRAR UN USUARIO
-export async function registerUser(payload: RegisterUserPayload) {
+export async function registerUser(payload: RegisterUser) {
   try {
     const response = await fetch(
       "https://api.bdfy.tech/api/1.0/users/register",
@@ -63,7 +63,7 @@ export async function registerUser(payload: RegisterUserPayload) {
 }
 
 // REGISTRAR UN SUBASTADOR
-export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
+export async function registerAuctioner(payload: RegisterAuctioneer) {
   try {
     const response = await fetch(
       "https://api.bdfy.tech/api/1.0/users/register",
