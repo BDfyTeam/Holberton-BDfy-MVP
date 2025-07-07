@@ -9,11 +9,11 @@ import type { RegisterAuctioneerPayload } from "../services/types";
 import { registerAuctioner } from "~/services/fetchService";
 import { useAuth } from "~/context/authContext";
 
-type auctioneerRegisterProps = {
+type Props = {
   className?: string;
 };
 
-function AuctionerRegisterFrom({ className }: auctioneerRegisterProps) {
+function AuctionerRegisterFrom({ className }: Props) {
   const navigate = useNavigate();
   const [validated, setValidated] = useState(false);
   const [firstName, setFirstName] = useState("");

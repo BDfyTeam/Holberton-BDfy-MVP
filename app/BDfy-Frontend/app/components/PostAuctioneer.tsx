@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "~/context/authContext";
-import { registerUser } from "~/services/fetchService";
-import type { RegisterUser } from "~/services/types";
+import { registerAuctioner } from "~/services/fetchService";
+import type { RegisterAuctioneer } from "~/services/types";
 import { Snackbar, Alert } from "@mui/material";
 import Name from "./FormFields/Name";
 import Email from "./FormFields/Email";
@@ -10,29 +10,36 @@ import Password from "./FormFields/Password";
 import Document from "./FormFields/Document";
 import Phone from "./FormFields/Phone";
 import Direction from "./FormFields/Direction";
-import { AlertCircle, CheckCircle, HandCoins, ShoppingCart } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  CircleDollarSign,
+  ClipboardCheck,
+  Gavel,
+} from "lucide-react";
 import { useAlert } from "~/context/alertContext";
+import Plate from "./FormFields/Plate";
 
 type Props = {
   className?: string;
 };
 
-export default function PostUser({ className }: Props) {
+export default function PostAuctioneer({ className }: Props) {
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [reputation] = useState(75);
+  const [reputation] = useState(100);
   const [phone, setPhone] = useState("");
   const [documentNumber, setDocumentNumber] = useState("");
-  const [role] = useState(0);
+  const [role] = useState(1);
   const [street, setStreet] = useState("");
   const [streetNumber, setStreetNumber] = useState("");
   const [corner, setCorner] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [department, setDepartment] = useState("");
-  const [isAdmin] = useState(false);
+  const [plate, setPlate] = useState("");
   // const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -42,7 +49,7 @@ export default function PostUser({ className }: Props) {
     event.preventDefault();
     setLoading(true);
 
-    const payload: RegisterUser = {
+    const payload: RegisterAuctioneer = {
       firstName,
       lastName,
       email,
@@ -58,13 +65,13 @@ export default function PostUser({ className }: Props) {
         zipCode: parseInt(zipCode),
         department,
       },
-      userDetails: {
-        IsAdmin: isAdmin,
+      auctioneerDetails: {
+        plate: parseInt(plate),
       },
     };
 
     try {
-      const token = await registerUser(payload);
+      const token = await registerAuctioner(payload);
       login(token);
       navigate("/");
       showAlert("Usuario registrado exitosamente", "success");
@@ -111,13 +118,36 @@ export default function PostUser({ className }: Props) {
         </Alert>
       </Snackbar>
 
+      {/* Información adicional (derecha) */}
+      <div className="flex flex-col w-1/2 p-8 my-auto items-center text-center text-white">
+        <h1 className="text-4xl font-semibold mb-12">
+          FORMULARIO DE SUBASTADORES
+        </h1>
+        <h2 className="text-2xl font-light mb-4">Bienvenido a BDfy</h2>
+        <p className="text-sm mb-10">
+          Como subastador, podrás gestionar y ofrecer diferentes lotes a los
+          participantes de la subasta. Este formulario te permitirá crear una
+          cuenta para comenzar a crear y administrar tus subastas en vivo.
+        </p>
+        <div className="flex gap-6">
+          <div className="flex flex-col items-center hover:drop-shadow-[0_0_6px_#ffffff] transition duration-300">
+            <CircleDollarSign size={48} className="text-white mb-2" />
+            <p>Valor de los lotes</p>
+          </div>
+          <div className="flex flex-col items-center hover:drop-shadow-[0_0_6px_#ffffff] transition duration-300">
+            <Gavel size={48} className="text-white mb-2" />
+            <p>Gestiona la subasta</p>
+          </div>
+          <div className="flex flex-col items-center hover:drop-shadow-[0_0_6px_#ffffff] transition duration-300">
+            <ClipboardCheck size={48} className="text-white mb-2" />
+            <p>Administra lotes</p>
+          </div>
+        </div>
+      </div>
 
       {/* Formulario */}
       <div className="flex w-1/2 h-auto py-15 px-20 bg-[#D3E3EB] rounded-2xl text-[#0D4F61]">
-        <form
-          className="-full h-full gap-4"
-          onSubmit={handleSubmit}
-        >
+        <form className="-full h-full gap-4" onSubmit={handleSubmit}>
           {/* Nombre completo */}
           <Name
             className="flex w-full mt-2 mb-4"
@@ -141,12 +171,21 @@ export default function PostUser({ className }: Props) {
             classNames="flex w-full mb-4 relative"
           />
 
-          {/* Número de documento */}
-          <Document
-            documentNumber={documentNumber}
-            setDocumentNumber={setDocumentNumber}
-            className="flex w-full mb-4 relative"
-          />
+          <div className="flex w-full mb-4">
+            {/* Número de documento */}
+            <Document
+              documentNumber={documentNumber}
+              setDocumentNumber={setDocumentNumber}
+              className="w-1/2 mr-5 relative"
+            />
+
+            {/* Matricula de subastador */}
+            <Plate
+              plate={plate}
+              setPlate={setPlate}
+              className="w-1/2 mr-5 relative"
+            />
+          </div>
 
           {/* Telefono */}
           <Phone
@@ -186,26 +225,6 @@ export default function PostUser({ className }: Props) {
             </button>
           </div>
         </form>
-      </div>
-      
-       {/* Información adicional (derecha) */}
-       <div className="flex flex-col w-1/2 p-8 my-auto items-center text-center text-white">
-        <h1 className="text-4xl font-semibold mb-12">FORMULARIO DE OFERENTES</h1>
-        <h2 className="text-2xl font-light mb-4">Bienvenido a BDfy</h2>
-        <p className="text-sm mb-10">
-          Como oferente, podrás pujar por diferentes lotes en tiempo real. Este formulario te permitirá crear una cuenta
-          para comenzar a hacer ofertas en nuestras subastas en vivo.
-        </p>
-        <div className="flex gap-6">
-          <div className="flex flex-col items-center hover:drop-shadow-[0_0_6px_#ffffff] transition duration-300">
-            <ShoppingCart size={48} className="text-white mb-2" />
-            <p>Compra de lotes</p>
-          </div>
-          <div className="flex flex-col items-center hover:drop-shadow-[0_0_6px_#ffffff] transition duration-300">
-            <HandCoins size={48} className="text-white mb-2" />
-            <p>Realiza ofertas</p>
-          </div>
-        </div>
       </div>
     </div>
   );
