@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
+using System.Dynamic;
 
 namespace BDfy.Controllers
 {
@@ -114,9 +115,54 @@ namespace BDfy.Controllers
             var user = await _db.Users
                 .Include(u => u.UserDetails)
                 .Include(u => u.AuctioneerDetails)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+                .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
-            return user is null ? NotFound() : Ok(user);
+            if (user == null)
+            {
+                return NotFound(new { message = $"User: {userId} not found" });
+            }
+
+            dynamic userDto = new ExpandoObject(); // Objecto dinamico para no mostrar campos en null
+
+            userDto.Id = user.Id;
+            userDto.FirstName = user.FirstName;
+            userDto.LastName = user.LastName;
+            userDto.Email = user.Email;
+            userDto.Password = user.Password;
+            userDto.Ci = user.Ci;
+            userDto.Reputation = user.Reputation;
+            userDto.Phone = user.Phone;
+            userDto.Role = user.Role;
+            userDto.ImageUrl = user.ImageUrl;
+            userDto.IsActive = user.IsActive;
+
+            userDto.Direction = new
+            {
+                Street = user.Direction.Street,
+                StreetNumber = user.Direction.StreetNumber,
+                Corner = user.Direction.Corner,
+                ZipCode = user.Direction.ZipCode,
+                Department = user.Direction.Department
+            };
+
+            if (user.UserDetails is not null)
+            {
+                userDto.UserDetails = new
+                {
+                    IsAdmin = user.UserDetails.IsAdmin,
+                    IsVerified = user.UserDetails.IsVerified
+                };
+            }
+            else if (user.AuctioneerDetails is not null)
+            {
+                userDto.AuctioneerDetails = new
+                {
+                    Plate = user.AuctioneerDetails.Plate,
+                    AuctionHouse = user.AuctioneerDetails.AuctionHouse
+                };
+            }
+
+            return Ok(userDto);
         }
 
         [HttpGet("_internal")]
@@ -127,7 +173,50 @@ namespace BDfy.Controllers
                 .Include(u => u.AuctioneerDetails)
                 .ToListAsync();
 
-            return Ok(users);
+            var usersDto = users.Select(u =>
+            {
+                dynamic user = new ExpandoObject(); // Objecto dinamico para no mostrar campos en null
+                user.Id = u.Id;
+                user.FirstName = u.FirstName;
+                user.LastName = u.LastName;
+                user.Email = u.Email;
+                user.Password = u.Password;
+                user.Ci = u.Ci;
+                user.Reputation = u.Reputation;
+                user.Phone = u.Phone;
+                user.Role = u.Role;
+                user.ImageUrl = u.ImageUrl;
+                user.Direction = new 
+                {
+                    Street = u.Direction.Street,
+                    StreetNumber = u.Direction.StreetNumber,
+                    Corner = u.Direction.Corner,
+                    ZipCode = u.Direction.ZipCode,
+                    Department = u.Direction.Department
+                };
+                user.IsActive = u.IsActive;
+
+                if (u.AuctioneerDetails is not null)
+                {
+                    user.AuctioneerDetails = new
+                    {
+                        Plate = u.AuctioneerDetails.Plate,
+                        AuctionHouse = u.AuctioneerDetails.AuctionHouse
+                    };
+                }
+                else if (u.UserDetails is not null)
+                {
+                    user.UserDetails = new
+                    {
+                        IsAdmin = u.UserDetails.IsAdmin,
+                        IsVerified = u.UserDetails.IsVerified
+                    };
+                }
+
+                return user;
+            }).ToList();
+
+            return Ok(usersDto);
         }
 
         [Authorize]
