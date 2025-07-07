@@ -1,6 +1,8 @@
 <div align="center">
    <img src="https://i.imgur.com/5FReqDz.png" height="150" width="150"><h1>BDfy MVP</h1></img>
 </div>
+<p>BDfy es una plataforma digital de subastas que brinda una experiencia simple y segura en tiempo real para usuarios y rematadores. 
+Principalmente desarrollada en C# (.NET) y React en el frontend, emplea RabbitMQ para la concurrencia de ofertas, SignalR para la comunicación en tiempo real y PostgreSQL como base de datos</p>
 
 ## Tabla de Contenido
 
