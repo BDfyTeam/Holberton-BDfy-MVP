@@ -12,6 +12,7 @@ export async function loginUser(email: string, password: string) {
   try {
     // Llamamos al back con los datos del formulario
     const response = await fetch("https://api.bdfy.tech/api/1.0/users/login", {
+    const response = await fetch("https://api.bdfy.tech/api/1.0/users/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json", // Le decimos que enviamos JSON
@@ -38,6 +39,7 @@ export async function loginUser(email: string, password: string) {
 export async function registerUser(payload: RegisterUserPayload) {
   try {
     const response = await fetch(
+      "https://api.bdfy.tech/api/1.0/users/register",
       "https://api.bdfy.tech/api/1.0/users/register",
       {
         method: "POST",
@@ -66,6 +68,7 @@ export async function registerUser(payload: RegisterUserPayload) {
 export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
   try {
     const response = await fetch(
+      "https://api.bdfy.tech/api/1.0/users/register",
       "https://api.bdfy.tech/api/1.0/users/register",
       {
         method: "POST",
@@ -126,6 +129,7 @@ export async function fetchRole() {
 
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/users/${userId}`
+      `https://api.bdfy.tech/api/1.0/users/${userId}`
     );
     const data = await response.json();
 
@@ -141,6 +145,7 @@ export async function fetchRole() {
 // ENTRAR EN UNA SUBASTA (GET all auctions)
 export async function getAllAuctions() {
   try {
+    const response = await fetch("https://api.bdfy.tech/api/1.0/auctions", {
     const response = await fetch("https://api.bdfy.tech/api/1.0/auctions", {
       method: "GET",
       headers: {
@@ -175,6 +180,7 @@ export async function createAuction(payload: AuctionCard) {
     }
 
     const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/auctions/${userId}`,
       `https://api.bdfy.tech/api/1.0/auctions/${userId}`,
       {
         method: "POST",
@@ -211,6 +217,7 @@ export async function getAuctionsByAuctioneer() {
 
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/auctions/auctioneer/${userId}`,
+      `https://api.bdfy.tech/api/1.0/auctions/auctioneer/${userId}`,
       {
         method: "GET",
         headers: {
@@ -241,6 +248,7 @@ export async function getAuctionById(id: string) {
   try {
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/auctions/specific/${id}`,
+      `https://api.bdfy.tech/api/1.0/auctions/specific/${id}`,
       {
         method: "GET",
         headers: {
@@ -268,6 +276,7 @@ export async function updateAuction(payload: AuctionCard) {
     }
     const auctionId = payload.id;
     const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/auctions/${auctionId}`,
       `https://api.bdfy.tech/api/1.0/auctions/${auctionId}`,
       {
         method: "PUT",
@@ -301,6 +310,7 @@ export async function createLot(payload: LotCard) {
     const auctionId = payload.auctionId;
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/lots/${auctionId}`,
+      `https://api.bdfy.tech/api/1.0/lots/${auctionId}`,
       {
         method: "POST",
         headers: {
@@ -329,6 +339,7 @@ export async function getLotById(lotId: string) {
 
   try {
     const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/lots/specific/${lotId}`,
       `https://api.bdfy.tech/api/1.0/lots/specific/${lotId}`,
       {
         method: "GET",
@@ -359,6 +370,7 @@ export async function updateLot(payload: LotCard) {
     }
     const lotId = payload.id;
     const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/lots/${lotId}/edit`,
       `https://api.bdfy.tech/api/1.0/lots/${lotId}/edit`,
       {
         method: "PUT",
@@ -400,6 +412,7 @@ export async function getAllStorageLots() {
   try {
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/lots/${auctioneer_id}`,
+      `https://api.bdfy.tech/api/1.0/lots/${auctioneer_id}`,
       {
         method: "GET",
         headers: {
@@ -436,6 +449,7 @@ export async function makeBid(lotId: string, bid: number) {
     }
     const dateNow = new Date();
     const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/lots/bid/${lotId}`,
       `https://api.bdfy.tech/api/1.0/lots/bid/${lotId}`,
       {
         method: "POST",
@@ -483,6 +497,7 @@ export async function makeAutoBid(
 
     // AUTOPUJA
     const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
       `https://api.bdfy.tech/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
       {
         method: "POST",

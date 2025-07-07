@@ -1,65 +1,73 @@
-# Dependencias para API REST en C# (NuGet Packages)
-# Uso: Ejecuta los comandos dotnet add package en la raíz del proyecto .NET para instalarlos.
+# Dependencias del Proyecto BDfy
 
-# Base de datos y ORM (Entity Framework Core y PostgreSQL)
-dotnet add package Microsoft.EntityFrameworkCore
-dotnet add package Microsoft.EntityFrameworkCore.Tools
-dotnet add package Microsoft.EntityFrameworkCore.Design
-dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
-dotnet add package Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
-dotnet add package Microsoft.EntityFrameworkCore.Proxies
+Este archivo documenta las librerías y paquetes utilizados en el backend (.NET) y frontend (React) del proyecto. Todas las dependencias ya están incluidas en `*.csproj` y `package.json`, por lo que no requieren instalación manual individual.
 
-# SignalR para comunicación en tiempo real
-dotnet add package Microsoft.AspNetCore.SignalR.Client
-dotnet add package Microsoft.AspNetCore.SignalR
+---
 
-# Mensajería con RabbitMQ
-dotnet add package RabbitMQ.Client
+## Backend - ASP.NET Core (.NET 8)
 
-# Autenticación y autorización JWT
-dotnet add package System.IdentityModel.Tokens.Jwt
-dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.5
+### 🔸 Entity Framework Core y PostgreSQL
+- `Microsoft.EntityFrameworkCore`
+- `Microsoft.EntityFrameworkCore.Tools`
+- `Microsoft.EntityFrameworkCore.Design`
+- `Microsoft.EntityFrameworkCore.Proxies`
+- `Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore`
+- `Npgsql.EntityFrameworkCore.PostgreSQL`
 
-# Soporte para JSON avanzado en MVC
-dotnet add package Microsoft.AspNetCore.Mvc.NewtonsoftJson
+### 🔸 WebSockets (SignalR)
+- `Microsoft.AspNetCore.SignalR`
+- `Microsoft.AspNetCore.SignalR.Client`
 
-# Rate Limiting (Limitación de peticiones)
-dotnet add package Microsoft.AspNetCore.RateLimiting
+### 🔸 RabbitMQ (Mensajería)
+- `RabbitMQ.Client`
 
-# ---------------------------------------------
-# Paquetes para Unit Testing
-dotnet add package Moq
-dotnet add package NUnit
-dotnet add package NUnit3TestAdapter
+### 🔸 Autenticación JWT
+- `System.IdentityModel.Tokens.Jwt`
+- `Microsoft.AspNetCore.Authentication.JwtBearer`
 
-# ---------------------------------------------
-# Requisitos Frontend (npm packages)
-# Ejecutar en el directorio del frontend
+### 🔸 Serialización JSON
+- `Microsoft.AspNetCore.Mvc.NewtonsoftJson`
 
-npm install swiper                                   # Carrousel Swiper
-npm install @splidejs/react-splide                   # Carrousel Splide (React)
-npm install lucide-react                             # Iconos Lucide React
-npm install jwt-decode                               # Decodificar JWT para frontend
-npm install react-datepicker                         # Selector de fecha
-npm install @types/react-datepicker --save-dev       # Tipos TypeScript para react-datepicker
-npm install @heroicons/react                         # Iconos Heroicons React
-npm install @headlessui/react @heroicons/react clsx  # Headlessui para componentes(combobox) y heroicons por sus iconos
+### 🔸 Rate Limiting
+- `Microsoft.AspNetCore.RateLimiting`
 
+---
 
-# ---------------------------------------------
-# Notas adicionales
+## 🧪 Testing Backend
+- `Moq`
+- `NUnit`
+- `NUnit3TestAdapter`
 
-# 1. Para la base de datos PostgreSQL, instalar y configurar PostgreSQL en el sistema.
-# 2. Para RabbitMQ, instalar y habilitar el servicio RabbitMQ:
-#    sudo apt-get install rabbitmq-server
-#    sudo systemctl enable rabbitmq-server
-# 3. Para ejecutar comandos dotnet, navega a la carpeta del proyecto API y ejecuta:
-#    dotnet add package [NombrePaquete]
-# 4. Para el frontend React, ejecuta los comandos npm dentro de la carpeta correspondiente.
+---
 
+## Frontend - React + Vite
 
+### 🔸 UI
+- `tailwindcss` / `postcss` / `autoprefixer`
+- `@heroicons/react`
+- `@headlessui/react`
+- `clsx`
 
+### 🔸 Componentes Visuales
+- `swiper`
+- `@splidejs/react-splide`
+- `react-datepicker`
+- `@types/react-datepicker`
 
-# Dependencias de tailwind
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p 
+### 🔸 Utilidades
+- `lucide-react` (íconos)
+- `jwt-decode` (decodificar tokens JWT)
+
+---
+
+## Notas
+- Si es la primera vez que clonas el Proyecto no te olvides de instalar las dependencias del frontend:  
+  ```bash
+  cd BDfy-Frontend/
+  npm install
+  ```
+- Para restaurar las dependencias del Backend:
+  ```bash
+  cd Bdfy/
+  dotnet restore
+  ```

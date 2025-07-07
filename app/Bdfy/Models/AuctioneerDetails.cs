@@ -15,6 +15,10 @@ namespace BDfy.Models
         [Required]
         public int Plate { get; set; }
 
+        [Column("auction_house")]
+        [Required]
+        public string AuctionHouse { get; set; } = null!;
+
         [ForeignKey("UserId")]
         [JsonIgnore]
         public User User { get; set; } = null!;
