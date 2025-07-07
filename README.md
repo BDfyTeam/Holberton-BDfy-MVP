@@ -151,5 +151,5 @@ Authorization: Bearer [your-JWT-token]
 
 <h2><a href="https://github.com/lucas2mz" style="color:#D96E1C;" ><strong>Lucas Andrada |</strong></a>
 <a href="https://github.com/Ifabri31" style="color:#D91C87;" ><strong>Fabrizzio Oviedo |</strong></a>
-<a href="https://github.com/RodrigoFerrer" style="color:#81D91C;" ><strong>Rodrigo Reyes |</strong></a>
+<a href="https://github.com/RodrigoFerrer" style="color:#81D91C;" ><strong>Rodrigo Ferrer |</strong></a>
 <a href="https://github.com/Franco-byte" style="color:#38A3C7;" ><strong>Franco Reyes</strong></a></h2>
