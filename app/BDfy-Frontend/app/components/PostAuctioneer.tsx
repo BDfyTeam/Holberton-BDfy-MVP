@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAlert } from "~/context/alertContext";
 import Plate from "./FormFields/Plate";
+import AuctionHouse from "./FormFields/AuctionHause";
 
 type Props = {
   className?: string;
@@ -40,6 +41,7 @@ export default function PostAuctioneer({ className }: Props) {
   const [zipCode, setZipCode] = useState("");
   const [department, setDepartment] = useState("");
   const [plate, setPlate] = useState("");
+  const [auctionHouse, setAuctionHouse] = useState("");
   // const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -67,6 +69,7 @@ export default function PostAuctioneer({ className }: Props) {
       },
       auctioneerDetails: {
         plate: parseInt(plate),
+        auctionHouse: auctionHouse,
       },
     };
 
@@ -147,7 +150,7 @@ export default function PostAuctioneer({ className }: Props) {
 
       {/* Formulario */}
       <div className="flex w-1/2 h-auto py-15 px-20 bg-[#D3E3EB] rounded-2xl text-[#0D4F61]">
-        <form className="-full h-full gap-4" onSubmit={handleSubmit}>
+        <form className="w-full h-full gap-4" onSubmit={handleSubmit}>
           {/* Nombre completo */}
           <Name
             className="flex w-full mt-2 mb-4"
@@ -183,7 +186,7 @@ export default function PostAuctioneer({ className }: Props) {
             <Plate
               plate={plate}
               setPlate={setPlate}
-              className="w-1/2 mr-5 relative"
+              className="w-1/2 relative"
             />
           </div>
 
@@ -192,6 +195,13 @@ export default function PostAuctioneer({ className }: Props) {
             phone={phone}
             setPhone={setPhone}
             className="flex w-full mb-4 relative"
+          />
+
+          {/* Casa de subastas */}
+          <AuctionHouse
+            className="flex w-full mb-4 relative"
+            auctionHouse={auctionHouse}
+            setAuctionHouse={setAuctionHouse}
           />
 
           {/* Direccion */}

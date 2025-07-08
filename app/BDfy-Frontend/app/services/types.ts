@@ -40,6 +40,7 @@ export type RegisterAuctioneer = {
   };
   auctioneerDetails: {
     plate: number;
+    auctionHouse: string;
   };
 };
 

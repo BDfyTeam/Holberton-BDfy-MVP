@@ -1,5 +1,4 @@
 import type { Route } from "./+types/home";
-import AuctionerRegisterFrom from "~/components/auctionerRegisterForm";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { ChevronLeft, ChevronRight } from "lucide-react";

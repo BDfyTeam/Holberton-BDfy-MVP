@@ -7,7 +7,7 @@ import {
   type BasicCardItem,
   type Lot,
 } from "~/services/types";
-import LotCard from "~/components/LotToBid";
+import LotToBid from "~/components/LotToBid";
 import * as signalR from "@microsoft/signalr";
 import { getToken } from "~/services/handleToken";
 import GaleryOfCards from "~/components/galeryOfLotCards";
@@ -34,7 +34,7 @@ type BidUpdate = {
 };
 
 type BiddingHistoryDto = {
-  Winner: {
+  User: {
     FirstName: string;
     LastName: string;
   };
@@ -330,13 +330,20 @@ export default function AuctionPage() {
   };
 
   const history = selectLot ? biddingHistories[selectLot.id] || [] : [];
+  
 
   return (
     // INFORMACION DE LA SUBASTA
     <div className="items-center text-white">
       <div className="flex justify-center items-start">
         {/* Zona principal: 3/4 de la pantalla */}
-        <div className="w-3/4 p-4 flex mt-[100px] bg-[#0D4F61] rounded-lg border border-[#0D4F61]/20">
+        <div 
+          className="w-3/4 p-4 flex mt-[100px] mb-10 bg-[#0D4F61] rounded-lg shadow-gray-700 shadow-2xl"
+          style={{
+            background:
+              "linear-gradient(135deg,rgba(13, 79, 97, 1) 27%, rgba(65, 196, 174, 1) 100%)",
+          }}  
+        >
           {/* Información de la subasta (2/4) */}
           <div className="w-3/4 pr-8">
             {/* Titulo */}
@@ -504,7 +511,7 @@ export default function AuctionPage() {
               ✕
             </button>
 
-            <LotCard
+            <LotToBid
               lot={selectLot}
               onBidInitiated={suscribirseAlLote}
               className="text-black"
@@ -520,7 +527,7 @@ export default function AuctionPage() {
                   {history.map((entry, index) => (
                     <li key={index} className="border-b pb-1">
                       <span className="font-bold">
-                        {entry.Winner.FirstName} {entry.Winner.LastName}
+                        {entry.User.FirstName} {entry.User.LastName}
                       </span>{" "}
                       ofreció ${entry.Amount} a las{" "}
                       {new Date(entry.Time).toLocaleTimeString()}{" "}
