@@ -1,6 +1,6 @@
 import { Splide, SplideSlide } from "@splidejs/react-splide";
 import { Link } from "react-router";
-import type { Auction, AuctionCard } from "~/services/types";
+import type { Auction } from "~/services/types";
 import { useEffect, useRef } from "react";
 import pengu from "app/public/assets/ConfusedPengu.png";
 import categorys from "~/services/categorys";

@@ -47,9 +47,10 @@ export type RegisterAuctioneer = {
 
 
 // MODELO DE LA AUCTIONCARD
-export type AuctionCard = {
+export type AuctionForm = {
   id?: string;
   title: string;
+  image: File;
   description: string;
   startAt: string;
   endAt?: string;
@@ -120,7 +121,7 @@ export interface Lot {
 export interface Auction {
   id?: string;
   title: string;
-  imageUrl: string;
+  imageUrl: string | File;
   description: string;
   category: number[];
   startAt: string;

@@ -7,6 +7,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import PostUser from "~/components/PostUser";
 import PostAuctioneer from "~/components/PostAuctioneer";
+import { useState } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -16,10 +17,12 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Register() {
+  const [showAuctioneer, setShowAuctioneer] = useState(true);
+
+
   return (
     <main>
-      <div className="w-4/5 h-auto mt-22 mb-3 mx-auto"
-      >
+      <div className="w-4/5 h-auto mt-22 mb-3 mx-auto">
         <Swiper
           modules={[Navigation, Pagination]}
           spaceBetween={50}
@@ -38,10 +41,11 @@ export default function Register() {
         >
           <SwiperSlide key="auctioneer">
             {/* Registro como subastador */}
-            <PostAuctioneer className="flex w-5/6 mx-auto mb-10 bg-[#0D4F61] rounded-2xl shadow-lg
+            <PostAuctioneer
+              className="flex w-5/6 mx-auto mb-10 bg-[#0D4F61] rounded-2xl shadow-lg
               shadow-gray-700 p-2 relative overflow-visible"
             />
-            
+
             {/* Boton hacia registro oferente */}
             <div className="swiper-button-next absolute right-2 top-1/2 -translate-y-1/2 z-50 cursor-pointer text-[#81fff9] hover:text-white transition">
               <ChevronRight size={32} />
@@ -50,7 +54,8 @@ export default function Register() {
 
           <SwiperSlide key="user">
             {/* Registro como oferente */}
-            <PostUser className="flex w-5/6 mx-auto mb-10 bg-[#0D4F61] rounded-2xl shadow-lg
+            <PostUser
+              className="flex w-5/6 mx-auto mb-10 bg-[#0D4F61] rounded-2xl shadow-lg
               shadow-gray-700 p-2 relative overflow-visible"
             />
 

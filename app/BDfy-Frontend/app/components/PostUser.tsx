@@ -4,12 +4,12 @@ import { useAuth } from "~/context/authContext";
 import { registerUser } from "~/services/fetchService";
 import type { RegisterUser } from "~/services/types";
 import { Snackbar, Alert } from "@mui/material";
-import Name from "./FormFields/Name";
-import Email from "./FormFields/Email";
-import Password from "./FormFields/Password";
-import Document from "./FormFields/Document";
-import Phone from "./FormFields/Phone";
-import Direction from "./FormFields/Direction";
+import Name from "./FormFields/Register/Name";
+import Email from "./FormFields/Register/Email";
+import Password from "./FormFields/Register/Password";
+import Document from "./FormFields/Register/Document";
+import Phone from "./FormFields/Register/Phone";
+import Direction from "./FormFields/Register/Direction";
 import { AlertCircle, CheckCircle, HandCoins, ShoppingCart } from "lucide-react";
 import { useAlert } from "~/context/alertContext";
 
@@ -115,7 +115,7 @@ export default function PostUser({ className }: Props) {
       {/* Formulario */}
       <div className="flex w-1/2 h-auto py-15 px-20 bg-[#D3E3EB] rounded-2xl text-[#0D4F61]">
         <form
-          className="-full h-full gap-4"
+          className="w-full h-full gap-4"
           onSubmit={handleSubmit}
         >
           {/* Nombre completo */}

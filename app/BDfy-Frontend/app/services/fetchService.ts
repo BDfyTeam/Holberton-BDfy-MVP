@@ -1,10 +1,10 @@
 import { getToken, getUserIdFromToken } from "./handleToken";
 import type {
-  AuctionCard,
   RegisterUser,
   RegisterAuctioneer,
   LotCard,
   CompleteLot,
+  AuctionForm,
 } from "./types";
 
 // LOGUEAR UN USUARIO
@@ -163,7 +163,7 @@ export async function getAllAuctions() {
 }
 
 // CREAR UNA SUBASTA
-export async function createAuction(payload: AuctionCard) {
+export async function createAuction(payload: AuctionForm) {
   try {
     const token = getToken();
     if (!token) {
@@ -174,15 +174,30 @@ export async function createAuction(payload: AuctionCard) {
       throw new Error("No se pudo obtener el ID del usuario desde el token.");
     }
 
+    const formData = new FormData();
+    formData.append("title", payload.title);
+    formData.append("image", payload.image);
+    formData.append("description", payload.description);
+    formData.append("startAt", payload.startAt);
+    if (payload.endAt) {
+        formData.append("endAt", payload.endAt);
+    }
+    payload.category.forEach(cat => formData.append("Category", cat.toString()));
+    formData.append("status", payload.status.toString());
+    formData.append("Direction.Street", payload.direction.street);
+    formData.append("Direction.StreetNumber", payload.direction.streetNumber.toString());
+    formData.append("Direction.Corner", payload.direction.corner);
+    formData.append("Direction.Department", payload.direction.department);
+    formData.append("Direction.ZipCode", payload.direction.zipCode.toString());
+
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/auctions/${userId}`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
     if (!response.ok) {
@@ -260,7 +275,7 @@ export async function getAuctionById(id: string) {
 }
 
 // ACTUALIZAR SUBASTA
-export async function updateAuction(payload: AuctionCard) {
+export async function updateAuction(payload: AuctionForm) {
   try {
     const token = getToken();
     if (!token) {

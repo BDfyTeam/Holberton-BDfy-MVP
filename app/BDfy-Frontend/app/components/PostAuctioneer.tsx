@@ -4,12 +4,12 @@ import { useAuth } from "~/context/authContext";
 import { registerAuctioner } from "~/services/fetchService";
 import type { RegisterAuctioneer } from "~/services/types";
 import { Snackbar, Alert } from "@mui/material";
-import Name from "./FormFields/Name";
-import Email from "./FormFields/Email";
-import Password from "./FormFields/Password";
-import Document from "./FormFields/Document";
-import Phone from "./FormFields/Phone";
-import Direction from "./FormFields/Direction";
+import Name from "./FormFields/Register/Name";
+import Email from "./FormFields/Register/Email";
+import Password from "./FormFields/Register/Password";
+import Document from "./FormFields/Register/Document";
+import Phone from "./FormFields/Register/Phone";
+import Direction from "./FormFields/Register/Direction";
 import {
   AlertCircle,
   CheckCircle,
@@ -18,8 +18,8 @@ import {
   Gavel,
 } from "lucide-react";
 import { useAlert } from "~/context/alertContext";
-import Plate from "./FormFields/Plate";
-import AuctionHouse from "./FormFields/AuctionHause";
+import Plate from "./FormFields/Register/Plate";
+import AuctionHouse from "./FormFields/Register/AuctionHause";
 
 type Props = {
   className?: string;

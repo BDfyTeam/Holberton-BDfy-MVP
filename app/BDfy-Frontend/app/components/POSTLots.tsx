@@ -78,7 +78,7 @@ export default function CreateLotButton({ className }: LotForm) {
     <div className={className}>
       <button
         onClick={openForm}
-        className="transition-all px-2 py-1 font-semibold flex items-center space-x-2"
+        className="transition-all px-6 py-1 font-semibold flex text-center justify-between items-center space-x-2"
       >
         <Boxes size={20} />
         <span>Crear Lote</span>

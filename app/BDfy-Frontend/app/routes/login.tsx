@@ -15,8 +15,8 @@ import {
   UserCheck2,
 } from "lucide-react";
 import { useAuth } from "~/context/authContext";
-import Email from "~/components/FormFields/Email";
-import Password from "~/components/FormFields/Password";
+import Email from "~/components/FormFields/Register/Email";
+import Password from "~/components/FormFields/Register/Password";
 import { Alert, Snackbar } from "@mui/material";
 import { useAlert } from "~/context/alertContext";
 
