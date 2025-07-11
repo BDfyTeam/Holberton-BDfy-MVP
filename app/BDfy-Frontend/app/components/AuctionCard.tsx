@@ -37,7 +37,7 @@ export default function AuctionCard({ auction, className }: Props) {
 
           <div className="w-full h-2/5 z-40">
             <img
-              src={auction.imageUrl}
+              src={typeof auction.imageUrl === "string" ? auction.imageUrl : undefined}
               alt="Logo Subasta"
               className="w-full h-full object-cover"
             />

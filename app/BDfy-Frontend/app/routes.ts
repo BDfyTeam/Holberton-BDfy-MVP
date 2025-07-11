@@ -7,6 +7,7 @@ export default [
     route("login", "routes/login.tsx"),
     route("register", "routes/register.tsx"),
     route("auction/specific/:id", "routes/auction.tsx"),
+    route("all-auctions", "routes/auctions.tsx")
   ]),
 
   // Rutas protegidas

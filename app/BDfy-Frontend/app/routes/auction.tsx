@@ -355,7 +355,7 @@ export default function AuctionPage() {
               {/* Columna izquierda: Imagen y nombre de la casa de subastas */}
               <div className="w-2/4 mr-25 ml-40 flex flex-col items-center">
                 <img
-                  src={auction.imageUrl}
+                  src={typeof auction.imageUrl === "string" ? auction.imageUrl : undefined}
                   alt={auction.title}
                   className="max-w-[90%] h-auto rounded-2xl mb-4"
                 />

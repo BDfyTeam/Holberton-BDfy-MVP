@@ -67,7 +67,6 @@ export async function registerAuctioner(payload: RegisterAuctioneer) {
   try {
     const response = await fetch(
       "https://api.bdfy.tech/api/1.0/users/register",
-      "https://api.bdfy.tech/api/1.0/users/register",
       {
         method: "POST",
         headers: {
@@ -96,7 +95,7 @@ export async function getUserById(userId: string) {
   try {
     const token = getToken();
 
-    const response = await fetch(`https://34.39.142.249/api/1.0/users/${userId}`, {
+    const response = await fetch(`https://api.bdfy.tech/api/1.0/users/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
