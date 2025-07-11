@@ -1,10 +1,20 @@
+import { Alert, Snackbar } from "@mui/material";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAlert } from "~/context/alertContext";
 import {
   getAuctionsByAuctioneer,
   getLotById,
   updateLot,
 } from "~/services/fetchService";
-import type { BasicCardItem, Lot, LotCard } from "~/services/types";
+import type { BasicCardItem, FormLot } from "~/services/types";
+import Image from "./FormFields/AucLotCreationFields/Image";
+import Title from "./FormFields/AucLotCreationFields/Title";
+import LotNumber from "./FormFields/AucLotCreationFields/lotNumber";
+import Description from "./FormFields/AucLotCreationFields/Description";
+import StaringPrice from "./FormFields/AucLotCreationFields/StartingPrice";
+import Details from "./FormFields/AucLotCreationFields/Details";
+import AuctionSelection from "./FormFields/AucLotCreationFields/SelectedAuction";
 
 type Props = {
   basicLot: BasicCardItem;
@@ -14,12 +24,20 @@ type Props = {
 
 export default function UpdateLots({ basicLot, onClose, className }: Props) {
   const [showForm, setShowForm] = useState(false);
-  const [auctionOptions, setAuctionOptions] = useState<{ id: number; title: string }[]>([]);
-  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(null);
+  const [auctionOptions, setAuctionOptions] = useState<
+    { id: number; title: string }[]
+  >([]);
+  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(
+    null
+  );
+  const [title, setTitle] = useState("");
+  const [image, setImage] = useState<File | null>(null);
   const [lotNumber, setLotNumber] = useState("");
   const [description, setDescription] = useState("");
   const [details, setDetails] = useState("");
   const [startingPrice, setStartingPrice] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { showAlert, open, message, severity, handleClose } = useAlert();
 
   useEffect(() => {
     async function fetchLot() {
@@ -72,24 +90,57 @@ export default function UpdateLots({ basicLot, onClose, className }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true);
 
-    const payload: LotCard = {
-      id: basicLot.id,
+    const payload: FormLot = {
+      title,
+      image: image ? image : new File([], ""),
       lotNumber: parseInt(lotNumber),
       description: description,
-      details: details,
       startingPrice: parseInt(startingPrice),
-      auctionId: selectedAuctionId ?? "",
+      details: details,
+      auctionId: selectedAuctionId !== null ? selectedAuctionId.toString() : "",
     };
     const success = await updateLot(payload);
     if (success) {
       closeForm();
-      alert("Subasta editada con éxito");
+      showAlert("Lote editado con exito!", "success");
+      setLoading(false);
+    } else {
+      showAlert("No se pudo editar el lote :c", "error");
+      setLoading(false);
     }
   }
 
   return (
     <div className={className}>
+      {/* Alertas */}
+      <Snackbar
+        open={open}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        slotProps={{
+          transition: { timeout: 1000 },
+        }}
+      >
+        <Alert
+          onClose={handleClose}
+          severity={severity}
+          iconMapping={{
+            success: <CheckCircle color="#ffffff" />,
+            error: <AlertCircle color="#ffffff" />,
+          }}
+          sx={{
+            width: "100%",
+            backgroundColor: severity === "success" ? "#35DE3E" : "#F23838", // Establecemos el color de fondo según el `severity`
+            color: "white",
+          }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
+
       {/* Fondo oscuro */}
       {showForm && (
         <div
@@ -101,12 +152,11 @@ export default function UpdateLots({ basicLot, onClose, className }: Props) {
       {showForm && (
         <div
           className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-          w-full max-w-xl bg-[#1B3845] text-white p-8 rounded-2xl shadow-2xl 
-          z-50 overflow-visible max-h-[90vh] border border-[#59b9e2]/50 backdrop-blur-sm"
+            bg-[#D3E3EB] text-[#0D4F61] p-8 rounded-2xl z-50 max-h-[100vh] min-w-[50vh] overflow-auto"
         >
           <button
             onClick={closeForm}
-            className="absolute top-3 right-5 text-white hover:text-[#81fff9] transition-colors text-xl"
+            className="absolute top-3 right-5 text-[#0D4F61] hover:text-[#41c4ae] transition-colors text-xl"
           >
             ✕
           </button>
@@ -115,136 +165,70 @@ export default function UpdateLots({ basicLot, onClose, className }: Props) {
             Editar lote
           </h2>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="w-full h-full gap-4">
             {/* Título */}
-            <div className="relative z-0 w-full mb-6 group font-[Inter]">
-              <input
-                type="text"
-                id="lotNumber"
-                name="lotNumber"
-                value={lotNumber}
-                onChange={(e) => setLotNumber(e.target.value)}
-                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
-                placeholder="Número del lote"
-                required
-              />
-              <label
-                htmlFor="lotNumber"
-                className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200
-                  peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60
-                  peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
-              >
-                Número del Lote
-              </label>
-            </div>
+            <Title
+              className="flex w-full mb-4 relative"
+              title={title}
+              setTitle={setTitle}
+            />
+
+            {/* lotNumber */}
+            <LotNumber
+              className="flex w-full mb-4 relative"
+              lotNumber={lotNumber}
+              setLotNumber={setLotNumber}
+            />
+
+            {/* Imagen */}
+            <Image
+              className="flex w-full mb-8 relative"
+              image={image}
+              setImage={setImage}
+            />
 
             {/* Descripción */}
-            <div className="relative z-0 w-full mb-6 group font-[Inter]">
-              <textarea
-                name="description"
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition resize-none min-h-[120px]"
-                placeholder="Descripción"
-                required
-              ></textarea>
-              <label
-                htmlFor="description"
-                className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60 peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
-              >
-                Descripción
-              </label>
-            </div>
+            <Description
+              className="flex w-full mb-8 relative"
+              description={description}
+              setDescription={setDescription}
+            />
 
             {/* Precio de inicio */}
-            <div className="relative z-0 w-full mb-6 group font-[Inter]">
-              <input
-                type="text"
-                id="startingPrice"
-                name="startingPrice"
-                value={startingPrice}
-                onChange={(e) => setStartingPrice(e.target.value)}
-                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
-                placeholder="Precio inicial"
-                required
-              />
-              <label
-                htmlFor="startingPrice"
-                className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200
-                  peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60
-                  peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
-              >
-                Precio inicial
-              </label>
-            </div>
+            <StaringPrice
+              className="flex w-full mb-8 relative"
+              startingPrice={startingPrice}
+              setStartingPrice={setStartingPrice}
+            />
 
             {/* Detalles */}
-            <div className="relative z-0 w-full mb-6 group font-[Inter]">
-              <textarea
-                name="details"
-                id="details"
-                value={details}
-                onChange={(e) => setDetails(e.target.value)}
-                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-white placeholder-transparent focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition resize-none min-h-[120px]"
-                placeholder="Detalles"
-              ></textarea>
-              <label
-                htmlFor="details"
-                className="absolute left-4 -top-3 bg-[#1B3845] px-1 text-sm text-[#81fff9] transition-all duration-200
-                  peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#81fff9]/60
-                  peer-focus:-top-3 peer-focus:text-sm peer-focus:text-[#81fff9]"
-              >
-                Detalles
-              </label>
-            </div>
+            <Details
+              className="flex w-full mb-8 relative"
+              details={details}
+              setDetails={setDetails}
+            />
 
             {/* Selección de subasta */}
-            <div className="relative z-50 w-full mb-6 group font-[Inter]">
-              <select
-                id="auctionId"
-                name="auctionId"
-                value={selectedAuctionId ?? ""}
-                onChange={(e) => setSelectedAuctionId(e.target.value)}
-                className="peer block w-full appearance-none rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 pt-5 pb-2 text-sm text-[#81fff9] focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50 transition"
-                required
-              >
-                <option value="" disabled hidden></option>
-                {auctionOptions.map((auction) => (
-                  <option key={auction.id} value={auction.id}>
-                    {auction.title}
-                  </option>
-                ))}
-              </select>
-
-              <label
-                htmlFor="auctionId"
-                className={`absolute left-4 px-1 bg-[#1B3845] text-sm text-[#81fff9] transition-all duration-200 
-                  ${
-                    selectedAuctionId === ""
-                      ? "top-4 text-base text-[#81fff9]/60"
-                      : "-top-3 text-sm"
-                  }`}
-              >
-                Seleccionar Subasta
-              </label>
-            </div>
+            <AuctionSelection
+              className="w-full mb-8 relative"
+              selectedAuctionId={selectedAuctionId}
+              setSelectedAuctionId={setSelectedAuctionId}
+              auctionOptions={auctionOptions}
+            />
 
             {/* Botones de acción */}
-            <div className="flex justify-end gap-4 mb-4 font-[Inter]">
+            <div className="flex justify-center mt-8">
               <button
+                className="text-white font-semibold py-2 px-6 
+                        rounded-full transition-transform duration-500 hover:scale-110"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(13, 79, 97, 1) 0%, rgba(65, 196, 174, 1) 100%)",
+                }}
                 type="submit"
-                className="bg-[#81fff9] text-[#1B3845] font-semibold py-2 px-5 rounded-lg border border-[#81fff9] transition-colors duration-300 hover:bg-[#59b9e2] hover:text-white hover:border-[#59b9e2] shadow-md"
+                disabled={loading}
               >
-                Editar
-              </button>
-
-              <button
-                type="button"
-                onClick={closeForm}
-                className="bg-[#2c4d5a] text-[#9acfd9] font-semibold py-2 px-5 rounded-lg border border-[#406a79] transition-colors duration-300 hover:bg-[#1B3845] hover:text-[#81fff9] shadow-md"
-              >
-                Cerrar
+                {loading ? "Creando..." : "Crear Lote"}
               </button>
             </div>
           </form>

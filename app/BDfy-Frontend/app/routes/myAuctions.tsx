@@ -86,6 +86,7 @@ export default function MyAuctions() {
           <UpdateAuctionButton
             auction={auctionToEdit}
             onClose={() => setAuctionToEdit(null)}
+            className=""
           />
         )}
       </div>

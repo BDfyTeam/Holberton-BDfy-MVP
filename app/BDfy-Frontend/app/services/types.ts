@@ -66,9 +66,11 @@ export type AuctionForm = {
 };
 
 // MODELOS PARA LOTES
-export type LotCard = {
+export type FormLot = {
   id?: string,
   lotNumber: number;
+  title: string;
+  image: File;
   description: string;
   startingPrice: number;
   details: string;
@@ -80,7 +82,7 @@ export type CompleteLot = {
   id: string;
   title: string;
   lotNumber: number;
-  imageUrl: string;
+  imageUrl: File;
   description: string;
   details: string;
   startingPrice: number;
@@ -121,7 +123,7 @@ export interface Lot {
 export interface Auction {
   id?: string;
   title: string;
-  imageUrl: string | File;
+  image: string | File;
   description: string;
   category: number[];
   startAt: string;
