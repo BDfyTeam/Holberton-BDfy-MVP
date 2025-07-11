@@ -53,7 +53,7 @@ namespace BDfy.Services
             return auction;
         }
 
-        public async Task<ActionResult<IEnumerable<AuctionDto>>> AllAuctions()
+        public async Task<IEnumerable<AuctionDto>> AllAuctions()
         {
             var auctions = await db.Auctions
                 .Include(ad => ad.Auctioneer)

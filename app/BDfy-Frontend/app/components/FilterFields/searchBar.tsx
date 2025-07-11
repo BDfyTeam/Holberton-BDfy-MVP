@@ -5,9 +5,11 @@ interface SearchBarProps {
   onSearch?: (value: string) => void;
   className?: string;
   placeHolder?: string;
+  classNameInput?: string;
+  classNameIcon?: string;
 }
 
-export default function SearchBar({ onSearch, className = "", placeHolder="" }: SearchBarProps) {
+export default function SearchBar({ onSearch, className = "", placeHolder="", classNameInput="", classNameIcon="" }: SearchBarProps) {
   const [input, setInput] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -17,14 +19,14 @@ export default function SearchBar({ onSearch, className = "", placeHolder="" }: 
   };
 
   return (
-    <div className={`${className}`}>
-      <FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-blue-400" />
+    <div className={`relative ${className}`}>
+      <FaSearch className={`${classNameIcon}`}/>
       <input
         type="text"
         placeholder={`${placeHolder}`}
         value={input}
         onChange={handleInputChange}
-        className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 bg-white/90 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+        className={`${classNameInput}`}
       />
     </div>
   );

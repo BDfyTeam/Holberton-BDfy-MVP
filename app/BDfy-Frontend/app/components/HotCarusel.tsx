@@ -72,7 +72,7 @@ export default function HotCarusel({ auction, className, options }: Props) {
       }}
     >
       <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center text-[#D3E3EB] mb-15">
-        ULTIIMA OPORTUNIDAD
+        ULTIMA OPORTUNIDAD
       </h2>
       <Splide
         options={{
