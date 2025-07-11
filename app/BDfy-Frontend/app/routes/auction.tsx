@@ -537,6 +537,7 @@ export default function AuctionPage() {
               </div>
             )}
           </div>
+
         </div>
       )}
     </div>

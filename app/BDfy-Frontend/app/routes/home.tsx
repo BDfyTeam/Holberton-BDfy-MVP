@@ -101,12 +101,10 @@ export default function Home() {
 
   return (
     <>
-      <div>
-        <BanerCarousel
-          auction={banerAuctions}
-          className="w-full overflow-hidden"
-        />
-      </div>
+      <BanerCarousel
+        auction={banerAuctions}
+        className="w-full overflow-hidden"
+      />
 
       <div className="w-3/4 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
 

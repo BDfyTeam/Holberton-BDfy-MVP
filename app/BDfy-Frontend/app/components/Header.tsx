@@ -56,7 +56,7 @@ export default function Header({ className }: Props) {
         <NavBar to="/abaut" className="flex px-4 py-2 mt-4 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Sobre nosotros</NavBar>
         <NavBar to="/all-auctions" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Subastas</NavBar>
         <NavBar to="/help" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Ayuda</NavBar>
-        <NavBar to="/contact" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Contacto</NavBar>
+        {/* <NavBar to="/contact" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Contacto</NavBar> */}
 
         {!isAuthenticated ? (
           <div className="hidden md:flex space-x-4">

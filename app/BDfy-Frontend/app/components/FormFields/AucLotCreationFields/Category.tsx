@@ -34,7 +34,7 @@ export default function CategoryField({
   className,
 }: CategorySelectFieldProps) {
   return (
-    <div className={`relative ${className}`}>
+    <div className={className}>
       <Combobox
         value={selectedCategories}
         onChange={(selected) => setSelectedCategories(selected)}

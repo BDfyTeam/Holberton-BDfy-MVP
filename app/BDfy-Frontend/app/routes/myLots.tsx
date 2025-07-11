@@ -10,7 +10,7 @@ type Props = {
 
 export default function MyLots({ className }: Props) {
   const [storageLots, setStorageLots] = useState<CompleteLot[]>([]);
-  const [selectLot, setselectLot] = useState<Lot| null>(null);
+  const [selectLot, setselectLot] = useState<CompleteLot| null>(null);
 
   useEffect(() => {
     async function fetchAuctions() {
@@ -39,7 +39,7 @@ export default function MyLots({ className }: Props) {
 
   return (
     <div className={className}>
-      <h1>Inventario</h1>
+      <h1 className="mt-50">Inventario</h1>
       <GaleryOfLotCards
         items={items}
         onCardClick={handleCardClick}
