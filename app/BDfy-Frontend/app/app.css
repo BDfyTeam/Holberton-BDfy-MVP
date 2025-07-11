@@ -16,8 +16,32 @@ body {
   color: #59b9e2;
 } */
 
+/* Aplica estilos cuando el input tiene autocompletado */
+input:-webkit-autofill {
+  background-color: #D3E3EB !important; /* Mantén el fondo */
+  color: #0D4F61 !important; /* Mantén el color del texto */
+  border-bottom-color: #0D4F61 !important; /* Mantén el borde */
+  box-shadow: 0 0 0px 1000px #D3E3EB inset !important; /* Elimina el sombreado del autofill */
+}
+
+/* Asegúrate de que el color del texto se mantenga incluso cuando se autocompleta */
+input:-webkit-autofill::first-line {
+  color: #0D4F61 !important; /* Color del texto */
+  font-size: 1rem !important; /* Asegura que el tamaño de fuente se mantenga */
+}
+
+/* Cuando el input tiene foco y está autocompletado */
+input:focus:-webkit-autofill {
+  background-color: #D3E3EB !important; /* Mantén el fondo */
+  color: #0D4F61 !important; /* Mantén el color del texto */
+  border-bottom-color: #41c4ae !important; /* Mantén el borde cuando se hace focus */
+  box-shadow: 0 0 0px 1000px #D3E3EB inset !important; /* Elimina el sombreado del autofill */
+}
+
+
+
 /* Estilo de las flechas de los splide */
-.splide__arrow {
+/* .splide__arrow {
   transform: translateY(-50%);
   top: 50%;
   background-color: #d6f2fdb0 !important;
@@ -37,6 +61,6 @@ body {
 .swiper-pagination-bullet-active {
   background: #81fff9 !important;
   opacity: 1;
-}
+} */
 
   

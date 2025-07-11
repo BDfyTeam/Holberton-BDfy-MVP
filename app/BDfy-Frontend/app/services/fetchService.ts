@@ -1,11 +1,11 @@
 import { getToken, getUserIdFromToken } from "./handleToken";
 import type {
-  AuctionCard,
-  RegisterUserPayload,
+  RegisterUser,
+  RegisterAuctioneer,
   LotCard,
   CompleteLot,
+  AuctionForm,
 } from "./types";
-import type { RegisterAuctioneerPayload } from "./types";
 
 // LOGUEAR UN USUARIO
 export async function loginUser(email: string, password: string) {
@@ -35,7 +35,7 @@ export async function loginUser(email: string, password: string) {
 }
 
 // REGISTRAR UN USUARIO
-export async function registerUser(payload: RegisterUserPayload) {
+export async function registerUser(payload: RegisterUser) {
   try {
     const response = await fetch(
       "https://api.bdfy.tech/api/1.0/users/register",
@@ -63,9 +63,10 @@ export async function registerUser(payload: RegisterUserPayload) {
 }
 
 // REGISTRAR UN SUBASTADOR
-export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
+export async function registerAuctioner(payload: RegisterAuctioneer) {
   try {
     const response = await fetch(
+      "https://api.bdfy.tech/api/1.0/users/register",
       "https://api.bdfy.tech/api/1.0/users/register",
       {
         method: "POST",
@@ -95,7 +96,7 @@ export async function getUserById(userId: string) {
   try {
     const token = getToken();
 
-    const response = await fetch(`https://api.bdfy.tech/api/1.0/users/${userId}`, {
+    const response = await fetch(`https://34.39.142.249/api/1.0/users/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -160,7 +161,7 @@ export async function getAllAuctions() {
 }
 
 // CREAR UNA SUBASTA
-export async function createAuction(payload: AuctionCard) {
+export async function createAuction(payload: AuctionForm) {
   try {
     const token = getToken();
     if (!token) {
@@ -171,15 +172,30 @@ export async function createAuction(payload: AuctionCard) {
       throw new Error("No se pudo obtener el ID del usuario desde el token.");
     }
 
+    const formData = new FormData();
+    formData.append("title", payload.title);
+    formData.append("image", payload.image);
+    formData.append("description", payload.description);
+    formData.append("startAt", payload.startAt);
+    if (payload.endAt) {
+        formData.append("endAt", payload.endAt);
+    }
+    payload.category.forEach(cat => formData.append("Category", cat.toString()));
+    formData.append("status", payload.status.toString());
+    formData.append("Direction.Street", payload.direction.street);
+    formData.append("Direction.StreetNumber", payload.direction.streetNumber.toString());
+    formData.append("Direction.Corner", payload.direction.corner);
+    formData.append("Direction.Department", payload.direction.department);
+    formData.append("Direction.ZipCode", payload.direction.zipCode.toString());
+
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/auctions/${userId}`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Enviamos el token de autenticación
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
     if (!response.ok) {
@@ -257,7 +273,7 @@ export async function getAuctionById(id: string) {
 }
 
 // ACTUALIZAR SUBASTA
-export async function updateAuction(payload: AuctionCard) {
+export async function updateAuction(payload: AuctionForm) {
   try {
     const token = getToken();
     if (!token) {
@@ -478,6 +494,7 @@ export async function makeAutoBid(
       throw new Error("No se pudo obtener el ID del usario desde el token.");
     }
 
+    // AUTOPUJA
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
       {
@@ -503,5 +520,33 @@ export async function makeAutoBid(
   } catch (error) {
     console.error("Error al hacer la autopuja:", error);
     throw error;
+  }
+}
+
+// SELECCIONAR TODOS LAS SUBASTAS POR CATEGORIA
+export async function getAuctionsByCategory(categoryId: number) {
+  try {
+    const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/auctions/category/${categoryId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Error al obtener las subastas por categoria."
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error("Error al obtener las subastas por categoria:", err);
+    throw new Error("Error al obtener las subastas por categoria");
   }
 }

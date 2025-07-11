@@ -1,4 +1,3 @@
-import logo from "app/public/assets/auctionHouses/subastasBerrios.png";
 import pengu from "app/public/assets/ConfusedPengu.png";
 import { useEffect, useRef, useState } from "react";
 import type { Auction } from "~/services/types";
@@ -72,6 +71,9 @@ export default function HotCarusel({ auction, className, options }: Props) {
           "radial-gradient(circle, rgba(39, 119, 145, 1) 13%, rgba(13, 79, 97, 1) 58%, rgba(6, 44, 56, 1) 100%)",
       }}
     >
+      <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center text-[#D3E3EB] mb-15">
+        ULTIIMA OPORTUNIDAD
+      </h2>
       <Splide
         options={{
           type: "loop",
@@ -93,7 +95,7 @@ export default function HotCarusel({ auction, className, options }: Props) {
                   {/* 50% Imagen de la subasta */}
                   <div className="w-3/7">
                     <img
-                      src={logo}
+                      src={auctionItem.imageUrl}
                       alt="Logo Subasta"
                       className="w-full h-full object-cover"
                     />

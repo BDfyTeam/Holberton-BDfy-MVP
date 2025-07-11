@@ -1,7 +1,7 @@
 import type { JSX } from "react/jsx-runtime";
 
 // REGISTRO DE USARIO Y SUBASTADOR
-export type RegisterUserPayload = {
+export type RegisterUser = {
   firstName: string;
   lastName: string;
   email: string;
@@ -13,6 +13,7 @@ export type RegisterUserPayload = {
   direction: {
     street: string;
     streetNumber: number;
+    corner: string;
     zipCode: number;
     department: string;
   };
@@ -21,7 +22,7 @@ export type RegisterUserPayload = {
   };
 };
 
-export type RegisterAuctioneerPayload = {
+export type RegisterAuctioneer = {
   firstName: string;
   lastName: string;
   email: string;
@@ -33,18 +34,23 @@ export type RegisterAuctioneerPayload = {
   direction: {
     street: string;
     streetNumber: number;
+    corner: string;
     zipCode: number;
     department: string;
   };
   auctioneerDetails: {
     plate: number;
+    auctionHouse: string;
   };
 };
 
+
+
 // MODELO DE LA AUCTIONCARD
-export type AuctionCard = {
+export type AuctionForm = {
   id?: string;
   title: string;
+  image: File;
   description: string;
   startAt: string;
   endAt?: string;
@@ -72,7 +78,9 @@ export type LotCard = {
 // LOTE COMPLETO
 export type CompleteLot = {
   id: string;
+  title: string;
   lotNumber: number;
+  imageUrl: string;
   description: string;
   details: string;
   startingPrice: number;
@@ -98,6 +106,8 @@ export type CompleteLot = {
 // Type para lot y tipar correctamente el useState
 export interface Lot {
   id: string;
+  title: string;
+  imageUrl: string;
   lotNumber: number;
   description: string;
   details: string;
@@ -111,6 +121,7 @@ export interface Lot {
 export interface Auction {
   id?: string;
   title: string;
+  imageUrl: string | File;
   description: string;
   category: number[];
   startAt: string;
@@ -132,11 +143,34 @@ export interface Auction {
   lots: Lot[];
 }
 
+// TIPO PARA EL TIPO QUE VENDE COSAS
+export type Auctioneer = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  ci: string;
+  reputation: number;
+  phone: string;
+  role: number;
+  imageUrl: string;
+  direction: {
+    street: string;
+    streetNumber: number;
+    corner: string;
+    zipCode: number;
+    department: string;
+  };
+  id: string;
+  auctionHouse: string;
+  plate: number
+}
+
 // TIPO BASICO PARA UNA CARD
 export type BasicCardItem = {
-  id: string,
+  id: string;
   title: string;
   description: string;
   category?: number[];
-  image?: string;
+  imageUrl?: string;
 }

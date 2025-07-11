@@ -10,13 +10,12 @@ import { useAuth } from "~/context/authContext";
 import FiltersIcons from "~/components/FiltersIcons";
 import HotCarusel from "~/components/HotCarusel";
 import AuctionCard from "~/components/AuctionCard";
-import Galetys from "~/components/Galerys";
-
+import Galerys from "~/components/Galerys";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "BDfy Simple y Seguro" },
+    { name: "description", content: "Welcome to BDFY!" },
   ];
 }
 
@@ -28,6 +27,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<number | null>(null);
   const { isAuthenticated } = useAuth();
+  const [isCategorySelected, setIsCategorySelected] = useState(false);
 
   useEffect(() => {
     async function fetchAuctions() {
@@ -74,9 +74,9 @@ export default function Home() {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
-        const data = await fetchRole(); // Llamamos a la función asíncrona
+        const data = await fetchRole();
         if (data) {
-          setRole(data.role); // Establecemos el rol del usuario
+          setRole(data.role);
         }
       } catch (error) {
         console.error("Error al obtener el rol del usuario:", error);
@@ -111,27 +111,40 @@ export default function Home() {
       <div className="w-3/4 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
 
       <div className="w-6/8 mx-auto mb-8">
-        <FiltersIcons className="grid grid-cols-6 gap-1" />
+        <FiltersIcons
+          className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-1"
+          setAuction={setAllAuctions}
+          setIsCategorySelected={setIsCategorySelected}
+        />
       </div>
 
       <div className="w-3/4 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
 
-      <HotCarusel
-        auction={hotAuctions}
-        className="w-full p-20 shadow-lg mx-auto my-20"
-      />
-
-      <Galetys 
-        auctions={allAuctions}
-        component={AuctionCard}
-        className="my-10 w-3/4"
-      />
+      {isCategorySelected ? (
+        <Galerys
+          auctions={allAuctions}
+          component={AuctionCard}
+          className="flex w-4/5 mx-auto flex-col items-center justify-center p-1"
+          internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+        />
+      ) : (
+        <HotCarusel
+          auction={hotAuctions}
+          className="w-full p-20 shadow-lg mx-auto my-20"
+        />
+      )}
 
       <div className="">
         {isAuthenticated && role === 1 && (
           <div className="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
-            <CreateAuctionButton className="bg-[#59b9e2] text-white hover:bg-[#81fff9] hover:text-[#1b3845] transition-all px-7 py-3 rounded-full shadow-lg font-semibold text-xl" />
-            <CreateLotButton className="bg-[#59b9e2] text-white hover:bg-[#81fff9] hover:text-[#1b3845] transition-all px-7 py-3 rounded-full shadow-lg font-semibold text-xl" />
+            <CreateAuctionButton
+              className="bg-[#41c4ae] text-[#0D4F61] hover:text-[#072831] hover:bg-[#1aac93] transition-all px-7 py-3 rounded-full 
+                shadow-lg shadow-gray-700 font-semibold text-xl duration-300"
+            />
+            <CreateLotButton
+              className="bg-[#41c4ae] text-[#0D4F61] hover:text-[#072831] hover:bg-[#1aac93] transition-all px-7 py-3 rounded-full 
+                shadow-lg shadow-gray-700 font-semibold text-xl duration-300"
+            />
           </div>
         )}
       </div>
