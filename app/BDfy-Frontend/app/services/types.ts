@@ -103,19 +103,26 @@ export interface Lot {
   details: string;
   startingPrice: number;
   endingPrice?: number;
-  currentPrice?: number; // opcional si lo calculás en tiempo real
+  currentPrice?: number; 
   winner?: string | null;
 }
 
 // Type para auction y tipar correctamente el useState
 export interface Auction {
-  id: string;
+  id?: string;
   title: string;
   description: string;
-  category: string[];
-  start_at: string;
-  end_at: string;
+  category: number[];
+  startAt: string;
+  endAt?: string;
   status: number;
+  direction: {
+    street: string;
+    streetNumber: number;
+    corner: string;
+    zipCode: number;
+    department: string;
+  };
   auctioneer: {
     id: number;
     first_name: string;

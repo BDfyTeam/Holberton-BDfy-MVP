@@ -50,7 +50,7 @@ export default function ComonMenu({ className }: { className?: string }) {
             />
 
             {/* Menú lateral */}
-            <div className="fixed top-0 left-0 h-screen w-72 bg-[#1B3845]/80 backdrop-blur-md text-[#81fff9] z-50 shadow-lg flex flex-col pt-4 px-6 pb-6 space-y-4 border-r border-[#59b9e2]/40">
+            <div className="fixed top-0 left-0 h-screen w-72 bg-[#0D4F61]/80 backdrop-blur-md text-[#81fff9] z-50 shadow-lg flex flex-col pt-4 px-6 pb-6 space-y-4 border-r border-[#59b9e2]/40">
               <button
                 onClick={closeMenu}
                 className="self-end text-[#81fff9]/80 hover:text-[#81fff9] transition"

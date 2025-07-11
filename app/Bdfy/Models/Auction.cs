@@ -16,6 +16,11 @@ namespace BDfy.Models
         public string Title { get; set; } = null!;
 
         [Required]
+        [Column("image_url")]
+        [StringLength(100, ErrorMessage = "The image URL cannot have more than 100 characters")]
+        public string ImageUrl { get; set; } = null!;
+
+        [Required]
         [StringLength(1200, ErrorMessage = "The Description cannot have more than 1200 characters")]
         [Column("description")]
         public string Description { get; set; } = null!;
@@ -28,8 +33,9 @@ namespace BDfy.Models
         [Column("end_at")]
         public DateTime EndAt { get; set; }
 
+        [Required]
         [Column("category")]
-        public int[]? Category { get; set; } = [];
+        public int[] Category { get; set; } = [];
 
         [Required]
         [Column("status")]

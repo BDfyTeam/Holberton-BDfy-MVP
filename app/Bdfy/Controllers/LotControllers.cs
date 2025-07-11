@@ -14,7 +14,7 @@ namespace BDfy.Controllers
 	[ApiController]
 	[Route("api/1.0/lots")]
 	public class BaseControllerLots(BDfyDbContext db) : Controller { protected readonly BDfyDbContext _db = db; }
-	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher, IAutoBidService autoBidService, BiddingHistoryService biddingHistoryService) : BaseControllerLots(db) // Heredamos la DB para poder usarla
+	public class LotController(BDfyDbContext db, IHubContext<BdfyHub, IClient> hubContext, BidPublisher bidPublisher, IAutoBidService autoBidService, BiddingHistoryService biddingHistoryService, GcsImageService imageService) : BaseControllerLots(db) // Heredamos la DB para poder usarla
 	{
 		private readonly IHubContext<BdfyHub, IClient> _hubContext = hubContext;
 		private readonly BidPublisher _bidPublisher = bidPublisher;
@@ -23,7 +23,7 @@ namespace BDfy.Controllers
 
 		[Authorize]
 		[HttpPost("{auctionId}")]
-		public async Task<ActionResult> RegisterLot([FromRoute] Guid auctionId, [FromBody] RegisterLot Dto)
+		public async Task<ActionResult> RegisterLot([FromRoute] Guid auctionId, [FromForm] RegisterLot Dto)
 		{
 			try
 			{
@@ -51,16 +51,22 @@ namespace BDfy.Controllers
 				if (auction.Auctioneer.UserId != userId) { return Unauthorized("Access Denied: Diffrent User as the login"); }
 
 				var checkLot = await _db.AuctionLots // Busco en la tabla intermedia por algun lote que cumpla las caracteristicas
-				 	.Include(al => al.Lot)
+					.Include(al => al.Lot)
 					.AnyAsync(al => al.Lot.LotNumber == Dto.LotNumber && al.AuctionId == auctionId && al.IsOriginalAuction);
 
 				if (checkLot) { return BadRequest($"Lot number {Dto.LotNumber} already exists"); }
 
+				if (Dto.Image == null || Dto.Image.Length == 0) { return BadRequest("The lot must contain an image"); }
+
+				var urlImage = await imageService.UploadImageAsync(Dto.Image, "lots");
+
 				var lot = new Lot // Creamos el lote
 				{
+					Title = Dto.Title,
 					LotNumber = Dto.LotNumber,
 					Description = Dto.Description,
 					Details = Dto.Details,
+					ImageUrl = urlImage,
 					StartingPrice = Dto.StartingPrice,
 					CurrentPrice = Dto.StartingPrice,
 					Sold = false
@@ -78,9 +84,10 @@ namespace BDfy.Controllers
 				_db.AuctionLots.Add(auctionLot);
 				await _db.SaveChangesAsync();
 
-				return Created($"/api/1.0/lots/{lot.Id}", new { 
+				return Created($"/api/1.0/lots/{lot.Id}", new
+				{
 					message = "Lot registered successfully",
-					lotId = lot.Id 
+					lotId = lot.Id
 				});
 			}
 			catch (Exception ex)
@@ -102,9 +109,11 @@ namespace BDfy.Controllers
 					.Select(al => new GetLotByIdDto
 					{
 						Id = al.Lot.Id,
+						Title = al.Lot.Title,
 						LotNumber = al.Lot.LotNumber,
 						Description = al.Lot.Description,
 						Details = al.Lot.Details,
+						ImageUrl = al.Lot.ImageUrl,
 						StartingPrice = al.Lot.StartingPrice,
 						CurrentPrice = al.Lot.CurrentPrice ?? al.Lot.StartingPrice,
 						EndingPrice = al.Lot.EndingPrice ?? 0,
@@ -116,13 +125,15 @@ namespace BDfy.Controllers
 							Description = al.Auction.Description,
 							StartAt = al.Auction.StartAt,
 							EndAt = al.Auction.EndAt,
-							Category = al.Auction.Category ?? Array.Empty<int>(),
+							Category = al.Auction.Category,
+							ImageUrl = al.Auction.ImageUrl,
 							Status = al.Auction.Status,
 							AuctioneerId = al.Auction.AuctioneerId,
 							Auctioneer = new AuctioneerDto
 							{
 								UserId = al.Auction.Auctioneer.UserId,
-								Plate = al.Auction.Auctioneer.Plate
+								Plate = al.Auction.Auctioneer.Plate,
+								AuctionHouse = al.Auction.Auctioneer.AuctionHouse
 							}
 						}
 					})
@@ -161,6 +172,8 @@ namespace BDfy.Controllers
 				var lotDto = new GetLotByIdDto
 				{
 					Id = auctionLotById.LotId,
+					Title = auctionLotById.Lot.Title,
+					ImageUrl = auctionLotById.Lot.ImageUrl,
 					LotNumber = auctionLotById.Lot.LotNumber,
 					Description = auctionLotById.Lot.Description,
 					Details = auctionLotById.Lot.Details,
@@ -172,16 +185,19 @@ namespace BDfy.Controllers
 					{
 						Id = auctionLotById.Auction.Id,
 						Title = auctionLotById.Auction.Title,
+						ImageUrl = auctionLotById.Auction.ImageUrl,
 						Description = auctionLotById.Auction.Description,
 						StartAt = auctionLotById.Auction.StartAt,
 						EndAt = auctionLotById.Auction.EndAt,
-						Category = auctionLotById.Auction.Category ?? [],
+						Category = auctionLotById.Auction.Category,
 						Status = auctionLotById.Auction.Status,
+						WinnerId = auctionLotById.Lot.Winner?.Id ?? Guid.Empty,
 						AuctioneerId = auctionLotById.Auction.AuctioneerId,
 						Auctioneer = new AuctioneerDto
 						{
 							UserId = auctionLotById.Auction.Auctioneer.UserId,
-							Plate = auctionLotById.Auction.Auctioneer.Plate
+							Plate = auctionLotById.Auction.Auctioneer.Plate,
+							AuctionHouse = auctionLotById.Auction.Auctioneer.AuctionHouse
 						}
 					}
 				};
@@ -200,12 +216,13 @@ namespace BDfy.Controllers
 				var auctionLots = await _db.AuctionLots
 				.Include(al => al.Auction)
 				.Include(al => al.Lot)
-				.Where(al => al.IsOriginalAuction)
 				.ToListAsync();
 
 				var lotsDto = auctionLots.Select(al => new LotGetDto
 				{
 					Id = al.LotId,
+					Title = al.Lot.Title,
+					ImageUrl = al.Lot.ImageUrl,
 					LotNumber = al.Lot.LotNumber,
 					Description = al.Lot.Description,
 					Details = al.Lot.Details,
@@ -287,10 +304,11 @@ namespace BDfy.Controllers
 					await autoBidService.ProcessAutoBidAsync(lotId, bid.Amount);
 				});
 
-				return Created($"/api/lots/{lotId}", new { 
+				return Created($"/api/lots/{lotId}", new
+				{
 					message = "Bid created successfully",
 					lotId = lotId,
-					amount = bid.Amount 
+					amount = bid.Amount
 				});
 			}
 			catch (Exception ex)
@@ -330,11 +348,11 @@ namespace BDfy.Controllers
 		}
 		[Authorize]
 		[HttpPut("{lotId}/edit")]
-		public async Task<ActionResult> EditLot([FromRoute] Guid lotId, [FromBody] EditLotDto editLotDto)
+		public async Task<ActionResult> EditLot([FromRoute] Guid lotId, [FromForm] EditLotDto editLotDto)
 		{
 			try
 			{
-				
+
 				if (!ModelState.IsValid)
 				{
 					return BadRequest(ModelState);
@@ -386,6 +404,40 @@ namespace BDfy.Controllers
 						return BadRequest("You cannot assign an auction that is not yours. Sorry.");
 					}
 				}
+				if (editLotDto.Image != null && editLotDto.Image.Length > 0)
+				{
+					string newHash;
+					using var newImageStream = editLotDto.Image.OpenReadStream();
+					newHash = await imageService.CalculateHashAsync(newImageStream);
+
+					if (!string.IsNullOrEmpty(auctionLot.Lot.ImageUrl))
+					{
+						try
+						{
+							using var oldImageStream = await imageService.DownloadImageAsync(auctionLot.Lot.ImageUrl);
+							var oldHash = await imageService.CalculateHashAsync(oldImageStream);
+
+							if (newHash != oldHash)
+							{
+								// si son diferentes se sube la nueva imagen
+								var newImageUrl = await imageService.UploadImageAsync(editLotDto.Image, "lots");
+								auctionLot.Lot.ImageUrl = newImageUrl;
+							}
+						}
+						catch
+						{
+							// si hay un erro al descargar la imagen anterior se sube la nueva
+							var imageUrlNew = await imageService.UploadImageAsync(editLotDto.Image, "lots");
+							auctionLot.Lot.ImageUrl = imageUrlNew;
+						}
+					}
+					else
+					{
+						// si no habia imagen en el lote
+						var nuevaUrl = await imageService.UploadImageAsync(editLotDto.Image, "lots");
+						auctionLot.Lot.ImageUrl = nuevaUrl;
+					}
+                }
 
 				if (editLotDto.LotNumber != auctionLot.Lot.LotNumber)
 				{
@@ -406,6 +458,7 @@ namespace BDfy.Controllers
 
 				if (finalAuction == null) { return BadRequest("Auction not found. Sorry"); }
 
+				auctionLot.Lot.Title = editLotDto.Title;
 				auctionLot.Lot.LotNumber = editLotDto.LotNumber;
 				auctionLot.Lot.Description = editLotDto.Description;
 				auctionLot.Lot.Details = editLotDto.Details;
@@ -458,7 +511,7 @@ namespace BDfy.Controllers
 
 				await _db.SaveChangesAsync();
 
-				return Ok(new { message = "Lot updated successfully", lotId = lotId} );
+				return Ok(new { message = "Lot updated successfully", lotId = lotId });
 			}
 			catch (Exception ex)
 			{
@@ -538,7 +591,7 @@ namespace BDfy.Controllers
 				return StatusCode(500, new { error = ex.Message });
 			}
 		}
-		[HttpGet("/_internal/{lotId}/bidding-history")]
+		[HttpGet("{lotId}/bidding-history")]
 		public async Task<ActionResult<BiddingHistoryDto>> GetAllBidsByLotId([FromRoute] Guid lotId)
 		{
 			try
@@ -551,6 +604,68 @@ namespace BDfy.Controllers
 				return StatusCode(500, new { error = ex.Message });
 			}
 		}
+		[Authorize]
+		[HttpDelete("{lotId}")]
+
+		public async Task<IActionResult> DeleteLot([FromRoute] Guid lotId)
+		{
+			using var transaction = await _db.Database.BeginTransactionAsync();
+
+			try
+			{
+				if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+				var auctioneerClaims = HttpContext.User;
+				var auctioneerRoleFromToken = auctioneerClaims.FindFirst("Role")?.Value;
+				var auctioneerIdFromToken = auctioneerClaims.FindFirst("Id")?.Value;
+
+				if (!Guid.TryParse(auctioneerIdFromToken, out var auctioneerId)) { return Unauthorized("Invalid auctioneer token"); }
+
+				var auctionLot = await _db.AuctionLots
+					.Include(al => al.Lot)
+					.Include(al => al.Auction)
+					.FirstOrDefaultAsync(al => al.LotId == lotId);
+
+				if (auctionLot == null)
+				{
+					return NotFound("AuctionLot not found");
+				}
+
+				var lot = await _db.Lots.FirstOrDefaultAsync(l => l.Id == lotId);
+
+				if (lot == null)
+				{
+					return NotFound("Lot not found");
+				}
+
+				if (!string.IsNullOrEmpty(lot.ImageUrl))
+				{
+					try
+					{
+						await imageService.DeleteImageAsync(lot.ImageUrl);
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine($"Error al borrar la imagen: {ex.Message}");
+					}
+				}
+
+				if (auctionLot.Auction.Status != AuctionStatus.Closed)
+				{
+					_db.AuctionLots.Remove(auctionLot);
+					_db.Lots.Remove(lot);
+					await _db.SaveChangesAsync();
+				}
+
+				await transaction.CommitAsync();
+
+				return Ok(new { message = "Lot deleted successfully" });
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { error = ex.Message });
+			}
+		}
 	}
-}        
+}
 	

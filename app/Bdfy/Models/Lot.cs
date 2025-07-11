@@ -1,10 +1,21 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Newtonsoft.Json;
 
 namespace BDfy.Models
 {
     public class Lot : Base // Clase lote
     {
+        [Required]
+        [Column("title")]
+        [StringLength(100, ErrorMessage = "The title cannot have more than 100 characters")]
+        public string Title { get; set; } = null!;
+
+        [Required]
+        [Column("image_url")]
+        [StringLength(100, ErrorMessage = "The image URL cannot have more than 100 characters")]
+        public string ImageUrl { get; set; } = null!;
+
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Lot number must be greater than 0")]
         [Column("lot_number")]

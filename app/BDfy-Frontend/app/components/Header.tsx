@@ -6,48 +6,76 @@ import { useAuth } from "~/context/authContext";
 import { Gavel } from "lucide-react";
 import ComonMenu from "./comonMenu";
 
-export default function Header() {
+
+interface Props {
+  className?: string;
+}
+
+export default function Header({ className }: Props) {
   const { isAuthenticated, logout } = useAuth();
 
   const location = useLocation();
   const path = location.pathname;
 
   return (
-    <header className="w-full py-4 px-8 flex items-center justify-between bg-[#1b3845] border-b-3 border-[#6cf2ff] transition-colors duration-300 hover:border-[#81fff9] hover:drop-shadow-[0_0_6px_#59b9e2]">
+    <header
+      className={className}
+      style={{
+        background:
+          "linear-gradient(180deg, #0D4F61 0%, rgba(255, 255, 255, 0) 81%)",
+      }}
+    >
       {/* Izquierda: menú y logo */}
-      <div className="flex items-center space-x-6">
-        <ComonMenu />
+      <div className="flex space-x-6 mt-1">
+        {/* <ComonMenu /> */}
 
-        <div className="flex items-center space-x-4 group">
+        <div className="flex space-x-4 group">
           <DynamicButton
             to="/"
-            className="w-15 h-15 flex items-center justify-center rounded-full bg-[#59b9e2] text-white group-hover:drop-shadow-[0_0_6px_#59b9e2] transition duration-300"
+            className="w-15 h-15 flex items-center justify-center rounded-full bg-[#147894] group-hover:drop-shadow-[0_0_6px_#ffffff] transition duration-300"
           >
-            <Gavel className="text-white w-10 h-10 transition-transform duration-300 group-hover:rotate-30" />
+            <Gavel className="w-10 h-10 transition-transform duration-300 group-hover:rotate-30" />
           </DynamicButton>
 
           <DynamicButton
             to="/"
-            className="text-white text-3xl font-extrabold tracking-wide group-hover:drop-shadow-[0_0_6px_#59b9e2] transition duration-300"
+            className="text-3xl mt-3 font-extrabold tracking-wide group-hover:drop-shadow-[0_0_6px_#ffffff] transition duration-300"
           >
-            <span className="text-[#59b9e2]">BD</span>fy
+            BDfy
           </DynamicButton>
         </div>
       </div>
 
       {/* Derecha: Menús según autenticación */}
-      {!isAuthenticated ? (
-        <div className="hidden md:flex space-x-4">
-          {(path === "/" || path === "/login") && (
-            <NavBar to="/register">Registrarme</NavBar>
-          )}
-          {(path === "/" || path === "/register") && (
-            <NavBar to="/login">Iniciar Sesión</NavBar>
-          )}
-        </div>
-      ) : (
-        <UserMenu />
-      )}
+      <div className="flex space-x-6 ">
+        <NavBar to="/abaut" className="flex px-4 py-2 mt-4 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Sobre nosotros</NavBar>
+        <NavBar to="/gallery" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Subastas</NavBar>
+        <NavBar to="/help" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Ayuda</NavBar>
+        <NavBar to="/contact" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Contacto</NavBar>
+
+        {!isAuthenticated ? (
+          <div className="hidden md:flex space-x-4">
+            {(path === "/" || path === "/login") && (
+              <NavBar 
+                to="/register"
+                className="flex mt-4 px-4 py-2 rounded-full border-2 border-grey-200 bg-transparent hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold"
+              >
+                Registrarme
+              </NavBar>
+            )}
+            {(path === "/" || path === "/register") && (
+              <NavBar 
+                to="/login"
+                className="flex mt-4 px-4 py-2 rounded-full border-2 border-grey-200 bg-transparent hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold"
+              >
+                Iniciar Sesión
+              </NavBar>
+            )}
+          </div>
+        ) : (
+          <UserMenu className="flex mt-1 px-4 py-2 relative z-40" />
+        )}
+      </div>
     </header>
   );
 }

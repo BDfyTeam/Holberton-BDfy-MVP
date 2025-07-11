@@ -7,8 +7,8 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: {
-        oscuro: "#1b3845", // Tu color personalizado
+      fontFamily: {
+        poppins: ['Poppins', 'sans-serif'],
       },
     },
   },

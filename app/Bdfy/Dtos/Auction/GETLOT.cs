@@ -9,6 +9,13 @@ namespace BDfy.Dtos
         public Guid Id { get; set; }
 
         [Required]
+        [StringLength(100, ErrorMessage = "The title cannot have more than 100 characters")]
+        public string Title { get; set; } = null!;
+
+        [Required]
+        public string ImageUrl { get; set; } = null!;
+
+        [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Lot number must be greater than 0")]
         public int LotNumber { get; set; }
 
@@ -42,6 +49,13 @@ namespace BDfy.Dtos
     {
         [Required]
         public Guid Id { get; set; }
+        
+        [Required]
+        [StringLength(100, ErrorMessage = "The title cannot have more than 100 characters")]
+        public string Title { get; set; } = null!;
+
+        [Required]
+        public string ImageUrl { get; set; } = null!;
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Lot number must be greater than 0")]

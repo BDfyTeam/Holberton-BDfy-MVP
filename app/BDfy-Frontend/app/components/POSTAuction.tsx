@@ -16,6 +16,7 @@ import {
 import { CheckIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 
+
 type AuctionForm = {
   className?: string;
 };
@@ -70,11 +71,12 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
   };
 
   // Necesario manejar las categorias asi para usarse con HeadLessUI
-  const categoryOptions = Object.entries(categorys).map(([key, label]) => ({
-    id: parseInt(key),
-    name: label,
+  const categoryOptions = categorys.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    icon: cat.icon,
   }));
-
+  
   return (
     <div className={className}>
       <button
@@ -197,65 +199,64 @@ export default function CreateAuctionButton({ className }: AuctionForm) {
 
             {/* Categoría */}
             <div className="relative z-50 w-full mb-6 group font-[Inter]">
-              <label className="block mb-2 text-sm text-[#81fff9]">
-                Categorías
-              </label>
+    <label className="block mb-2 text-sm text-[#81fff9]">Categorías</label>
 
-              <Combobox
-                value={selectedCategories}
-                onChange={(selected) => setSelectedCategories(selected)}
-                multiple
-              >
-                <div className="relative">
-                  <ComboboxInput
-                    className="w-full rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 py-2 text-sm text-white focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50"
-                    onChange={(event) => setQuery(event.target.value)}
-                    displayValue={(selected: { name: string }[]) =>
-                      selected.map((s) => s.name).join(", ")
-                    }
+    <Combobox
+      value={selectedCategories}
+      onChange={(selected) => setSelectedCategories(selected)}
+      multiple
+    >
+      <div className="relative">
+        <ComboboxInput
+          className="w-full rounded-lg border border-[#59b9e2]/50 bg-[#1B3845] px-4 py-2 text-sm text-white focus:border-[#81fff9] focus:outline-none focus:ring-2 focus:ring-[#81fff9]/50"
+          onChange={(event) => setQuery(event.target.value)}
+          displayValue={(selected: { name: string }[]) =>
+            selected.map((s) => s.name).join(", ")
+          }
+        />
+        <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-3">
+          <ChevronDownIcon className="w-4 h-4 text-white" />
+        </ComboboxButton>
+      </div>
+
+      <ComboboxOptions className="absolute top-full left-0 z-[999] mt-1 max-h-60 w-full overflow-auto rounded-lg bg-[#1B3845] border border-[#59b9e2]/50 py-1 text-sm shadow-lg">
+        {categoryOptions
+          .filter((option) =>
+            option.name.toLowerCase().includes(query.toLowerCase())
+          )
+          .map((option) => (
+            <ComboboxOption
+              key={option.id}
+              value={option}
+              className={({ active, selected }) =>
+                clsx(
+                  "cursor-pointer select-none px-4 py-2",
+                  active && "bg-[#59b9e2]/20",
+                  selected && "font-semibold text-[#81fff9]"
+                )
+              }
+            >
+              {({ selected }) => (
+                <div className="flex items-center gap-2">
+                  <CheckIcon
+                    className={clsx(
+                      "w-4 h-4",
+                      selected ? "visible text-[#81fff9]" : "invisible"
+                    )}
                   />
-                  <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <ChevronDownIcon className="w-4 h-4 text-white" />
-                  </ComboboxButton>
+                  <span className="flex items-center gap-2">
+                    {option.icon && (
+                      <span className="mr-2">{option.icon}</span>
+                    )}
+                    {option.name}
+                  </span>
                 </div>
-
-                <ComboboxOptions 
-                  className="absolute top-full left-0 z-[999] mt-1 max-h-60 w-full overflow-auto rounded-lg bg-[#1B3845] border border-[#59b9e2]/50 py-1 text-sm shadow-lg"
-                >
-                  {categoryOptions
-                    .filter((option) =>
-                      option.name.toLowerCase().includes(query.toLowerCase())
-                    )
-                    .map((option) => (
-                      <ComboboxOption
-                        key={option.id}
-                        value={option}
-                        className={({ active, selected }) =>
-                          clsx(
-                            "cursor-pointer select-none px-4 py-2",
-                            active && "bg-[#59b9e2]/20",
-                            selected && "font-semibold text-[#81fff9]"
-                          )
-                        }
-                      >
-                        {({ selected }) => (
-                          <div className="flex items-center gap-2">
-                            <CheckIcon
-                              className={clsx(
-                                "w-4 h-4",
-                                selected
-                                  ? "visible text-[#81fff9]"
-                                  : "invisible"
-                              )}
-                            />
-                            {option.name}
-                          </div>
-                        )}
-                      </ComboboxOption>
-                    ))}
-                </ComboboxOptions>
-              </Combobox>
-            </div>
+              )}
+            </ComboboxOption>
+          ))}
+      </ComboboxOptions>
+    </Combobox>
+  </div>
 
             {/* Dirección */}
             <div className="border-b border-gray-900/10 pb-12 font-[Inter]">
