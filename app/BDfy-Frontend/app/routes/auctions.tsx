@@ -7,6 +7,7 @@ import Galerys from "~/components/Galerys";
 import StatusFilter from "~/components/FilterFields/statusFilter";
 import CategoryFilter from "~/components/FilterFields/categoryFilter";
 import DateFields from "~/components/FormFields/AucLotCreationFields/Date";
+import DepartmentFilter from "~/components/FilterFields/departmentFilter";
 
 export default function Auctions() {
   const [allAuctions, setAllAuctions] = useState<Auction[]>([]);
@@ -14,6 +15,8 @@ export default function Auctions() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("");
+
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   const [isCategorySelected, setIsCategorySelected] = useState(false);
   const [startAtFilter, setStartAtFilter] = useState<Date | null>(null);
@@ -57,6 +60,14 @@ export default function Auctions() {
         filtered = filtered.filter((auction) => auction.status === 1);
       } else if (statusFilter === "closed") {
         filtered = filtered.filter((auction) => auction.status === 0);
+      }
+    }
+
+    if (departmentFilter) {
+      if (departmentFilter !== "Ninguno"){
+        filtered = filtered.filter(
+          (auction) => auction.direction && auction.direction.department === departmentFilter
+        );
       }
     }
 
@@ -118,6 +129,13 @@ export default function Auctions() {
           />
         </div>
         <div className="mt-3">
+          <DepartmentFilter 
+            className=""
+            onStatusChange={setDepartmentFilter}
+            currentStatus={departmentFilter}
+          />
+        </div>
+        <div className="mt-3">
           <DateFields
             className="flex gap-4"
             startAt={startAtFilter}
@@ -128,9 +146,6 @@ export default function Auctions() {
         </div>
         <div className="mt-3">
           <p>Filtro por casa de subasta</p>
-        </div>
-        <div className="mt-3">
-          <p>Filtro por departamento</p>
         </div>
       </div>
       <div className="flex w-3/4 mx-auto">
