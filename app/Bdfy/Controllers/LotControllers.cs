@@ -155,7 +155,7 @@ namespace BDfy.Controllers
 					return Unauthorized("Access Denied: Only Auctioneers or admins can edit Lots");
 				}
 
-				await lotservice.EditLot(lotId, editLotDto, userId, userIdFromToken);
+				await lotservice.EditLot(lotId, editLotDto, userId);
 
 				return Ok(new { message = "Lot updated successfully", lotId = lotId });
 			}

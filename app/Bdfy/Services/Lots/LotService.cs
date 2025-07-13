@@ -244,137 +244,138 @@ namespace BDfy.Services
 
             return (cantidadDePujas, stopwatch);
         }
-        public async Task EditLot(Guid lotId, EditLotDto editLotDto, Guid userId, string userIdFromToken)
+        public async Task EditLot(Guid lotId, EditLotDto editLotDto, Guid userId)
         {
-            var auctionLot = await db.AuctionLots
-                .Include(al => al.Auction)
-                    .ThenInclude(a => a.Auctioneer)
-                .Include(al => al.Lot)
-                    .ThenInclude(l => l.BiddingHistory)
-                .FirstOrDefaultAsync(al => al.IsOriginalAuction && al.LotId == lotId) ?? throw new NotFoundException("Lot not found");
-
-            if (auctionLot.Auction.Auctioneer.UserId.ToString() != userIdFromToken)
+            using var transaction = await db.Database.BeginTransactionAsync();
+            try
             {
-                throw new UnauthorizedException("Access Denied: You can only edit your own lots");
-            }
-
-            if (auctionLot.Lot.BiddingHistory != null && auctionLot.Lot.BiddingHistory.Count != 0)
-            {
-                throw new BadRequestException("Cannot edit lot that already has bids");
-            }
-
-            if (auctionLot.AuctionId != editLotDto.AuctionId)
-            {
-                var existingAuction = await db.Auctions
-                    .FirstOrDefaultAsync(a => a.Id == editLotDto.AuctionId
-                                && userId == a.Auctioneer.UserId
-                                && a.Status != AuctionStatus.Storage) ?? throw new BadRequestException("You cannot assign an auction that is not yours. Sorry.");
-            }
-
-            if (editLotDto.Image != null && editLotDto.Image.Length > 0)
-            {
-                string newHash;
-                using var newImageStream = editLotDto.Image.OpenReadStream();
-                newHash = await imageService.CalculateHashAsync(newImageStream);
-
-                if (!string.IsNullOrEmpty(auctionLot.Lot.ImageUrl))
-                {
-                    try
-                    {
-                        using var oldImageStream = await imageService.DownloadImageAsync(auctionLot.Lot.ImageUrl);
-                        var oldHash = await imageService.CalculateHashAsync(oldImageStream);
-
-                        if (newHash != oldHash)
-                        {
-                            // si son diferentes se sube la nueva imagen
-                            var newImageUrl = await imageService.UploadImageAsync(editLotDto.Image, "lots");
-                            auctionLot.Lot.ImageUrl = newImageUrl;
-                        }
-                    }
-                    catch
-                    {
-                        // si hay un erro al descargar la imagen anterior se sube la nueva
-                        var imageUrlNew = await imageService.UploadImageAsync(editLotDto.Image, "lots");
-                        auctionLot.Lot.ImageUrl = imageUrlNew;
-                    }
-                }
-                else
-                {
-                    // si no habia imagen en el lote
-                    var nuevaUrl = await imageService.UploadImageAsync(editLotDto.Image, "lots");
-                    auctionLot.Lot.ImageUrl = nuevaUrl;
-                }
-            }
-
-            if (editLotDto.LotNumber != auctionLot.Lot.LotNumber)
-            {
-                var existingLot = await db.AuctionLots
-                    .Include(al => al.Lot)
-                    .AnyAsync(al => al.Lot.LotNumber == editLotDto.LotNumber &&
-                                al.AuctionId == editLotDto.AuctionId &&
-                                al.LotId != lotId &&
-                                al.IsOriginalAuction);
-
-                if (existingLot)
-                {
-                    throw new BadRequestException("The Lot number is already taken in this auction");
-                }
-            }
-
-            var finalAuction = await db.Auctions.FindAsync(editLotDto.AuctionId) ?? throw new BadRequestException("Auction not found. Sorry");
-
-            auctionLot.Lot.Title = editLotDto.Title;
-            auctionLot.Lot.LotNumber = editLotDto.LotNumber;
-            auctionLot.Lot.Description = editLotDto.Description;
-            auctionLot.Lot.Details = editLotDto.Details;
-            auctionLot.Lot.StartingPrice = editLotDto.StartingPrice;
-
-            if (auctionLot.Lot.BiddingHistory == null || auctionLot.Lot.BiddingHistory.Count == 0)
-            {
-                auctionLot.Lot.CurrentPrice = editLotDto.StartingPrice;
-            }
-
-            if (auctionLot.AuctionId != editLotDto.AuctionId) // Si se quiere cambiar de auction 
-            {
-
-                var storageAuctionLot = await db.AuctionLots // Checkea si el lote tiene una relacion con el storage
+                var auctionLot = await db.AuctionLots // Buscamos el lote
                     .Include(al => al.Auction)
-                    .FirstOrDefaultAsync(al =>
-                        al.LotId == lotId &&
-                        al.Auction.Status == AuctionStatus.Storage);
+                        .ThenInclude(a => a.Auctioneer)
+                    .Include(al => al.Lot)
+                        .ThenInclude(l => l.BiddingHistory)
+                    .FirstOrDefaultAsync(al => al.IsOriginalAuction && al.LotId == lotId) ?? throw new NotFoundException("Lot not found");
 
-                if (storageAuctionLot != null)
+                if (auctionLot.Auction.Auctioneer.UserId != userId)
                 {
-                    db.AuctionLots.Remove(storageAuctionLot); // Borramos referencia con el Storage
+                    throw new UnauthorizedException("Access Denied: You can only edit your own lots");
                 }
 
-                var exists = await db.AuctionLots // Checkea si ya existe alguna relacion auction <-> lot con los datos del dto
-                    .AnyAsync(al => al.AuctionId == editLotDto.AuctionId && al.LotId == lotId);
-
-                if (!exists) // sino existe la crea
+                if (auctionLot.Lot.BiddingHistory != null && auctionLot.Lot.BiddingHistory.Count != 0)
                 {
-                    var newAuctionLot = new AuctionLot
+                    throw new BadRequestException("Cannot edit lot that already has bids");
+                }
+                if (auctionLot.AuctionId != editLotDto.AuctionId)
+                {
+                    var targetAuction = await db.Auctions
+                        .Include(a => a.Auctioneer)
+                        .FirstOrDefaultAsync(a => a.Id == editLotDto.AuctionId) ?? throw new NotFoundException($"Target auction not found {editLotDto.AuctionId}");
+
+                    if (targetAuction.Auctioneer.UserId != userId)
                     {
-                        AuctionId = editLotDto.AuctionId,
-                        LotId = lotId,
-                        IsOriginalAuction = true,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
+                        throw new UnauthorizedException("You cannot assign a lot to an auction that is not yours");
+                    }
 
-                    db.AuctionLots.Add(newAuctionLot);
+                    if (targetAuction.Status == AuctionStatus.Storage)
+                    {
+                        throw new BadRequestException("Cannot assign lot to storage auction");
+                    }
                 }
-                else
+
+                if (editLotDto.Title != null)
                 {
-                    var existingAuctionLot = await db.AuctionLots
-                        .FirstAsync(al => al.AuctionId == editLotDto.AuctionId && al.LotId == lotId);
-
-                    existingAuctionLot.IsOriginalAuction = true;
-                    existingAuctionLot.UpdatedAt = DateTime.UtcNow;
+                    auctionLot.Lot.Title = editLotDto.Title;
                 }
-            }
+                if (editLotDto.Description != null)
+                {
+                    auctionLot.Lot.Description = editLotDto.Description;
+                }
+                if (editLotDto.Details != null)
+                {
+                    auctionLot.Lot.Details = editLotDto.Details;
+                }
+                if (editLotDto.Image != null && editLotDto.Image.Length > 0)
+                {
+                    if (auctionLot.Lot.ImageUrl != null) // Optimizaciones
+                    {
+                        await imageService.DeleteImageAsync(auctionLot.Lot.ImageUrl); // Borra la anituga foto
+                        auctionLot.Lot.ImageUrl = await imageService.UploadImageAsync(editLotDto.Image, "lots"); // Actualiza a la nueva imagen
+                    }
+                    else
+                    {
+                        auctionLot.Lot.ImageUrl = await imageService.UploadImageAsync(editLotDto.Image, "lots"); // Si el lote no tenia imagen sube la nueva foto
+                    }
+                }
+                if (editLotDto.LotNumber != null && editLotDto.LotNumber != auctionLot.Lot.LotNumber)
+                {
+                    var existingLot = await db.AuctionLots
+                        .Include(al => al.Lot)
+                        .AnyAsync(al => al.Lot.LotNumber == editLotDto.LotNumber &&
+                                    al.AuctionId == editLotDto.AuctionId &&
+                                    al.LotId != lotId &&
+                                    al.IsOriginalAuction);
 
-            await db.SaveChangesAsync();
+                    if (existingLot)
+                    {
+                        throw new BadRequestException("The Lot number is already taken in this auction");
+                    }
+
+                    auctionLot.Lot.LotNumber = editLotDto.LotNumber.Value;
+
+                }
+                if (editLotDto.StartingPrice != null)
+                {
+                    auctionLot.Lot.StartingPrice = editLotDto.StartingPrice.Value;
+                }
+
+                if (auctionLot.AuctionId != editLotDto.AuctionId) // Si se quiere cambiar de auction 
+                {
+
+                    var storageAuctionLot = await db.AuctionLots // Checkea si el lote tiene una relacion con el storage
+                        .Include(al => al.Auction)
+                        .FirstOrDefaultAsync(al =>
+                            al.LotId == lotId &&
+                            al.Auction.Status == AuctionStatus.Storage);
+
+                    if (storageAuctionLot != null)
+                    {
+                        db.AuctionLots.Remove(storageAuctionLot); // Borramos referencia con el Storage
+                    }
+
+                    var exists = await db.AuctionLots // Checkea si ya existe alguna relacion auction <-> lot con los datos del dto
+                        .AnyAsync(al => al.AuctionId == editLotDto.AuctionId && al.LotId == lotId);
+
+                    if (!exists) // sino existe la crea
+                    {
+                        var newAuctionLot = new AuctionLot
+                        {
+                            AuctionId = editLotDto.AuctionId,
+                            LotId = lotId,
+                            IsOriginalAuction = true,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+
+                        db.AuctionLots.Add(newAuctionLot);
+                    }
+                    else
+                    {
+                        var existingAuctionLot = await db.AuctionLots
+                            .FirstAsync(al => al.AuctionId == editLotDto.AuctionId && al.LotId == lotId);
+
+                        existingAuctionLot.IsOriginalAuction = true;
+                        existingAuctionLot.UpdatedAt = DateTime.UtcNow;
+                    }
+                }
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+            
         }
         public async Task<AutoBidConfig> RegisterAutoBid(Guid lotId, Guid buyerId, CreateAutoBidDto dto, Guid parsedUserId)
         {

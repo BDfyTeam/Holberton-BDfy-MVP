@@ -30,9 +30,9 @@ namespace BDfy.Controllers
 
                 var auction = await _auctionServices.CreateAuction(userId, Dto);
 
-                return CreatedAtRoute($"api/1.0/auctions/{userId}", new
+                return Created($"/api/1.0/auctions/{auction.Id}", new
                 {
-                    messagge = "Auction created"
+                    message = "Auction created"
                 });
             }
             catch (Exception ex)

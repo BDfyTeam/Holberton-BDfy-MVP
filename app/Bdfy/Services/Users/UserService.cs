@@ -288,7 +288,7 @@ namespace BDfy.Services
                 }
                 else
                 {
-                    auctioneer.ImageUrl = await _imgService.UploadImageAsync(dto.Image, "users"); // Si el subastador no tenia imagen sube la neuva foto
+                    auctioneer.ImageUrl = await _imgService.UploadImageAsync(dto.Image, "users"); // Si el subastador no tenia imagen sube la nueva foto
                 }
             }
 

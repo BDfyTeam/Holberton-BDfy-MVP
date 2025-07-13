@@ -8,6 +8,7 @@ import StatusFilter from "~/components/FilterFields/statusFilter";
 import CategoryFilter from "~/components/FilterFields/categoryFilter";
 import DateFields from "~/components/FormFields/AucLotCreationFields/Date";
 import DepartmentFilter from "~/components/FilterFields/departmentFilter";
+import AuctionHouseFilter from "~/components/FilterFields/auctionHouseFilter";
 
 export default function Auctions() {
   const [allAuctions, setAllAuctions] = useState<Auction[]>([]);
@@ -16,7 +17,7 @@ export default function Auctions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("");
-
+  const [auctionHouseFilter, setAuctionHouseFilter] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
   const [isCategorySelected, setIsCategorySelected] = useState(false);
   const [startAtFilter, setStartAtFilter] = useState<Date | null>(null);
@@ -84,6 +85,13 @@ export default function Auctions() {
         return start >= from && start <= to;
       });
     }
+    if (auctionHouseFilter) {
+      filtered = filtered.filter(
+        (auction) =>
+          auction.auctioneer &&
+          auction.auctioneer.auctionHouse === auctionHouseFilter
+      );
+    }
 
     return filtered;
   };
@@ -103,7 +111,7 @@ export default function Auctions() {
 
   return (
     <div className="flex mb-8 mt-22">
-      <div className="flex flex-col w-1/4 mx-auto bg-white rounded rounded-2xl px-3 pt-1 rounded-xl border border-gray-300 text-gray-700">
+      <div className="flex flex-col w-1/4 mx-auto mb-auto bg-white rounded rounded-2xl px-3 pt-1 rounded-xl border border-gray-300 text-gray-700">
         <div className="mt-2">
           <SearchBar 
             className="relative w-full max-w-md mx-auto transition-transform duration-300 hover:scale-102"
@@ -144,8 +152,12 @@ export default function Auctions() {
             setEndAt={setEndAtFilter}
           />
         </div>
-        <div className="mt-3">
-          <p>Filtro por casa de subasta</p>
+        <div className="mt-3 mb-3">
+          <AuctionHouseFilter
+            auctions={allAuctions}
+            currentAuctionHouse={auctionHouseFilter}
+            onAuctionHouseChange={setAuctionHouseFilter}
+          />
         </div>
       </div>
       <div className="flex w-3/4 mx-auto">
