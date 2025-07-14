@@ -2,18 +2,8 @@ import React, { useState, useEffect, type JSX } from "react";
 import { updateAuction } from "~/services/fetchService";
 import type { Auction, AuctionForm } from "~/services/types";
 import "../app.css";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import categorys from "~/services/categorys";
-import {
-  Combobox,
-  ComboboxInput,
-  ComboboxButton,
-  ComboboxOptions,
-  ComboboxOption,
-} from "@headlessui/react";
-import { CheckIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
-import clsx from "clsx";
 import { useAlert } from "~/context/alertContext";
 import { Alert, Snackbar } from "@mui/material";
 import { AlertCircle, CheckCircle } from "lucide-react";
@@ -23,6 +13,7 @@ import DateFields from "./FormFields/AucLotCreationFields/Date";
 import Description from "./FormFields/AucLotCreationFields/Description";
 import Image from "./FormFields/AucLotCreationFields/Image";
 import Title from "./FormFields/AucLotCreationFields/Title";
+import StatusField from "./FormFields/AucLotCreationFields/StatusSelect";
 
 type Props = {
   auction: Auction;
@@ -56,8 +47,11 @@ export default function UpdateAuctionButton({
   useEffect(() => {
     if (auction) {
       setTitle(auction.title);
-      setImage(typeof auction.image === "object" ? auction.image : null);
-      setDescription(auction.description);
+      const backendImage = auction.image;
+      if (typeof backendImage === "object") {
+        setImage(backendImage);
+      }
+      setDescription(auction.description || "");
       setStartAt(new Date(auction.startAt));
       setEndAt(auction.endAt ? new Date(auction.endAt) : null);
       setStatus(auction.status);
@@ -88,7 +82,7 @@ export default function UpdateAuctionButton({
     const payload: AuctionForm = {
       id: auction.id,
       title,
-      image: image ? image : new File([], ""),
+      image: image ?? new File([], ""),
       description,
       startAt: startAt ? startAt.toISOString() : "",
       endAt: endAt ? endAt.toISOString() : "",
@@ -167,7 +161,7 @@ export default function UpdateAuctionButton({
         </button>
 
         <h2 className="text-3xl font-bold mb-6 flex flex-col text-center font-[Inter]">
-          Crear subasta
+          Editar subasta
         </h2>
 
         <form onSubmit={handleSubmit} className="w-full h-full gap-4">
@@ -211,6 +205,13 @@ export default function UpdateAuctionButton({
             className="relative z-50 w-full mb-6 group font-[Inter]"
           />
 
+          {/* Estado */}
+          <StatusField
+            status={status}
+            setStatus={setStatus}
+            className="relative z-40 w-full mb-6"
+          />
+
           {/* Dirección */}
 
           <Direction
@@ -239,7 +240,7 @@ export default function UpdateAuctionButton({
               type="submit"
               disabled={loading}
             >
-              {loading ? "Creando..." : "Crear Subasta"}
+              {loading ? "Creando..." : "Editar Subasta"}
             </button>
           </div>
         </form>

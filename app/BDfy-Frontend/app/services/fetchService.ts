@@ -12,7 +12,7 @@ import type {
 export async function loginUser(email: string, password: string) {
   try {
     // Llamamos al back con los datos del formulario
-    const response = await fetch("https://api.bdfy.tech/api/1.0/users/login", {
+    const response = await fetch("http://localhost:5015/api/1.0/users/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json", // Le decimos que enviamos JSON
@@ -39,7 +39,7 @@ export async function loginUser(email: string, password: string) {
 export async function registerUser(payload: RegisterUser) {
   try {
     const response = await fetch(
-      "https://api.bdfy.tech/api/1.0/users/register",
+      "http://localhost:5015/api/1.0/users/register",
       {
         method: "POST",
         headers: {
@@ -67,7 +67,7 @@ export async function registerUser(payload: RegisterUser) {
 export async function registerAuctioner(payload: RegisterAuctioneer) {
   try {
     const response = await fetch(
-      "https://api.bdfy.tech/api/1.0/users/register",
+      "http://localhost:5015/api/1.0/users/register",
       {
         method: "POST",
         headers: {
@@ -96,7 +96,7 @@ export async function getUserById(userId: string) {
   try {
     const token = getToken();
 
-    const response = await fetch(`https://api.bdfy.tech/api/1.0/users/${userId}`, {
+    const response = await fetch(`http://localhost:5015/api/1.0/users/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -123,7 +123,7 @@ export async function fetchRole() {
     }
 
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/users/${userId}`
+      `http://localhost:5015/api/1.0/users/${userId}`
     );
     const data = await response.json();
 
@@ -139,7 +139,7 @@ export async function fetchRole() {
 // ENTRAR EN UNA SUBASTA (GET all auctions)
 export async function getAllAuctions() {
   try {
-    const response = await fetch("https://api.bdfy.tech/api/1.0/auctions", {
+    const response = await fetch("http://localhost:5015/api/1.0/auctions", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -194,7 +194,7 @@ export async function createAuction(payload: AuctionForm) {
     formData.append("Direction.ZipCode", payload.direction.zipCode.toString());
 
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/auctions/${userId}`,
+      `http://localhost:5015/api/1.0/auctions/${userId}`,
       {
         method: "POST",
         headers: {
@@ -228,7 +228,7 @@ export async function getAuctionsByAuctioneer() {
     }
 
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/auctions/auctioneer/${userId}`,
+      `http://localhost:5015/api/1.0/auctions/auctioneer/${userId}`,
       {
         method: "GET",
         headers: {
@@ -258,7 +258,7 @@ export async function getAuctionsByAuctioneer() {
 export async function getAuctionById(id: string) {
   try {
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/auctions/specific/${id}`,
+      `http://localhost:5015/api/1.0/auctions/specific/${id}`,
       {
         method: "GET",
         headers: {
@@ -285,21 +285,48 @@ export async function updateAuction(payload: AuctionForm) {
       throw new Error("No se encontró el token de autenticación.");
     }
     const auctionId = payload.id;
+
+    const formData = new FormData();
+    formData.append("Title", payload.title);
+    if (payload.image instanceof File && payload.image.size > 0) {
+      formData.append("Image", payload.image);
+    }        
+    formData.append("Description", payload.description);
+    formData.append("StartAt", payload.startAt);
+    if (payload.endAt) formData.append("EndAt", payload.endAt);
+    payload.category.forEach((cat) =>
+      formData.append("Category", cat.toString())
+    );
+    formData.append("Status", payload.status.toString());
+    formData.append("Direction.Street", payload.direction.street);
+    formData.append(
+      "Direction.StreetNumber",
+      payload.direction.streetNumber.toString() 
+    );
+    formData.append("Direction.Corner", payload.direction.corner);
+    formData.append("Direction.Department", payload.direction.department);
+    formData.append("Direction.ZipCode", payload.direction.zipCode.toString());
+
+    for (const pair of formData.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
+    
+
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/auctions/${auctionId}`,
+      `http://localhost:5015/api/1.0/auctions/${auctionId}`,
       {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Error al actualizar subasta");
+      const errorText = await response.text();
+      console.log(errorText);
+      throw new Error(errorText  || "Error al actualizar subasta");
     }
 
     return "Subasta editada con éxito";
@@ -327,7 +354,7 @@ export async function createLot(payload: FormLot) {
     formData.append("auctionId", auctionId);
 
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/lots/${auctionId}`,
+      `http://localhost:5015/api/1.0/lots/${auctionId}`,
       {
         method: "POST",
         headers: {
@@ -355,7 +382,7 @@ export async function getLotById(lotId: string) {
 
   try {
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/lots/specific/${lotId}`,
+      `http://localhost:5015/api/1.0/lots/specific/${lotId}`,
       {
         method: "GET",
         headers: {
@@ -400,7 +427,7 @@ export async function updateLot(payload: FormLot) {
     }
     
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/lots/${lotId}/edit`,
+      `http://localhost:5015/api/1.0/lots/${lotId}/edit`,
       {
         method: "PUT",
         headers: {
@@ -436,7 +463,7 @@ export async function getAllStorageLots() {
   }
   try {
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/lots/${auctioneer_id}`,
+      `http://localhost:5015/api/1.0/lots/${auctioneer_id}`,
       {
         method: "GET",
         headers: {
@@ -474,7 +501,7 @@ export async function makeBid(lotId: string, bid: number) {
     }
     const dateNow = new Date();
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/lots/bid/${lotId}`,
+      `http://localhost:5015/api/1.0/lots/bid/${lotId}`,
       {
         method: "POST",
         headers: {
@@ -521,7 +548,7 @@ export async function makeAutoBid(
 
     // AUTOPUJA
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
+      `http://localhost:5015/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
       {
         method: "POST",
         headers: {
@@ -552,7 +579,7 @@ export async function makeAutoBid(
 export async function getAuctionsByCategory(categoryId: number) {
   try {
     const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/auctions/category/${categoryId}`,
+      `http://localhost:5015/api/1.0/auctions/category/${categoryId}`,
       {
         method: "GET",
         headers: {

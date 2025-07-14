@@ -9,7 +9,12 @@ interface ButtonProps {
 
 export default function DynamicButton({ to, onClick, children, className }: ButtonProps) {
   return (
-    <NavLink to={to} end={true} onClick={onClick} className={`button-link ${className ?? ''}`}>
+    <NavLink 
+      to={to} 
+      end={true} 
+      onClick={onClick} 
+      className={`button-link ${className ?? ''}`}
+      >
       {children}
     </NavLink>
   );

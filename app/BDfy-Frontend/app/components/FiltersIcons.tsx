@@ -7,12 +7,14 @@ import SearchBar from "./FilterFields/searchBar";
 
 type Props = {
   className?: string;
+  auctions: Auction[];
   setAuction: (auction: Auction[]) => void;
   setIsCategorySelected: (isSelected: boolean) => void;
 };
 
 export default function FiltersIcons({
   className,
+  auctions,
   setAuction,
   setIsCategorySelected,
 }: Props) {
@@ -20,8 +22,11 @@ export default function FiltersIcons({
 
   async function handleCategoryClick(categoryId: number) {
     try {
-      const auctions = await getAuctionsByCategory(categoryId);
-      setAuction(auctions);
+      const fetchedAuctions = await getAuctionsByCategory(categoryId);
+      const filtered = fetchedAuctions.filter((fetchedAuction: Auction) =>
+        auctions.some((activeAuction) => activeAuction.id === fetchedAuction.id)
+      );
+      setAuction(filtered);
 
       if (selectedCategory === categoryId) {
         setSelectedCategory(null);
