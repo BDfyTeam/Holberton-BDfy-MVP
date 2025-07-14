@@ -7,7 +7,7 @@ import {
   type BasicCardItem,
   type Lot,
 } from "~/services/types";
-import LotCard from "~/components/LotToBid";
+import LotToBid from "~/components/LotToBid";
 import * as signalR from "@microsoft/signalr";
 import { getToken } from "~/services/handleToken";
 import GaleryOfCards from "~/components/galeryOfLotCards";
@@ -15,6 +15,7 @@ import categorys from "~/services/categorys";
 import {
   CalendarIcon,
   CalendarOffIcon,
+  IdCard,
   LayoutList,
   MailIcon,
   MapPinIcon,
@@ -33,7 +34,7 @@ type BidUpdate = {
 };
 
 type BiddingHistoryDto = {
-  Winner: {
+  User: {
     FirstName: string;
     LastName: string;
   };
@@ -90,6 +91,8 @@ export default function AuctionPage() {
             department: user.direction.department,
           },
           id: user.id,
+          auctionHouse: user.auctioneerDetails.auctionHouse,
+          plate: user.auctioneerDetails.plate
         });
         setLots(data.lots);
 
@@ -320,19 +323,26 @@ export default function AuctionPage() {
     // category: lot.category
   }));
 
-  const handleCardClick = (item: BasicCardItem) => {
+  const handleCardClick = (item: BasicCardItem) => { // item ya no deberia ser un BasicCardItem, sino un CompleteLot, para poder recibir toda la info
     const lote = auction?.lots.find((l) => l.id === item.id);
     if (lote) setselectLot(lote);
   };
 
   const history = selectLot ? biddingHistories[selectLot.id] || [] : [];
+  
 
   return (
     // INFORMACION DE LA SUBASTA
     <div className="items-center text-white">
       <div className="flex justify-center items-start">
         {/* Zona principal: 3/4 de la pantalla */}
-        <div className="w-3/4 p-4 flex mt-[100px] bg-[#0D4F61] rounded-lg border border-[#0D4F61]/20">
+        <div 
+          className="w-3/4 p-4 flex mt-[100px] mb-10 bg-[#0D4F61] rounded-lg shadow-gray-700 shadow-2xl"
+          style={{
+            background:
+              "linear-gradient(135deg,rgba(13, 79, 97, 1) 27%, rgba(65, 196, 174, 1) 100%)",
+          }}  
+        >
           {/* Información de la subasta (2/4) */}
           <div className="w-3/4 pr-8">
             {/* Titulo */}
@@ -345,12 +355,12 @@ export default function AuctionPage() {
               {/* Columna izquierda: Imagen y nombre de la casa de subastas */}
               <div className="w-2/4 mr-25 ml-40 flex flex-col items-center">
                 <img
-                  src={auction.imageUrl}
+                  src={typeof auction.imageUrl === "string" ? auction.imageUrl : undefined}
                   alt={auction.title}
                   className="max-w-[90%] h-auto rounded-2xl mb-4"
                 />
                 <p className="text-white mb-2 text-center">
-                  Nombre de la casa de subastas
+                  {auctioneer?.auctionHouse}
                 </p>
               </div>
 
@@ -427,9 +437,15 @@ export default function AuctionPage() {
                 </h2>
 
                 {/* Reputación */}
-                <p className="flex items-center text-[#0D4F61] justify-center mb-4">
+                <p className="flex items-center text-[#0D4F61] justify-center mb-1">
                   <VerifiedIcon className="w-5 h-5 mr-2" />
                   {auctioneer?.reputation}%
+                </p>
+                
+                {/* placa */}
+                <p className="flex items-center text-[#0D4F61] justify-center mb-4">
+                  <IdCard className="w-5 h-5 mr-2 inline-block" />
+                  {auctioneer?.plate}
                 </p>
               </div>
             </div>
@@ -494,7 +510,7 @@ export default function AuctionPage() {
               ✕
             </button>
 
-            <LotCard
+            <LotToBid
               lot={selectLot}
               onBidInitiated={suscribirseAlLote}
               className="text-black"
@@ -510,7 +526,7 @@ export default function AuctionPage() {
                   {history.map((entry, index) => (
                     <li key={index} className="border-b pb-1">
                       <span className="font-bold">
-                        {entry.Winner.FirstName} {entry.Winner.LastName}
+                        {entry.User.FirstName} {entry.User.LastName}
                       </span>{" "}
                       ofreció ${entry.Amount} a las{" "}
                       {new Date(entry.Time).toLocaleTimeString()}{" "}
@@ -521,6 +537,7 @@ export default function AuctionPage() {
               </div>
             )}
           </div>
+
         </div>
       )}
     </div>

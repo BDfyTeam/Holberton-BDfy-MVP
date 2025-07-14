@@ -36,14 +36,16 @@ dotnet add package NUnit3TestAdapter
 # Requisitos Frontend (npm packages)
 # Ejecutar en el directorio del frontend
 
-npm install swiper                                   # Carrousel Swiper
-npm install @splidejs/react-splide                   # Carrousel Splide (React)
-npm install lucide-react                             # Iconos Lucide React
-npm install jwt-decode                               # Decodificar JWT para frontend
-npm install react-datepicker                         # Selector de fecha
-npm install @types/react-datepicker --save-dev       # Tipos TypeScript para react-datepicker
-npm install @heroicons/react                         # Iconos Heroicons React
-npm install @headlessui/react @heroicons/react clsx  # Headlessui para componentes(combobox) y heroicons por sus iconos
+npm install swiper                                       # Carrousel Swiper
+npm install @splidejs/react-splide                       # Carrousel Splide (React)
+npm install lucide-react                                 # Iconos Lucide React
+npm install jwt-decode                                   # Decodificar JWT para frontend
+npm install react-datepicker                             # Selector de fecha
+npm install @types/react-datepicker --save-dev           # Tipos TypeScript para react-datepicker
+npm install @heroicons/react                             # Iconos Heroicons React
+npm install @headlessui/react @heroicons/react clsx      # Headlessui para componentes(combobox) y heroicons por sus iconos
+npm install @mui/material @emotion/react @emotion/styled # Material UI para componentes de interfaz
+
 
 
 # ---------------------------------------------

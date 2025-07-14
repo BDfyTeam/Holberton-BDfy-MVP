@@ -8,7 +8,7 @@ interface LotCardProps {
   className?: string;
 }
 
-export default function LotCard({ lot, onBidInitiated, className }: LotCardProps) {
+export default function LotToBid({ lot, onBidInitiated, className }: LotCardProps) {
   const [bid, setBid] = useState<number>((lot.currentPrice ?? lot.startingPrice) + 1);
   const [message, setMessage] = useState("");
   const [base, setBase] = useState(lot.currentPrice ?? lot.startingPrice);
@@ -31,6 +31,7 @@ export default function LotCard({ lot, onBidInitiated, className }: LotCardProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    
     const currentPrice = lot.currentPrice ?? lot.startingPrice;
     if (bid <= currentPrice) {
       setMessage(

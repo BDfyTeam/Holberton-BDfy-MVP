@@ -66,7 +66,7 @@ export default function FiltersIcons({
       {/* Icono de búsqueda */}
       <div
         className="w-5/8 h-16 mt-4 ml-67 flex text-center items-center justify-between p-1 border-3 
-        border-[#0D4F61] rounded-full bg-transparent transition-transform duration-300 hover:scale-110"
+        border-[#0D4F61] rounded-full bg-transparent transition-transform duration-300 hover:scale-102"
       >
         <input
           type="text"

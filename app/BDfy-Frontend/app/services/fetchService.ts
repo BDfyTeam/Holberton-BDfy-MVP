@@ -1,11 +1,11 @@
 import { getToken, getUserIdFromToken } from "./handleToken";
 import type {
-  AuctionCard,
-  RegisterUserPayload,
-  LotCard,
+  RegisterUser,
+  RegisterAuctioneer,
+  FormLot,
   CompleteLot,
+  AuctionForm,
 } from "./types";
-import type { RegisterAuctioneerPayload } from "./types";
 
 // LOGUEAR UN USUARIO
 export async function loginUser(email: string, password: string) {
@@ -35,7 +35,7 @@ export async function loginUser(email: string, password: string) {
 }
 
 // REGISTRAR UN USUARIO
-export async function registerUser(payload: RegisterUserPayload) {
+export async function registerUser(payload: RegisterUser) {
   try {
     const response = await fetch(
       "https://api.bdfy.tech/api/1.0/users/register",
@@ -63,7 +63,7 @@ export async function registerUser(payload: RegisterUserPayload) {
 }
 
 // REGISTRAR UN SUBASTADOR
-export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
+export async function registerAuctioner(payload: RegisterAuctioneer) {
   try {
     const response = await fetch(
       "https://api.bdfy.tech/api/1.0/users/register",
@@ -163,7 +163,7 @@ export async function getAllAuctions() {
 }
 
 // CREAR UNA SUBASTA
-export async function createAuction(payload: AuctionCard) {
+export async function createAuction(payload: AuctionForm) {
   try {
     const token = getToken();
     if (!token) {
@@ -174,15 +174,35 @@ export async function createAuction(payload: AuctionCard) {
       throw new Error("No se pudo obtener el ID del usuario desde el token.");
     }
 
+    const formData = new FormData();
+    formData.append("title", payload.title);
+    formData.append("image", payload.image);
+    formData.append("description", payload.description);
+    formData.append("startAt", payload.startAt);
+    if (payload.endAt) {
+      formData.append("endAt", payload.endAt);
+    }
+    payload.category.forEach((cat) =>
+      formData.append("Category", cat.toString())
+    );
+    formData.append("status", payload.status.toString());
+    formData.append("Direction.Street", payload.direction.street);
+    formData.append(
+      "Direction.StreetNumber",
+      payload.direction.streetNumber.toString()
+    );
+    formData.append("Direction.Corner", payload.direction.corner);
+    formData.append("Direction.Department", payload.direction.department);
+    formData.append("Direction.ZipCode", payload.direction.zipCode.toString());
+
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/auctions/${userId}`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
     if (!response.ok) {
@@ -260,7 +280,7 @@ export async function getAuctionById(id: string) {
 }
 
 // ACTUALIZAR SUBASTA
-export async function updateAuction(payload: AuctionCard) {
+export async function updateAuction(payload: AuctionForm) {
   try {
     const token = getToken();
     if (!token) {
@@ -292,22 +312,30 @@ export async function updateAuction(payload: AuctionCard) {
 }
 
 // CREAR UN LOTE
-export async function createLot(payload: LotCard) {
+export async function createLot(payload: FormLot) {
   try {
     const token = getToken();
     if (!token) {
       throw new Error("No se encontró el token de autenticación.");
     }
     const auctionId = payload.auctionId;
+    const formData = new FormData();
+    formData.append("title", payload.title);
+    formData.append("image", payload.image);
+    formData.append("lotNumber", payload.lotNumber.toString());
+    formData.append("description", payload.description);
+    formData.append("details", payload.details);
+    formData.append("startingPrice", payload.startingPrice.toString());
+    formData.append("auctionId", auctionId);
+
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/lots/${auctionId}`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`, // Enviamos el token de autenticación
         },
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
     if (!response.ok) {
@@ -351,7 +379,7 @@ export async function getLotById(lotId: string) {
 }
 
 // ACTUALIZAR LOTE
-export async function updateLot(payload: LotCard) {
+export async function updateLot(payload: FormLot) {
   try {
     const token = getToken();
     if (!token) {
@@ -420,6 +448,7 @@ export async function getAllStorageLots() {
     const storageData = data.filter(
       (lot: CompleteLot) => lot.auction.status === 3
     );
+    console.log("Lotes en el storage:", storageData);
     return storageData;
   } catch (error) {
     console.error("Error al obtener el almacenamiento:", error);
