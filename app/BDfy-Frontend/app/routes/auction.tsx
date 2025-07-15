@@ -225,7 +225,7 @@ export default function AuctionPage() {
     let isMounted = true;
 
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://api.bdfy.tech/BidHub", {
+      .withUrl("http://localhost:5015/BidHub", {
         accessTokenFactory: () => getToken() || "",
         skipNegotiation: false,
       })
