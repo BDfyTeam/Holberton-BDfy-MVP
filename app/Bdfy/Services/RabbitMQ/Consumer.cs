@@ -42,7 +42,7 @@ namespace BDfy.Services
                 UserName = userName,
                 Password = password,
                 VirtualHost = virtualHost,
-                Port = 5672
+                Port = 5671
             };
             // Console.WriteLine(">> VHOST CONFIG: " + _configuration["RabbitMQ:VirtualHost"]);
             // Console.WriteLine($"RabbitMQ Config:");

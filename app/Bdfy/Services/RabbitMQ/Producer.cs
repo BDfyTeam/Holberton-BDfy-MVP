@@ -41,7 +41,7 @@ namespace BDfy.Services
                 UserName = userName,
                 Password = password,
                 VirtualHost = virtualHost,
-                Port = 5672,
+                Port = 5671,
                 Ssl = new SslOption
                 {
                     Enabled = true,
