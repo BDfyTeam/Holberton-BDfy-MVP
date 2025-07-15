@@ -1,9 +1,9 @@
 import { useState, type ReactElement } from "react";
-import type { Auction, Lot } from "~/services/types";
+import type { Auction, CompleteLot, Lot } from "~/services/types";
 
 type Props = {
   auctions?: Auction[];
-  lots?: Lot[];
+  lots?: CompleteLot[];
   component: React.ElementType;
   className?: string;
   internalClassName?: string;
