@@ -4,12 +4,16 @@ import type { CompleteLot } from "~/services/types";
 import categorys from "~/services/categorys";
 import { useEffect } from "react";
 
-type Props = { lot: CompleteLot; className?: string };
+type Props = { 
+  lot: CompleteLot;
+  onCardClick?: (item: CompleteLot) => void;
+  className?: string 
+};
 
-export default function LotCard({ lot, className }: Props) {
+export default function LotCard({ lot, className, onCardClick }: Props) {
   return (
     <div className={className ?? "w-fit"}>
-      <Link to={`/lot/${lot.id}`} className="block">
+      <button onClick={onCardClick ? () => onCardClick(lot) : undefined}>
         <div
           className="w-[350px] bg-[#0D4F61] border border-white rounded-2xl p-6 text-white flex flex-col justify-between hover:scale-105 transform transition duration-300 my-8"
         >
@@ -79,7 +83,7 @@ export default function LotCard({ lot, className }: Props) {
             )}
           </div>
         </div>
-      </Link>
+      </button>
     </div>
   );
 }

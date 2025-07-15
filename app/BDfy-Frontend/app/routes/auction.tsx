@@ -329,7 +329,7 @@ export default function AuctionPage() {
     // category: lot.category
   }));
 
-  const handleCardClick = (item: BasicCardItem) => { // item ya no deberia ser un BasicCardItem, sino un CompleteLot, para poder recibir toda la info
+  const handleCardClick = (item: CompleteLot) => { // item ya no deberia ser un BasicCardItem, sino un CompleteLot, para poder recibir toda la info
     const lote = auction?.lots.find((l) => l.id === item.id);
     if (lote) setselectLot(lote);
   };
@@ -492,6 +492,7 @@ export default function AuctionPage() {
       <Galerys
         lots={lots}
         component={LotCard}
+        onCardClick={handleCardClick}
         className="flex w-4/5 mx-auto flex-col items-center justify-center p-1"
         internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
       />
