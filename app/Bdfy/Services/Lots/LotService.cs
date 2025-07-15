@@ -155,6 +155,7 @@ namespace BDfy.Services
             var auctionLots = await db.AuctionLots
                 .Include(al => al.Auction)
                 .Include(al => al.Lot)
+                    .ThenInclude(l => l.Winner)
                 .ToListAsync();
 
             var lotsDto = auctionLots.Select(al => new LotGetDto
