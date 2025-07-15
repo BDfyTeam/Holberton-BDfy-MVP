@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import type { Auction } from "~/services/types";
 import categorys from "~/services/categorys";
 import { MapPin, Pencil } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddLot from "./addLot";
 import UpdateAuctionButton from "./PUTAuction";
 
@@ -12,7 +12,11 @@ type Props = {
   className?: string;
 };
 
-export default function AuctionCard({ auction, className, edit = false }: Props) {
+export default function AuctionCard({
+  auction,
+  className,
+  edit = false,
+}: Props) {
   const [showAddLot, setShowAddLot] = useState(false);
   const [showEditAuction, setShowEditAuction] = useState(false);
 
@@ -25,18 +29,9 @@ export default function AuctionCard({ auction, className, edit = false }: Props)
         {edit && (
           <button
             onClick={() => setShowEditAuction(true)}
-            className="absolute top-2 left-2 z-20 bg-[#ffffff22] backdrop-blur-md p-2 rounded-full hover:bg-[#ffffff33]"
+            className="absolute top-2 left-2 z-20 bg-[#0D4F61]/30 backdrop-blur-md p-2 rounded-full hover:bg-[#0D4F61]/50"
           >
-            <Pencil className="text-white w-5 h-5" />
-          </button>
-        )}
-
-        {edit && (
-          <button
-            onClick={() => setShowAddLot(true)}
-            className="absolute bottom-2 right-2 z-20 bg-green-500 hover:bg-green-700 text-white font-bold px-4 py-2 rounded"
-          >
-            Agregar Lote
+            <Pencil className="text-[#0D4F61] w-5 h-5" />
           </button>
         )}
 
@@ -62,7 +57,11 @@ export default function AuctionCard({ auction, className, edit = false }: Props)
         <Link to={`/auction/specific/${auction.id}`}>
           <div className="w-full h-2/5 z-40">
             <img
-              src={typeof auction.imageUrl === "string" ? auction.imageUrl : undefined}
+              src={
+                typeof auction.imageUrl === "string"
+                  ? auction.imageUrl
+                  : undefined
+              }
               alt="Logo Subasta"
               className="w-full h-full object-cover"
             />
@@ -97,6 +96,22 @@ export default function AuctionCard({ auction, className, edit = false }: Props)
                 esq. {auction.direction.corner} - {auction.direction.department}
               </span>
             </div>
+
+            {/* Boton de agregar lotes */}
+            {edit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // evitar que el click dispare el Link
+                  e.preventDefault(); // prevenir navegación
+                  setShowAddLot(true);
+                }}
+                className="mt-auto self-center bg-transparent text-white font-semibold py-2 px-6 border-2 
+                  rounded-full hover:bg-white hover:text-[#0D4F61] hover:border-white 
+                  transition-all duration-300"
+              >
+                Agregar Lote
+              </button>
+            )}
           </div>
         </Link>
       </div>
@@ -106,7 +121,10 @@ export default function AuctionCard({ auction, className, edit = false }: Props)
       )}
 
       {showEditAuction && (
-        <UpdateAuctionButton auction={auction} onClose={() => setShowEditAuction(false)} />
+        <UpdateAuctionButton
+          auction={auction}
+          onClose={() => setShowEditAuction(false)}
+        />
       )}
     </div>
   );
