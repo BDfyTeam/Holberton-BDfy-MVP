@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAllStorageLots, updateLot } from "~/services/fetchService";
-import type { Auction, CompleteLot, LotCard } from "~/services/types";
+import type { Auction, CompleteLot, FormLot } from "~/services/types";
 
 type AddLotProps = {
   auction: Auction;
@@ -23,8 +23,10 @@ export default function AddLot({ auction, onClose }: AddLotProps) {
   const handleUpdate = async () => {
     try {
       const updatePromises = selectedLots.map((lot: CompleteLot) => {
-        const payload: LotCard = {
+        const payload: FormLot = {
           id: lot.id,
+          title: lot.title,
+          image: lot.imageUrl,
           lotNumber: lot.lotNumber,
           description: lot.description,
           startingPrice: lot.startingPrice,

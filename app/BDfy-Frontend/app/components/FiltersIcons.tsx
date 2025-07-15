@@ -3,6 +3,7 @@ import { useState } from "react";
 import categorys from "~/services/categorys";
 import { getAuctionsByCategory } from "~/services/fetchService";
 import type { Auction } from "~/services/types";
+import SearchBar from "./FilterFields/searchBar";
 
 type Props = {
   className?: string;
@@ -64,16 +65,13 @@ export default function FiltersIcons({
         ))}
       </div>
       {/* Icono de búsqueda */}
-      <div
+      <div>
+        <SearchBar
         className="w-5/8 h-16 mt-4 ml-67 flex text-center items-center justify-between p-1 border-3 
         border-[#0D4F61] rounded-full bg-transparent transition-transform duration-300 hover:scale-102"
-      >
-        <input
-          type="text"
-          className="w-full py-1.5 px-4 bg-transparent text-[#0D4F61] placeholder-[#0D4F61] border-none outline-none p-2"
-          placeholder="Buscar subastas..."
-        />
-        <Search size={42} className="text-[#0D4F61]" />
+        classNameInput="w-full py-1.5 px-9 bg-transparent text-[#0D4F61] placeholder-[#0D4F61] border-none outline-none p-2"
+        classNameIcon="absolute top-1/2 left-4 transform -translate-y-1/2 text-[#0D4F61] text-xl">
+        </SearchBar>
       </div>
     </>
   );

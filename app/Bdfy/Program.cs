@@ -62,8 +62,7 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "https://bdfy-frontend-946201117375.southamerica-east1.run.app",
-                "https://bdfy.tech", "http://bdfy.tech", "https://bdfy-frontend-us-946201117375.us-central1.run.app") 
+                "http://127.0.0.1:5016", "http://localhost:5016", "https://bdfy.tech") 
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
@@ -163,9 +162,15 @@ builder.Services.AddHostedService<BidConsumerService>(); // Host para el servici
 builder.Services.AddScoped<GenerateJwtToken>(); // Servicio para generar JWT Token
 builder.Services.AddScoped<AppSettings>();
 
-builder.Services.AddScoped<AuctionServices>(); // Servicio para editar una subasta // Servicio para editar una subasta
+builder.Services.AddScoped<AuctionServices>(); // Servicio donde se encuentran todos las apis de Auctions
 builder.Services.AddScoped<IAutoBidService, AutoBidService>(); // Servicio para hacer Auto-bids
-builder.Services.AddScoped<BiddingHistoryService>();
+builder.Services.AddScoped<BiddingHistoryService>(); // Servicio para buscar el historial de ofertas en un lote
+builder.Services.AddScoped<GcsImageService>(); // Servicio de imagenes de Cloud
+builder.Services.AddScoped<UserServices>(); // Servicio donde se encuentran todos las apis de Users
+builder.Services.AddScoped<LotService>(); // Servicio donde se encuentran todos las apis de Lots
+builder.Services.AddScoped<PasswordHasher>(); // Servicio para hashear la password
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
@@ -210,9 +215,7 @@ app.Use(async (context, next) =>
 });
 
 // Middleware
-app.UseCors("SignalRCorsPolicy");
 app.UseRouting();
-
 app.UseRateLimiter();       // Activate the rate limiter
 app.UseAuthentication();    // Jwt
 app.UseAuthorization();     // Rols & claims

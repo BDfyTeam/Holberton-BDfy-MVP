@@ -68,12 +68,12 @@ export type AuctionForm = {
 // MODELOS PARA LOTES
 export type FormLot = {
   id?: string,
-  lotNumber: number;
   title: string;
   image: File;
+  lotNumber: number;
   description: string;
-  startingPrice: number;
   details: string;
+  startingPrice: number;
   auctionId: string;
 };
 
@@ -137,12 +137,7 @@ export interface Auction {
     zipCode: number;
     department: string;
   };
-  auctioneer: {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-  };
+  auctioneer: Auctioneer;
   lots: Lot[];
 }
 

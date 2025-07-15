@@ -54,7 +54,7 @@ export default function Header({ className }: Props) {
       {/* Derecha: Menús según autenticación */}
       <div className="flex space-x-6 ">
         <NavBar to="/abaut" className="flex px-4 py-2 mt-4 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Sobre nosotros</NavBar>
-        <NavBar to="/gallery" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Subastas</NavBar>
+        <NavBar to="/all-auctions" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Subastas</NavBar>
         <NavBar to="/help" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Ayuda</NavBar>
         {/* <NavBar to="/contact" className="flex mt-4 px-4 py-2 hover:drop-shadow-[0_0_6px_#ffffff] hover:text-[#ffffff] transition duration-300 font-semibold">Contacto</NavBar> */}
 

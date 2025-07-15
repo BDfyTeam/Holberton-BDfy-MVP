@@ -1,10 +1,11 @@
+import Title from "~/components/FormFields/AucLotCreationFields/Title";
 import { getToken, getUserIdFromToken } from "./handleToken";
 import type {
   RegisterUser,
   RegisterAuctioneer,
   FormLot,
   CompleteLot,
-  AuctionForm,
+  AuctionForm
 } from "./types";
 
 // LOGUEAR UN USUARIO
@@ -95,16 +96,13 @@ export async function getUserById(userId: string) {
   try {
     const token = getToken();
 
-    const response = await fetch(
-      `https://api.bdfy.tech/api/1.0/users/${userId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`https://api.bdfy.tech/api/1.0/users/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || "Error al obtener el usuario.");
@@ -385,30 +383,41 @@ export async function updateLot(payload: FormLot) {
     if (!token) {
       throw new Error("No se encontró el token de autenticación.");
     }
+    
     const lotId = payload.id;
+    const formData = new FormData();
+    
+    // El request body es Form asi q cargamos el payload a un form
+    if (payload.title) formData.append('title', payload.title);
+    if (payload.lotNumber) formData.append('lotNumber', payload.lotNumber.toString());
+    if (payload.description) formData.append('description', payload.description);
+    if (payload.details) formData.append('details', payload.details);
+    if (payload.startingPrice) formData.append('startingPrice', payload.startingPrice.toString());
+    if (payload.auctionId) formData.append('auctionId', payload.auctionId);
+    
+    if (payload.image) { // Desde editLot se manda una URL no un File (cambiar)
+      formData.append('image', payload.image);
+    }
+    
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/lots/${lotId}/edit`,
       {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
+          // Content-Type - el browser lo establece automaticamente
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          lotNumber: payload.lotNumber,
-          description: payload.description,
-          details: payload.details,
-          startingPrice: payload.startingPrice,
-          auctionId: payload.auctionId,
-        }),
+        body: formData,
       }
     );
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.log("Error body:", errorData);
       throw new Error(errorData.message || "Error al actualizar lote");
     }
-    return "Lote actualizado con exito";
+    
+    return "Lote actualizado con éxito";
   } catch (err) {
     console.error("Error al actualizar el lote:", err);
     throw err;

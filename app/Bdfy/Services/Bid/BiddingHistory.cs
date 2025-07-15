@@ -26,7 +26,7 @@ namespace BDfy.Services
 
 				var BidsDto = bids.Select(b => new BiddingHistoryDto
 				{
-					Winner = new WinnerDto
+					User = new WinnerDto
 					{
 						FirstName = b.Buyer.User.FirstName,
 						LastName = b.Buyer.User.LastName
@@ -38,7 +38,7 @@ namespace BDfy.Services
 
 				var AutoBidsDto = autoBids.Select(ab => new BiddingHistoryDto
 				{
-					Winner = new WinnerDto
+					User = new WinnerDto
 					{
 						FirstName = ab.Buyer.User.FirstName,
 						LastName = ab.Buyer.User.LastName

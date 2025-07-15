@@ -3,11 +3,11 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-DB_HOST = "localhost"
+DB_HOST = "35.199.73.96"
 DB_PORT = "5432"
 DB_NAME = "BDfyDatabase"
-DB_USER = "franco"
-DB_PASSWORD = "1234"
+DB_USER = "lucas"
+DB_PASSWORD = "BdfyAdmin123!"
 
 def create_tables():
     try:
@@ -32,6 +32,7 @@ def create_tables():
                 reputation INT NOT NULL CHECK (reputation BETWEEN 0 AND 100),
                 phone TEXT NOT NULL,
                 role INT NOT NULL, -- UserRole: Buyer=0, Auctioneer=1
+                image_url TEXT,
                 is_active BOOLEAN NOT NULL DEFAULT TRUE,
                 
                 -- Propiedad embebida Direction
@@ -65,6 +66,7 @@ def create_tables():
                 id UUID PRIMARY KEY,
                 user_id UUID UNIQUE NOT NULL,
                 plate INT NOT NULL,
+                auction_house TEXT NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL,
                 updated_at TIMESTAMPTZ NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -76,10 +78,11 @@ def create_tables():
             CREATE TABLE IF NOT EXISTS auctions (
                 id UUID PRIMARY KEY,
                 title TEXT NOT NULL,
+                image_url TEXT NOT NULL,
                 description TEXT NOT NULL,
                 start_at TIMESTAMPTZ NOT NULL,
                 end_at TIMESTAMPTZ NOT NULL,
-                category INTEGER[],
+                category INTEGER[] NOT NULL DEFAULT ARRAY [99],
                 status INT NOT NULL, -- AuctionStatus: Closed=0, Active=1, Draft=2
 
                 -- Propiedad embebida Direction
@@ -100,6 +103,8 @@ def create_tables():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS lots (
                 id UUID PRIMARY KEY,
+                title TEXT NOT NULL,
+                image_url TEXT NOT NULL,
                 lot_number INT NOT NULL CHECK (lot_number > 0),
                 description TEXT NOT NULL,
                 details TEXT NOT NULL,

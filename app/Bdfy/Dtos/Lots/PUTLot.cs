@@ -5,21 +5,22 @@ namespace BDfy.Dtos
 {
     public class EditLotDto// Edit Lot DTO
     {
-        [Required]
+        [StringLength(100, ErrorMessage = "The title cannot have more than 100 characters")]
+        public string? Title { get; set; } = null!;
+
+        public IFormFile? Image { get; set; } = null!;
+        
         [Range(1, int.MaxValue, ErrorMessage = "Lot number must be greater than 0")]
-        public int LotNumber { get; set; }
+        public int? LotNumber { get; set; }
 
-        [Required]
         [StringLength(200, ErrorMessage = "The Description cannot have more than 50 characters")]
-        public string Description { get; set; } = null!;
+        public string? Description { get; set; } = null!;
 
-        [Required]
         [StringLength(80, ErrorMessage = "The Details cannot have more than 80 characters")]
-        public string Details { get; set; } = null!;
+        public string? Details { get; set; } = null!;
 
-        [Required]
         [Range(0, double.MaxValue, ErrorMessage = "Starting price cannot be negative")]
-        public decimal StartingPrice { get; set; }
+        public decimal? StartingPrice { get; set; }
 
         [Required]
         public Guid AuctionId { get; set; }

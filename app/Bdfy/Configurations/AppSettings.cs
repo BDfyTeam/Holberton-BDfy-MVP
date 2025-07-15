@@ -1,6 +1,6 @@
 namespace BDfy.Configurations
 {
-    public class AppSettings
+    public class AppSettings // Cambiar a env
     {
         public string SecretKey { get; set; } = string.Empty; // Propiedad para almacenar la clave secreta
         public string APIKeyDidit { get; set; } = "gFBSHlytqe7toZ08yP89oH9wfv3x1J7kmVO-D03R1N8";
