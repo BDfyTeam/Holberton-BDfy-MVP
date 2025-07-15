@@ -4,7 +4,6 @@ import AddLot from "~/components/addLot";
 import { getAuctionsByAuctioneer } from "~/services/fetchService";
 import type { Auction } from "~/services/types";
 import UpdateAuctionButton from "~/components/PUTAuction";
-import CarouselAuctionCard from "~/components/GenericCarousel";
 import Galerys from "~/components/Galerys";
 import AuctionCard from "~/components/AuctionCard";
 
@@ -32,6 +31,7 @@ export default function MyAuctions() {
         setActiveAuct(activeAuctions);
         setClosedAuct(closedAuctions);
         setDraftedAuct(draftedAuctions);
+        
       } catch (error) {
         console.error("Error al cargar las subastas:", error);
         setError("Error al cargar las subastas");
