@@ -124,7 +124,7 @@ export interface Lot {
 export interface Auction {
   id?: string;
   title: string;
-  image: string | File;
+  imageUrl: string | File;
   description: string;
   category: number[];
   startAt: string;

@@ -97,7 +97,7 @@ export default function AuctionPage() {
           plate: user.auctioneerDetails.plate
         });
 
-        const lotPromises = data.lots.map(l => getLotById(l.id));
+        const lotPromises = data.lots.map((l: any) => getLotById(l.id));
         const lotsData = await Promise.all(lotPromises);
         setLots(lotsData);
 
@@ -361,7 +361,7 @@ export default function AuctionPage() {
               {/* Columna izquierda: Imagen y nombre de la casa de subastas */}
               <div className="w-2/4 mr-25 ml-40 flex flex-col items-center">
                 <img
-                  src={typeof auction.image === "string" ? auction.image : undefined}
+                  src={typeof auction.imageUrl === "string" ? auction.imageUrl : undefined}
                   alt={auction.title}
                   className="max-w-[90%] h-auto rounded-2xl mb-4"
                 />

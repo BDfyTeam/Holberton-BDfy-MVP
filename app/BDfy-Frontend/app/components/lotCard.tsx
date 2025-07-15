@@ -14,7 +14,7 @@ export default function LotCard({ lot, className }: Props) {
         >
           {/* — Header: número y detalles opcionales */}
           <div>
-            <h3 className="text-xl font-bold mb-2">Lote #{lot.lotNumber}</h3>
+            <h3 className="text-xl font-bold mb-2">{lot.title}</h3>
             {lot.details && (
               <p className="text-xs italic opacity-90 mb-4">
                 {lot.details}
@@ -31,7 +31,7 @@ export default function LotCard({ lot, className }: Props) {
           <div className="space-y-1 mb-4 text-sm">
             <p>Inicio: ${lot.startingPrice}</p>
             <p>Actual: ${lot.currentPrice}</p>
-            <p>Tope: ${lot.endingPrice}</p>
+            <p>Final: ${lot.endingPrice}</p>
           </div>
 
           {/* — Badges de categoría */}
