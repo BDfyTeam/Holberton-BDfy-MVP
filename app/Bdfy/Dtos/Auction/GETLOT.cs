@@ -39,6 +39,8 @@ namespace BDfy.Dtos
 
         [Required]
         public bool Sold { get; set; }
+        
+        public Guid? WinnerId { get; set; }
 
         [Required]
         public LotByIdAuctionDto Auction { get; set; } = null!; // Auction, auctioneer
