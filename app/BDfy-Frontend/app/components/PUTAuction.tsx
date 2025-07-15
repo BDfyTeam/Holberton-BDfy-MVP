@@ -47,7 +47,7 @@ export default function UpdateAuctionButton({
   useEffect(() => {
     if (auction) {
       setTitle(auction.title);
-      const backendImage = auction.image;
+      const backendImage = auction.imageUrl;
       if (typeof backendImage === "object") {
         setImage(backendImage);
       }

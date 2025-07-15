@@ -95,7 +95,7 @@ export default function HotCarusel({ auction, className, options }: Props) {
                   {/* 50% Imagen de la subasta */}
                   <div className="w-3/7">
                     <img
-                      src={auctionItem.imageUrl}
+                      src={typeof auctionItem.imageUrl === "string" ? auctionItem.imageUrl : undefined}
                       alt="Logo Subasta"
                       className="w-full h-full object-cover"
                     />
