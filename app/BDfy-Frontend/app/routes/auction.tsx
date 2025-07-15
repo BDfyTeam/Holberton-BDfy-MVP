@@ -97,7 +97,7 @@ export default function AuctionPage() {
           plate: user.auctioneerDetails.plate
         });
 
-        const lotPromises = data.lots.map((l: any) => getLotById(l.id));
+        const lotPromises = data.lots.map((l: CompleteLot) => getLotById(l.id));
         const lotsData = await Promise.all(lotPromises);
         setLots(lotsData);
 

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, MapPin } from "lucide-react";
 import type { CompleteLot } from "~/services/types";
 import categorys from "~/services/categorys";
+import { useEffect } from "react";
 
 type Props = { lot: CompleteLot; className?: string };
 
@@ -65,10 +66,14 @@ export default function LotCard({ lot, className }: Props) {
           {/* — Estado */}
           <div>
             {lot.sold ? (
+              <> 
               <span className="flex items-center gap-1 text-yellow-300 text-sm">
                 <CheckCircle2 className="w-4 h-4 text-yellow-300" />
-                Vendido{lot.winner ? ` a ${lot.winner}` : ""}
               </span>
+              <p>
+                Vendido a: {lot.winnerId}
+              </p>
+              </>
             ) : (
               <span className="text-yellow-300 text-sm">Disponible</span>
             )}
