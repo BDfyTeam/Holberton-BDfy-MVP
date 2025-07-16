@@ -6,8 +6,10 @@ import {
   type Auction,
   type BasicCardItem,
   type Lot,
+  type CompleteLot,
 } from "~/services/types";
 import LotToBid from "~/components/LotToBid";
+import LotCard from "~/components/lotCard";
 import * as signalR from "@microsoft/signalr";
 import { getToken } from "~/services/handleToken";
 import GaleryOfCards from "~/components/galeryOfLotCards";
@@ -59,7 +61,7 @@ export default function AuctionPage() {
     Record<string, BiddingHistoryDto[]>
   >({});
   const [auctioneer, setAuctioneer] = useState<Auctioneer | null>(null);
-  const [lots, setLots] = useState<Lot[]>([]);
+  const [lots, setLots] = useState<CompleteLot[]>([]);
 
   useEffect(() => {
     if (selectLot) {
@@ -94,7 +96,11 @@ export default function AuctionPage() {
           auctionHouse: user.auctioneerDetails.auctionHouse,
           plate: user.auctioneerDetails.plate
         });
-        setLots(data.lots);
+
+        const lotPromises = data.lots.map((l: CompleteLot) => getLotById(l.id));
+        const lotsData = await Promise.all(lotPromises);
+        setLots(lotsData);
+
 
         if (data.lots && data.lots.length > 0) {
           setActiveListeningLotId(data.lots[0].id);
@@ -323,25 +329,25 @@ export default function AuctionPage() {
     // category: lot.category
   }));
 
-  const handleCardClick = (item: BasicCardItem) => { // item ya no deberia ser un BasicCardItem, sino un CompleteLot, para poder recibir toda la info
+  const handleCardClick = (item: CompleteLot) => { // item ya no deberia ser un BasicCardItem, sino un CompleteLot, para poder recibir toda la info
     const lote = auction?.lots.find((l) => l.id === item.id);
     if (lote) setselectLot(lote);
   };
 
   const history = selectLot ? biddingHistories[selectLot.id] || [] : [];
-  
+
 
   return (
     // INFORMACION DE LA SUBASTA
     <div className="items-center text-white">
       <div className="flex justify-center items-start">
         {/* Zona principal: 3/4 de la pantalla */}
-        <div 
+        <div
           className="w-3/4 p-4 flex mt-[100px] mb-10 bg-[#0D4F61] rounded-lg shadow-gray-700 shadow-2xl"
           style={{
             background:
               "linear-gradient(135deg,rgba(13, 79, 97, 1) 27%, rgba(65, 196, 174, 1) 100%)",
-          }}  
+          }}
         >
           {/* Información de la subasta (2/4) */}
           <div className="w-3/4 pr-8">
@@ -441,7 +447,7 @@ export default function AuctionPage() {
                   <VerifiedIcon className="w-5 h-5 mr-2" />
                   {auctioneer?.reputation}%
                 </p>
-                
+
                 {/* placa */}
                 <p className="flex items-center text-[#0D4F61] justify-center mb-4">
                   <IdCard className="w-5 h-5 mr-2 inline-block" />
@@ -482,22 +488,14 @@ export default function AuctionPage() {
           </div>
         </div>
       </div>
-      
-      {/* Lo dejo comentado para que no te explote todo
+
       <Galerys
         lots={lots}
-        component={AK IRIA TU COMPONENTE FA}
+        component={LotCard}
+        onCardClick={handleCardClick}
         className="flex w-4/5 mx-auto flex-col items-center justify-center p-1"
         internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-      /> */}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <GaleryOfCards
-          items={items}
-          onCardClick={handleCardClick} // Tu componente tiene que ser capaz de agarrar esta funcion (Tmb va a servir para los lotes del storage porque funcionan igual)
-          className="bg-[#DDE9F0] text-black p-4 rounded-lg shadow space-y-2 space-x-4 w-full flex flex-col justify-between"
-        />
-      </div>
+      />
 
       {/* SECCION DE MODAL DESPLEGALE */}
       {selectLot && (

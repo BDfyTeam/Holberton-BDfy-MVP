@@ -1,9 +1,10 @@
 import { useState, type ReactElement } from "react";
-import type { Auction, Lot } from "~/services/types";
+import type { Auction, CompleteLot, Lot } from "~/services/types";
 
 type Props = {
   auctions?: Auction[];
-  lots?: Lot[];
+  lots?: CompleteLot[];
+  onCardClick?: (item: CompleteLot) => void;
   component: React.ElementType;
   className?: string;
   internalClassName?: string;
@@ -12,6 +13,7 @@ type Props = {
 export default function Galerys({
   auctions,
   lots,
+  onCardClick,
   component: Component,
   className,
   internalClassName,
@@ -57,7 +59,7 @@ export default function Galerys({
           {lots.slice(0, visibleLots).map((lot) => (
             <div key={lot.id}>
               {/* Pasa el lote como prop */}
-              <Component lot={lot} className="" />
+              <Component lot={lot} onCardClick={onCardClick} className="" />
             </div>
           ))}
           {visibleLots < lots.length && (
