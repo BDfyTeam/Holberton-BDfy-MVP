@@ -164,6 +164,12 @@ export type Auctioneer = {
   plate: number
 }
 
+export type Winner = {
+  firstName: string;
+  lastName: string;
+  id: string;
+}
+
 // TIPO BASICO PARA UNA CARD
 export type BasicCardItem = {
   id: string;

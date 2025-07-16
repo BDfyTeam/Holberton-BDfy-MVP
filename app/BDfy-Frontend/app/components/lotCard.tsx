@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
-import { CheckCircle2, MapPin } from "lucide-react";
+import { CheckCircle2} from "lucide-react";
 import type { CompleteLot } from "~/services/types";
 import categorys from "~/services/categorys";
-import { useEffect } from "react";
+import { use, useEffect, useState } from "react";
+import { getUserById } from "~/services/fetchService";
+import type { Winner } from "~/services/types";
 
 type Props = { 
   lot: CompleteLot;
@@ -10,7 +11,28 @@ type Props = {
   className?: string 
 };
 
+
 export default function LotCard({ lot, className, onCardClick }: Props) {
+const [winner, setWinner] = useState<Winner | null>(null);
+
+useEffect(() => {
+  const fetchWinner = async () => {
+    if (lot.winnerId) {
+      try {
+        const user = await getUserById(lot.winnerId as string);
+        setWinner({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          id: user.id
+        });
+      } catch (error) {
+        console.error("Error fetching winner:", error);
+      }
+    }
+  };
+  fetchWinner();
+}, [lot.winnerId]);
+
   return (
     <div className={className ?? "w-fit"}>
       <button onClick={onCardClick ? () => onCardClick(lot) : undefined}>
@@ -59,8 +81,9 @@ export default function LotCard({ lot, className, onCardClick }: Props) {
               <>
                 <span className="flex items-center gap-1 text-yellow-300 text-sm">
                   <CheckCircle2 className="w-4 h-4 text-yellow-300" />
+                <p className="text-sm">Vendido a: {winner?.firstName} {winner?.lastName}</p>
                 </span>
-                <p className="text-sm">Vendido a: {lot.winnerId}</p>
+
               </>
             ) : (
               <span className="text-yellow-300 text-sm">Disponible</span>
