@@ -8,12 +8,12 @@ namespace BDfy.Dtos
     {
         [Required(ErrorMessage = "The first name is mandatory")]
         [StringLength(50, ErrorMessage = "The First Name cannot have more than 50 characters")]
-        [RegularExpression("^[a-zA-Z]+$", ErrorMessage = "The First Name can only contain letters")]
+        [RegularExpression(@"^[\p{L}]+$", ErrorMessage = "The First Name can only contain letters")]
         public string FirstName { get; set; } = null!;
 
         [Required(ErrorMessage = "The last name is mandatory")]
         [StringLength(50, ErrorMessage = "The Last Name cannot have more than 50 characters")]
-        [RegularExpression("^[a-zA-Z]+$", ErrorMessage = "The Last Name can only contain letters")]
+        [RegularExpression(@"^[\p{L}]+$", ErrorMessage = "The Last Name can only contain letters")]
         public string LastName { get; set; } = null!;
 
         private string _email = null!;
