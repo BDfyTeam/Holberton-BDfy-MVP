@@ -6,12 +6,14 @@ export default [
     index("routes/home.tsx"),            // / (home público)
     route("login", "routes/login.tsx"),
     route("register", "routes/register.tsx"),
+    route("auction/specific/:id", "routes/auction.tsx"),
+    route("all-auctions", "routes/auctions.tsx"),
+    route("aboutUs", "routes/aboutUs.tsx"),
   ]),
 
   // Rutas protegidas
   route("/", "routes/protectedlayout.tsx", [
     route("profile", "routes/profile.tsx"),
-    route("auction/specific/:id", "routes/auction.tsx"),
     route("my-auctions", "routes/myAuctions.tsx"),
     route("my-lots", "routes/myLots.tsx")
   ]),

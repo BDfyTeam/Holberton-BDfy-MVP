@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     role INT NOT NULL, -- UserRole: Buyer=0, Auctioneer=1
     image_url TEXT,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-
+    
     -- Propiedad embebida Direction
     direction_street TEXT NOT NULL,
     direction_street_number INT NOT NULL,
@@ -83,9 +83,9 @@ CREATE TABLE IF NOT EXISTS lots (
     sold BOOLEAN NOT NULL,
 
     winner_id UUID,
+
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
-
     FOREIGN KEY (winner_id) REFERENCES userdetails(id) ON DELETE SET NULL
 );
 
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS bids (
     id UUID PRIMARY KEY,
     amount DECIMAL(19,4) NOT NULL CHECK (amount >= 0),
     time TIMESTAMPTZ NOT NULL,
-    is_autobid BOOLEAN NOT NULL,
+    is_autobid BOOL NOT NULL,
     parent_auto_bid UUID,
 
     lot_id UUID NOT NULL,

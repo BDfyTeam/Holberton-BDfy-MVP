@@ -9,6 +9,7 @@ import {
 import { AuthProvider } from "~/context/authContext";
 import type { Route } from "./+types/root";
 import "./app.css";
+import { AlertProvider } from "./context/alertContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -25,13 +26,22 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <html lang="en" style={{ fontFamily: "Poppins, sans-serif" }}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet"></link>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap"
+          rel="stylesheet"
+        ></link>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap"
+          rel="stylesheet"
+        />
         <Meta />
         <Links />
       </head>
@@ -40,14 +50,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ScrollRestoration />
         <Scripts />
       </body>
-    </html>
+    </html> 
   );
 }
 
 export default function App() {
   return (
     <AuthProvider>
-      <Outlet />
+      <AlertProvider>
+        <Outlet />
+      </AlertProvider>
     </AuthProvider>
   );
 }

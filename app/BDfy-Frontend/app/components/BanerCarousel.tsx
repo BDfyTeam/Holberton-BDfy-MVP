@@ -3,7 +3,6 @@ import { Link } from "react-router";
 import type { Auction } from "~/services/types";
 import { useEffect, useRef } from "react";
 import pengu from "app/public/assets/ConfusedPengu.png";
-import joyas from "app/public/assets/lots/joyas.jpg";
 import categorys from "~/services/categorys";
 import {
   Calendar,
@@ -71,7 +70,6 @@ export default function BanerCarousel({
           const url = `/auction/specific/${auctionItem.id}`;
           return (
             <SplideSlide key={auctionItem.id} className="w-full">
-              {/* Carrousel de las 3 imágenes estáticas por subasta */}
               <div className="w-full h-[500px] flex">
                 {/* Contenedor con bordes redondeados */}
                 <div
@@ -135,7 +133,7 @@ export default function BanerCarousel({
                     <div key={index} className="w-1/3 h-full">
                       {/* Imagen estática de cada lote */}
                       <img
-                        src={joyas} // Imagen estática utilizada para todos los lotes
+                        src={lot.imageUrl} // Imagen estática utilizada para todos los lotes
                         alt={`Lote ${index + 1}`}
                         className="w-full h-full object-cover" // Asegura que la imagen cubra todo el espacio sin deformarse
                       />
