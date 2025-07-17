@@ -35,7 +35,7 @@ export default function LotToBid({ lot, onBidInitiated, className }: LotCardProp
     const currentPrice = lot.currentPrice ?? lot.startingPrice;
     if (bid <= currentPrice) {
       setMessage(
-        `❌ La puja debe ser mayor que el precio actual (${currentPrice}).`
+        `❌ La puja debe ser mayor que $(${currentPrice}).`
       );
       return;
     }

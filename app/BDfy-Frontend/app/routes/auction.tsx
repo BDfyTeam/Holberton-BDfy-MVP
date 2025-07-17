@@ -9,7 +9,7 @@ import {
   type CompleteLot,
 } from "~/services/types";
 import LotToBid from "~/components/LotToBid";
-import LotCard from "~/components/lotCard";
+import LotCard from "~/components/LotCard";
 import * as signalR from "@microsoft/signalr";
 import { getToken } from "~/services/handleToken";
 import GaleryOfCards from "~/components/galeryOfLotCards";
@@ -493,17 +493,20 @@ export default function AuctionPage() {
         lots={lots}
         component={LotCard}
         onCardClick={handleCardClick}
-        className="flex w-4/5 mx-auto flex-col items-center justify-center p-1"
-        internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+        className="flex w-4/5 mx-auto flex-col items-center"
+        internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
       />
 
       {/* SECCION DE MODAL DESPLEGALE */}
       {selectLot && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded p-4 max-w-lg w-full relative">
+        <div
+          className="fixed inset-0  bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => setselectLot(null)}
+        >
+          <div className="flex flex-col-2 max-h-[90vh] w-auto bg-[#D3E3EB] rounded-2xl p-6 relative overflow-hidden">
             <button
               onClick={() => setselectLot(null)}
-              className="absolute top-2 right-2 text-black text-xl font-bold"
+              className="absolute top-3 right-4 text-black text-xl font-bold"
             >
               ✕
             </button>
@@ -535,7 +538,6 @@ export default function AuctionPage() {
               </div>
             )}
           </div>
-
         </div>
       )}
     </div>
