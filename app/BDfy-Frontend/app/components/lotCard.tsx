@@ -17,7 +17,7 @@ const [winner, setWinner] = useState<Winner | null>(null);
 
 useEffect(() => {
   const fetchWinner = async () => {
-    if (lot.winnerId) {
+    if (lot.winnerId !== "00000000-0000-0000-0000-000000000000") {
       try {
         const user = await getUserById(lot.winnerId as string);
         setWinner({
