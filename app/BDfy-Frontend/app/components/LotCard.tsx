@@ -82,8 +82,8 @@ export default function LotCard({ lot, className, onCardClick }: Props) {
               <div className=" flex items-center text-center justify-center">
                 {lot.sold ? (
                   <>
-                    <span className="flex items-center gap-1 text-gray-400 text-sm border border-gray-400 px-3 py-2 rounded-full bg-gray-400/10">
-                      <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                    <span className="flex items-center gap-1 text-gray-500 text-sm border border-gray-500 px-3 py-2 rounded-full bg-gray-500/10">
+                      <CheckCircle2 className="w-4 h-4 text-gray-500" />
                       <p className="text-sm">Vendido a: {winner?.firstName} {winner?.lastName}</p>
                     </span>
 
