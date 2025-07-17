@@ -3,32 +3,28 @@ import { Github, Linkedin, Globe } from "lucide-react"
 
 const translations = {
   es: {
-    title: "BDfy Team",
+    title: "BDfy",
     subtitle: "Simple y Seguro",
     cta: "Prueba nuestra web",
-    benefit1: "UX/UI satisfactorio para el usuario",
-    benefit2: "Arma una subasta y publícala en segundos",
-    benefit3: "Controla tu inventario de lotes",
-    feature1: "Confía en usuarios validados por KYC",
-    feature2: "Oferta y gana en simples pasos",
-    feature3: "Todas tus subastas de interés en un mismo lugar",
-    tagline: "¡Qué lindo se ve!",
-    finalCta: "¿Listo para subastar?",
+    feature1: "UX irresistiblemente simple",
+    feature2: "Sube tu subasta en un pestañeo",
+    feature3: "Inventario bajo control total",
+    feature4: "Puja, gana y celebra",
+    tagline: "El Equipo",
+    finalCta: "Todas tus subastas de interés en un mismo lugar",
     footerText: "© 2025 BDfy. Todas las ofertas son bienvenidas.",
     privacy: "Privacidad",
   },
   en: {
-    title: "BDfy Team",
+    title: "BDfy",
     subtitle: "Simple & Secure",
     cta: "Try our website",
-    benefit1: "Delightful UX/UI",
-    benefit2: "Create an auction in seconds",
-    benefit3: "Manage your lot inventory",
-    feature1: "Bid with KYC-validated users",
-    feature2: "Bid & win in simple steps",
-    feature3: "All your favourite auctions in one place",
-    tagline: "Look how gorgeous it is!",
-    finalCta: "Ready to start bidding?",
+    feature1: "UX aprueba de bobos",
+    feature2: "Publica tu subasta en menos de lo que gastas el aguinaldo",
+    feature3: "Manejo de inventario sin empleados de por medio",
+    feature4: "Lo viste, te encantó y lo ganas",
+    tagline: "The Team",
+    finalCta: "All your favourite auctions in one place",
     footerText: "© 2025 BDfy. All bids welcome.",
     privacy: "Privacy",
   },
@@ -112,14 +108,47 @@ export default function Landing() {
       {/* Key Benefits */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
         <div className="grid md:grid-cols-3 gap-8">
-          {[t.benefit1, t.benefit2, t.benefit3].map((text, i) => (
+          {[t.feature1].map((text, i) => (
             <div key={i} className="text-center p-6">
-              <div className="w-16 h-16 bg-[#D3E3EB] rounded-full mx-auto mb-6 flex items-center justify-center">
-                <div className="w-8 h-8 bg-[#0D4F61] rounded-full"></div>
-              </div>
               <h3 className="text-xl font-semibold mb-4 text-[#0D4F61]">
                 {text}
               </h3>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
+        <div className="grid md:grid-cols-3 gap-8">
+          {[t.feature2].map((text, i) => (
+            <div key={i} className="text-center p-6">
+              <h3 className="text-xl font-semibold mb-4 text-[#0D4F61]">
+                {text}
+              </h3>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
+        <div className="grid md:grid-cols-3 gap-8">
+          {[t.feature3].map((text, i) => (
+            <div key={i} className="text-center p-6">
+              <h3 className="text-xl font-semibold mb-4 text-[#0D4F61]">
+                {text}
+              </h3>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
+        <div className="grid md:grid-cols-3 gap-8">
+          {[t.feature4].map((text, i) => (
+            <div key={i} className="text-center p-6">
+              <h2 className="text-xl font-semibold mb-4 text-[#0D4F61]">
+                {text}
+              </h2>
             </div>
           ))}
         </div>
@@ -129,22 +158,6 @@ export default function Landing() {
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         <hr className="border-gray-200" />
       </div>
-
-      {/* Features for Bidders */}
-      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
-        <div className="grid md:grid-cols-3 gap-8">
-          {[t.feature1, t.feature2, t.feature3].map((text, i) => (
-            <div key={i} className="text-center p-6">
-              <div className="w-16 h-16 bg-[#277791] rounded-full mx-auto mb-6 flex items-center justify-center">
-                <div className="w-8 h-8 bg-transparent rounded-full"></div>
-              </div>
-              <h3 className="text-xl font-semibold mb-4 text-[#0D4F61]">
-                {text}
-              </h3>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Eye-candy Tagline */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
