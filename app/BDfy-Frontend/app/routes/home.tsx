@@ -23,6 +23,7 @@ export default function Home() {
   const [banerAuctions, setBanerAuctions] = useState<Auction[]>([]);
   const [hotAuctions, setHotAuctions] = useState<Auction[]>([]);
   const [allAuctions, setAllAuctions] = useState<Auction[]>([]);
+  const [filteredAuctions, setFilteredAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<number | null>(null);
@@ -60,6 +61,7 @@ export default function Home() {
         setBanerAuctions(topThreeAuctions);
         setHotAuctions(hotAuctions);
         setAllAuctions(activeAuctions);
+        setFilteredAuctions(activeAuctions);
       } catch (err) {
         console.error("Error al cargar las subastas:", err);
         setError("Error al cargar las subastas");
@@ -111,7 +113,8 @@ export default function Home() {
       <div className="w-6/8 mx-auto mb-8">
         <FiltersIcons
           className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-1"
-          setAuction={setAllAuctions}
+          auctions={allAuctions}
+          setAuction={setFilteredAuctions}
           setIsCategorySelected={setIsCategorySelected}
         />
       </div>
@@ -119,12 +122,19 @@ export default function Home() {
       <div className="w-3/4 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
 
       {isCategorySelected ? (
-        <Galerys
-          auctions={allAuctions}
-          component={AuctionCard}
-          className="flex w-4/5 mx-auto flex-col items-center justify-center p-1"
-          internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-        />
+        <>
+          <Galerys
+            auctions={filteredAuctions}
+            component={AuctionCard}
+            className="flex w-4/5 mx-auto flex-col items-center justify-center p-1"
+            internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          />
+
+          <HotCarusel
+            auction={hotAuctions}
+            className="w-full p-20 shadow-lg mx-auto my-20"
+          />
+        </>
       ) : (
         <HotCarusel
           auction={hotAuctions}

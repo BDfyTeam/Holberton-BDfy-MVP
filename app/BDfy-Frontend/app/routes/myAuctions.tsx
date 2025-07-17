@@ -4,7 +4,8 @@ import AddLot from "~/components/addLot";
 import { getAuctionsByAuctioneer } from "~/services/fetchService";
 import type { Auction } from "~/services/types";
 import UpdateAuctionButton from "~/components/PUTAuction";
-import CarouselAuctionCard from "~/components/GenericCarousel";
+import Galerys from "~/components/Galerys";
+import AuctionCard from "~/components/AuctionCard";
 
 export default function MyAuctions() {
   const [activeAuct, setActiveAuct] = useState<Auction[]>([]);
@@ -30,6 +31,7 @@ export default function MyAuctions() {
         setActiveAuct(activeAuctions);
         setClosedAuct(closedAuctions);
         setDraftedAuct(draftedAuctions);
+
       } catch (error) {
         console.error("Error al cargar las subastas:", error);
         setError("Error al cargar las subastas");
@@ -40,42 +42,38 @@ export default function MyAuctions() {
 
   return (
     <main>
-      <div className="p-4 text-white">
-        <h2 className="text-2xl font-bold mb-4">Subastas Activas</h2>
-        <BanerCarousel auction={activeAuct} />
-      </div>
-
-      <div className="p-4 text-white">
-        <h2 className="text-2xl font-bold mb-4">Subastas Cerradas</h2>
-        <BanerCarousel auction={closedAuct} />
-      </div>
-
-      <div className="p-4 text-white ">
-        <h2 className="text-2xl font-bold mb-4">Subastas en Borrador</h2>
-        <CarouselAuctionCard
-          auction={draftedAuct}
-          renderAction={(auction: Auction) => (
-            <>
-              <button
-                onClick={() => {
-                  setSelectedAuction(auction)
-                }}
-                className="bg-green-500 hover:bg-green-700 text-white font-bold px-4 py-2 rounded mr-2"
-              >
-                Agregar Lote
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setAuctionToEdit(auction);
-                }}
-                className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold px-4 py-2 rounded"
-              >
-                Editar
-              </button>
-            </>
-          )}
+      <div className="p-4 text-[#0D4F61]">
+        <h2 className="text-2xl font-bold my-4 mt-22 ml-30">Subastas Activas</h2>
+        <div className="w-9/10 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
+        <Galerys
+          auctions={activeAuct}
+          component={AuctionCard}
+          className="flex w-4/5 mx-auto flex-col items-center justify-center p-1"
+          internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         />
+      </div>
+
+      <div className="p-4 text-[#0D4F61]">
+        <h2 className="text-2xl font-bold my-4 ml-30">Subastas Cerradas</h2>
+        <div className="w-9/10 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
+        <Galerys
+          auctions={closedAuct}
+          component={AuctionCard}
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+        />
+      </div>
+
+      <div className="p-4 text-[#0D4F61]">
+        <h2 className="text-2xl font-bold my-4 ml-30">Subastas en Borrador</h2>
+        <div className="w-9/10 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
+        <Galerys
+          auctions={draftedAuct}
+          component={(props) => <AuctionCard {...props} edit={true} />}
+          className="flex w-4/5 mx-auto flex-col items-center justify-center p-1"
+          internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+        />
+
         {selectedAuction && (
           <AddLot
             auction={selectedAuction}

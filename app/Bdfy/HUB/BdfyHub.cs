@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.SignalR;
 using BDfy.Dtos;
 using BDfy.Data;
+using BDfy.Services;
 using System.Collections.Concurrent;
 
 namespace BDfy.Hub
 {
-    public class BdfyHub(BDfyDbContext db) : Hub<IClient>
+    public class BdfyHub(BDfyDbContext db, BiddingHistoryService _bh) : Hub<IClient>
     {
         protected readonly BDfyDbContext _db = db;
 
@@ -49,18 +50,22 @@ namespace BDfy.Hub
 
                 // Actualizar tracking
                 _userGroups[Context.ConnectionId] = groupName;
-                
+
                 await Clients.Caller.ReceiveMessage("success", $"Unido al grupo de subasta: {lotId}");
 
                 var currentBid = new ReceiveBidDto // Envia el estado actual del lote al cliente recien conectado
                 {
                     LotId = lotId,
                     CurrentPrice = lot.CurrentPrice,
-                    BuyerId = Guid.Empty, 
+                    BuyerId = Guid.Empty,
                     IsAutoBid = false
                 };
 
                 await Clients.Caller.ReceiveBid(currentBid);
+
+                var BiddingHistory = await _bh.GetAllBidsByLotId(lotId);
+
+                await Clients.Caller.ReceiveBiddingHistory(BiddingHistory);
             }
             catch (Exception ex)
             {

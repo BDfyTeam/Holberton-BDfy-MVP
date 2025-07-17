@@ -93,10 +93,18 @@ export default function AddLot({ auction, onClose }: AddLotProps) {
                       : "border-gray-300 bg-white"
                   } text-black`}
               >
-                <p>
+                <h3 className="font-bold text-2xl mb-4">{lot.title}</h3>
+                <img
+                  src={lot.imageUrl}
+                  alt={lot.title}
+                  className="w-full h-32 object-cover mb-4 rounded"
+                />
+                <p className="text-sm text-gray-600 mb-2">
                   <strong>Lote #{lot.lotNumber || idx + 1}</strong>
                 </p>
-                <p>Descripción: {lot.description || "Sin descripción"}</p>
+                <p className="text-sm text-gray-800 mb-2">
+                  Descripción: {lot.description || "Sin descripción"}
+                </p>
               </div>
             );
           })}

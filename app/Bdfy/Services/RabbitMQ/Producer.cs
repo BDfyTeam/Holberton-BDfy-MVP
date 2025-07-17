@@ -37,16 +37,16 @@ namespace BDfy.Services
 
             var factory = new ConnectionFactory
             {
-                HostName = hostName, 
-                UserName = userName,
-                Password = password,
-                VirtualHost = virtualHost,
-                Port = 5671,
-                Ssl = new SslOption
-                {
-                    Enabled = true,
-                    ServerName = hostName
-                }
+                HostName = "localhost", 
+                // UserName = userName,
+                // Password = password,
+                // VirtualHost = virtualHost,
+                Port = 5672
+                // Ssl = new SslOption
+                // {
+                //     Enabled = true,
+                //     ServerName = hostName
+                // }
             };
 
             try 

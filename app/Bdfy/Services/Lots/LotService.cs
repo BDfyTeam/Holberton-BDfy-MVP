@@ -110,6 +110,7 @@ namespace BDfy.Services
                 .Include(al => al.Auction)
                     .ThenInclude(a => a.Auctioneer)
                 .Include(al => al.Lot)
+                    .ThenInclude(l => l.Winner)
                 .FirstOrDefaultAsync(al => al.IsOriginalAuction && al.LotId == lotId) ?? throw new NotFoundException("AuctionLot not found. Sorry");
             if (auctionLotById.Auction == null) { throw new NotFoundException("Auction not found. Sorry"); }
 
@@ -127,6 +128,7 @@ namespace BDfy.Services
                 CurrentPrice = auctionLotById.Lot.CurrentPrice ?? auctionLotById.Lot.StartingPrice,
                 EndingPrice = auctionLotById.Lot.EndingPrice ?? 0,
                 Sold = auctionLotById.Lot.Sold,
+                WinnerId = auctionLotById.Lot.Winner?.UserId ?? Guid.Empty,
                 Auction = new LotByIdAuctionDto
                 {
                     Id = auctionLotById.Auction.Id,
@@ -137,7 +139,6 @@ namespace BDfy.Services
                     EndAt = auctionLotById.Auction.EndAt,
                     Category = auctionLotById.Auction.Category,
                     Status = auctionLotById.Auction.Status,
-                    WinnerId = auctionLotById.Lot.Winner?.Id ?? Guid.Empty,
                     AuctioneerId = auctionLotById.Auction.AuctioneerId,
                     Auctioneer = new AuctioneerDto
                     {
@@ -154,6 +155,7 @@ namespace BDfy.Services
             var auctionLots = await db.AuctionLots
                 .Include(al => al.Auction)
                 .Include(al => al.Lot)
+                    .ThenInclude(l => l.Winner)
                 .ToListAsync();
 
             var lotsDto = auctionLots.Select(al => new LotGetDto
@@ -169,7 +171,7 @@ namespace BDfy.Services
                 EndingPrice = al.Lot.EndingPrice ?? 0,
                 Sold = al.Lot.Sold,
                 AuctionId = al.AuctionId,
-                WinnerId = al.Lot.WinnerId ?? Guid.Empty
+                WinnerId = al.Lot.Winner?.UserId ?? Guid.Empty
             });
 
             return lotsDto;

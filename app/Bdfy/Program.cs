@@ -216,6 +216,7 @@ app.Use(async (context, next) =>
 
 // Middleware
 app.UseRouting();
+app.UseCors("SignalRCorsPolicy");
 app.UseRateLimiter();       // Activate the rate limiter
 app.UseAuthentication();    // Jwt
 app.UseAuthorization();     // Rols & claims
