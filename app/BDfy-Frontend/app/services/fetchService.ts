@@ -1,4 +1,3 @@
-import Title from "~/components/FormFields/AucLotCreationFields/Title";
 import { getToken, getUserIdFromToken } from "./handleToken";
 import type {
   RegisterUser,

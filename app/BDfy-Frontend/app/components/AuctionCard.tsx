@@ -23,8 +23,8 @@ export default function AuctionCard({
   return (
     <div className={className}>
       <div
-        className="w-full h-[400px] min-w-[350] max-w-[450] min-h-[400px] max-h-[500px] bg-[#0D4F61] rounded-2xl shadow-3xl 
-        overflow-hidden my-4 hover:transform hover:scale-107 transition-all duration-400 relative"
+        className="w-full h-[400px] min-w-[350] max-w-[450] min-h-[400px] max-h-[500px] bg-[#0D4F61] rounded-2xl 
+        overflow-hidden my-4 hover:transform hover:scale-107 transition-all duration-400 relative shadow-black shadow-2xl"
       >
         {edit && (
           <button

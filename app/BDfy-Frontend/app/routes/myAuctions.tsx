@@ -31,6 +31,7 @@ export default function MyAuctions() {
         setActiveAuct(activeAuctions);
         setClosedAuct(closedAuctions);
         setDraftedAuct(draftedAuctions);
+
       } catch (error) {
         console.error("Error al cargar las subastas:", error);
         setError("Error al cargar las subastas");
@@ -58,8 +59,8 @@ export default function MyAuctions() {
         <Galerys
           auctions={closedAuct}
           component={AuctionCard}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-          internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          className="flex w-4/5 mx-auto flex-col items-center justify-center p-1"
+          internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         />
       </div>
 

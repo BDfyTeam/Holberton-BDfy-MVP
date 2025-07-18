@@ -39,7 +39,7 @@ export default function LotCard({ lot, className, onCardClick }: Props) {
         <div
           className="relative w-[300px] h-[400px] max-h-[500px] max-w-[350px]
           rounded-2xl overflow-hidden transform hover:scale-105 transition-all duration-400 
-          my-8 border border-white shadow-3xl"
+          my-8 border border-white shadow-black shadow-3xl"
         >
           {/* Imagen de fondo */}
           <img

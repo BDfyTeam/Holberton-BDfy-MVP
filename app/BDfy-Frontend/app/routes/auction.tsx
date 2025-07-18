@@ -4,15 +4,12 @@ import { getAuctionById, getLotById, getUserById } from "~/services/fetchService
 import {
   type Auctioneer,
   type Auction,
-  type BasicCardItem,
-  type Lot,
   type CompleteLot,
 } from "~/services/types";
 import LotToBid from "~/components/LotToBid";
 import LotCard from "~/components/LotCard";
 import * as signalR from "@microsoft/signalr";
 import { getToken } from "~/services/handleToken";
-import GaleryOfCards from "~/components/galeryOfLotCards";
 import categorys from "~/services/categorys";
 import {
   CalendarIcon,
@@ -56,7 +53,7 @@ export default function AuctionPage() {
   const [activeListeningLotId, setActiveListeningLotId] = useState<
     string | null
   >(null);
-  const [selectLot, setselectLot] = useState<Lot | null>(null);
+  const [selectLot, setselectLot] = useState<CompleteLot | null>(null);
   const [biddingHistories, setBiddingHistories] = useState<
     Record<string, BiddingHistoryDto[]>
   >({});
@@ -97,7 +94,9 @@ export default function AuctionPage() {
           plate: user.auctioneerDetails.plate
         });
 
-        const lotPromises = data.lots.map((l: CompleteLot) => getLotById(l.id));
+        const lotPromises = data.lots.map((l: CompleteLot) =>
+          getLotById(l.id) as Promise<CompleteLot>
+        );
         const lotsData = await Promise.all(lotPromises);
         setLots(lotsData);
 
@@ -117,20 +116,26 @@ export default function AuctionPage() {
 
   const handleBidUpdate = useCallback((bidUpdate: BidUpdate) => {
     setAuction((prev) => {
-      if (!prev) {
-        return prev;
-      }
-
-      const updatedLots = prev.lots.map((lot) => {
-        if (lot.id === bidUpdate.LotId) {
-          return { ...lot, currentPrice: bidUpdate.CurrentPrice };
-        }
-        return lot;
-      });
-
+      if (!prev) return prev;
+  
+      const updatedLots = prev.lots.map((lot) =>
+        lot.id === bidUpdate.LotId
+          ? { ...lot, currentPrice: bidUpdate.CurrentPrice }
+          : lot
+      );
+  
       return { ...prev, lots: updatedLots };
     });
+  
+    // Actualizar selectLot si es el lote afectado
+    setselectLot((prev) => {
+      if (prev?.id === bidUpdate.LotId) {
+        return { ...prev, currentPrice: bidUpdate.CurrentPrice };
+      }
+      return prev;
+    });
   }, []);
+  
 
   const handleBiddingHistory = useCallback(
     (history: BiddingHistoryDto[]) => {
@@ -144,13 +149,13 @@ export default function AuctionPage() {
   );
 
   useEffect(() => {
-    if (!auction || !selectLot) return;
-
-    const updatedLot = auction.lots.find((l) => l.id === selectLot.id);
+    if (!selectLot) return;
+  
+    const updatedLot = lots.find((l) => l.id === selectLot.id);
     if (updatedLot) {
       setselectLot(updatedLot);
     }
-  }, [auction, selectLot?.id]);
+  }, [lots, selectLot?.id]);
 
   const handleMessage = useCallback((type: string, message: string) => {
     console.log(`[${type.toUpperCase()}] ${message}`);
@@ -329,8 +334,8 @@ export default function AuctionPage() {
     // category: lot.category
   }));
 
-  const handleCardClick = (item: CompleteLot) => { // item ya no deberia ser un BasicCardItem, sino un CompleteLot, para poder recibir toda la info
-    const lote = auction?.lots.find((l) => l.id === item.id);
+  const handleCardClick = (item: CompleteLot) => {
+    const lote = lots.find((l) => l.id === item.id);
     if (lote) setselectLot(lote);
   };
 
@@ -500,10 +505,13 @@ export default function AuctionPage() {
       {/* SECCION DE MODAL DESPLEGALE */}
       {selectLot && (
         <div
-          className="fixed inset-0  bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setselectLot(null)}
         >
-          <div className="flex flex-col-2 max-h-[90vh] w-auto bg-[#D3E3EB] rounded-2xl p-6 relative overflow-hidden">
+          <div 
+            className="flex flex-col-2 max-h-[90vh] w-[100vh] bg-[#D3E3EB] rounded-2xl p-6 relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}    
+          >
             <button
               onClick={() => setselectLot(null)}
               className="absolute top-3 right-4 text-black text-xl font-bold"
@@ -514,29 +522,9 @@ export default function AuctionPage() {
             <LotToBid
               lot={selectLot}
               onBidInitiated={suscribirseAlLote}
-              className="text-black"
+              className="flex flex-col-2 gap-4 w-full text-black"
+              history={history}
             />
-
-            {/* Historial */}
-            {history.length > 0 && (
-              <div className="mt-4 p-4 bg-gray-100 rounded text-black">
-                <h2 className="text-xl font-semibold mb-2">
-                  Historial de pujas
-                </h2>
-                <ul className="space-y-1">
-                  {history.map((entry, index) => (
-                    <li key={index} className="border-b pb-1">
-                      <span className="font-bold">
-                        {entry.User.FirstName} {entry.User.LastName}
-                      </span>{" "}
-                      ofreció ${entry.Amount} a las{" "}
-                      {new Date(entry.Time).toLocaleTimeString()}{" "}
-                      {entry.IsAutoBid ? "(Auto)" : ""}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         </div>
       )}

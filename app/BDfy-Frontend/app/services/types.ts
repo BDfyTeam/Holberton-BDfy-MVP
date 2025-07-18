@@ -2,6 +2,7 @@ import type { JSX } from "react/jsx-runtime";
 
 // REGISTRO DE USARIO Y SUBASTADOR
 export type RegisterUser = {
+  id?: string;
   firstName: string;
   lastName: string;
   email: string;
