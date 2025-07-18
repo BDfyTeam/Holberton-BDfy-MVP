@@ -1,6 +1,8 @@
 <div align="center">
    <img src="https://i.imgur.com/5FReqDz.png" height="150" width="150"><h1>BDfy MVP</h1></img>
 </div>
+<p>BDfy es una plataforma digital de subastas que brinda una experiencia simple y segura en tiempo real para usuarios y rematadores. 
+Principalmente desarrollada en C# (.NET) y React en el frontend, emplea RabbitMQ para la concurrencia de ofertas, SignalR para la comunicación en tiempo real y PostgreSQL como base de datos</p>
 
 ## Tabla de Contenido
 
@@ -61,7 +63,7 @@
 
 ## Flujo
 
-![image](https://github.com/user-attachments/assets/e5237534-0e8f-4716-b300-13e488d99145)
+![image](https://raw.githubusercontent.com/lucas2mz/Lucas2mz/refs/heads/flow-BDfy/Diagrama%20Arquitectura%20bien%20centrado.jpg)
 
 ---
 
@@ -151,5 +153,5 @@ Authorization: Bearer [your-JWT-token]
 
 <h2><a href="https://github.com/lucas2mz" style="color:#D96E1C;" ><strong>Lucas Andrada |</strong></a>
 <a href="https://github.com/Ifabri31" style="color:#D91C87;" ><strong>Fabrizzio Oviedo |</strong></a>
-<a href="https://github.com/RodrigoFerrer" style="color:#81D91C;" ><strong>Rodrigo Reyes |</strong></a>
+<a href="https://github.com/RodrigoFerrer" style="color:#81D91C;" ><strong>Rodrigo Ferrer |</strong></a>
 <a href="https://github.com/Franco-byte" style="color:#38A3C7;" ><strong>Franco Reyes</strong></a></h2>
