@@ -111,7 +111,7 @@ export default function Auctions() {
 
   return (
     <div className="flex mb-8 mt-22">
-      <div className="flex flex-col w-1/4 mx-auto mb-auto bg-white rounded rounded-2xl px-3 pt-1 rounded-xl border border-gray-300 text-gray-700">
+      <div className="flex flex-col w-1/4 mx-auto mb-auto bg-white rounded-2xl px-3 pt-1 border border-gray-300 text-gray-700">
         <div className="mt-2">
           <SearchBar 
             className="relative w-full max-w-md mx-auto transition-transform duration-300 hover:scale-102"
