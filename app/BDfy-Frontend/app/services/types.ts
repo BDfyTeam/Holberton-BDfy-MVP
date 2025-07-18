@@ -89,6 +89,7 @@ export type CompleteLot = {
   currentPrice: number;
   endingPrice: number;
   sold: boolean;
+  winnerId?: string | null;
   auction: {
     id: string;
     title: string;
@@ -161,6 +162,12 @@ export type Auctioneer = {
   id: string;
   auctionHouse: string;
   plate: number
+}
+
+export type Winner = {
+  firstName: string;
+  lastName: string;
+  id: string;
 }
 
 // TIPO BASICO PARA UNA CARD

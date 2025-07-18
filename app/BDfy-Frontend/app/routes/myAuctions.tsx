@@ -31,7 +31,6 @@ export default function MyAuctions() {
         setActiveAuct(activeAuctions);
         setClosedAuct(closedAuctions);
         setDraftedAuct(draftedAuctions);
-        
       } catch (error) {
         console.error("Error al cargar las subastas:", error);
         setError("Error al cargar las subastas");
@@ -42,8 +41,9 @@ export default function MyAuctions() {
 
   return (
     <main>
-      <div className="p-4 text-white">
-        <h2 className="text-2xl font-bold mb-4 mt-22">Subastas Activas</h2>
+      <div className="p-4 text-[#0D4F61]">
+        <h2 className="text-2xl font-bold my-4 mt-22 ml-30">Subastas Activas</h2>
+        <div className="w-9/10 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
         <Galerys
           auctions={activeAuct}
           component={AuctionCard}
@@ -52,8 +52,9 @@ export default function MyAuctions() {
         />
       </div>
 
-      <div className="p-4 text-white">
-        <h2 className="text-2xl font-bold mb-4">Subastas Cerradas</h2>
+      <div className="p-4 text-[#0D4F61]">
+        <h2 className="text-2xl font-bold my-4 ml-30">Subastas Cerradas</h2>
+        <div className="w-9/10 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
         <Galerys
           auctions={closedAuct}
           component={AuctionCard}
@@ -62,8 +63,9 @@ export default function MyAuctions() {
         />
       </div>
 
-      <div className="p-4 text-white ">
-        <h2 className="text-2xl font-bold mb-4">Subastas en Borrador</h2>
+      <div className="p-4 text-[#0D4F61]">
+        <h2 className="text-2xl font-bold my-4 ml-30">Subastas en Borrador</h2>
+        <div className="w-9/10 h-0.5 mx-auto my-10 bg-[#0D4F61]"></div>
         <Galerys
           auctions={draftedAuct}
           component={(props) => <AuctionCard {...props} edit={true} />}

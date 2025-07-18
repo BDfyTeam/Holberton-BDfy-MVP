@@ -126,7 +126,7 @@ export default function LoginPage() {
                 type="submit"
                 disabled={loading}
               >
-                {loading ? "Registrando..." : "Registrarse"}
+                {loading ? "Iniciando..." : "Iniciar sesión"}
               </button>
             </div>
 

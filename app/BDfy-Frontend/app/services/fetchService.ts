@@ -377,8 +377,8 @@ export async function createLot(payload: FormLot) {
 
 // TRAER UN LOTE ESPESIFICO
 export async function getLotById(lotId: string) {
-  const token = getToken();
-  if (!token) throw new Error("No se encontró el token de autenticación.");
+  // const token = getToken();
+  // if (!token) throw new Error("No se encontró el token de autenticación.");
 
   try {
     const response = await fetch(
@@ -387,7 +387,7 @@ export async function getLotById(lotId: string) {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
         },
       }
     );
