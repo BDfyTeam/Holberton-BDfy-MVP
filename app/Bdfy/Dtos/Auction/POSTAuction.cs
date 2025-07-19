@@ -39,8 +39,9 @@ namespace BDfy.Dtos
 
         [Required]
         public int Plate { get; set; }
-        
+
         [Required]
+        [StringLength(50, ErrorMessage = "Auction House name cannot have more than 50 characters")]
         public string AuctionHouse { get; set; } = null!;
     }
 
@@ -113,8 +114,6 @@ namespace BDfy.Dtos
 
         [Required]
         public AuctionStatus Status { get; set; }
-
-        public Guid? WinnerId { get; set; }
 
         [Required]
         public Guid AuctioneerId { get; set; }

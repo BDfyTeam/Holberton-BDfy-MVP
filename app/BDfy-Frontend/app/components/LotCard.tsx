@@ -1,146 +1,103 @@
-import { useState, useEffect } from "react";
-import type { Lot } from "../services/types";
-import { makeAutoBid, makeBid } from "~/services/fetchService";
+import { CheckCircle2 } from "lucide-react";
+import type { CompleteLot } from "~/services/types";
+import categorys from "~/services/categorys";
+import { use, useEffect, useState } from "react";
+import { getUserById } from "~/services/fetchService";
+import type { Winner } from "~/services/types";
 
-interface LotCardProps {
-  lot: Lot;
-  onBidInitiated: (lotId: string) => void;
-  className?: string;
-}
-
-export default function LotCard({ lot, onBidInitiated, className }: LotCardProps) {
-  const [bid, setBid] = useState<number>((lot.currentPrice ?? lot.startingPrice) + 1);
-  const [message, setMessage] = useState("");
-  const [base, setBase] = useState(lot.currentPrice ?? lot.startingPrice);
-  const [autoMaxBid, setAutoMaxBid] = useState<number | undefined>(undefined);
+type Props = {
+  lot: CompleteLot;
+  onCardClick?: (item: CompleteLot) => void;
+  className?: string
+};
 
 
-  // Este useEffect asegura que el input de la puja se actualice
-  // cuando el precio del lote cambie (debido a actualizaciones de SignalR).
-  useEffect(() => {
-    const newMinimumBid = (lot.currentPrice ?? lot.startingPrice) + 1;
-    setBid(newMinimumBid);
-    setMessage(""); // Limpiamos cualquier mensaje anterior
-  }, [lot.currentPrice, lot.startingPrice]);
+export default function LotCard({ lot, className, onCardClick }: Props) {
+  const [winner, setWinner] = useState<Winner | null>(null);
 
   useEffect(() => {
-    setBase(lot.currentPrice ?? lot.startingPrice);
-    setBid((lot.currentPrice ?? lot.startingPrice) + 1);
-  }, [lot.id, lot.currentPrice]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const currentPrice = lot.currentPrice ?? lot.startingPrice;
-    if (bid <= currentPrice) {
-      setMessage(
-        `❌ La puja debe ser mayor que el precio actual (${currentPrice}).`
-      );
-      return;
-    }
-
-    // onBidInitiated(lot.id);
-
-    const mesgg = makeBid(lot.id, bid);
-    setMessage(await mesgg);
-  };
-
-  function rondTo50(n: number): number {
-    return Math.round(n / 50) * 50;
-  }
-
-  const divisores = [10, 5, 2, 1.5];
-
-  const botones = divisores.map((divisor) => {
-    const incremento = rondTo50(base / divisor);
-    return {
-      label: `+${incremento}`,
-      finalValue: base + incremento,
-      incremento,
+    const fetchWinner = async () => {
+      if (lot.winnerId !== "00000000-0000-0000-0000-000000000000") {
+        try {
+          const user = await getUserById(lot.winnerId as string);
+          setWinner({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            id: user.id
+          });
+        } catch (error) {
+          console.error("Error fetching winner:", error);
+        }
+      }
     };
-  });
-
-  const minIncrement = Math.min(...botones.map((b) => b.incremento));
-
-
-  const handleAutoBid = async () => {
-    if (autoMaxBid === undefined || autoMaxBid <= base) {
-      setMessage("❌ La autopuja debe tener un valor máximo mayor al actual e incremento positivo.");
-      return;
-    }
-  
-    try {
-      const msg = await makeAutoBid(lot.id, autoMaxBid, minIncrement);
-      setMessage(msg);
-    } catch (err: any) {
-      setMessage(`❌ ${err.message}`);
-    }
-  };
+    fetchWinner();
+  }, [lot.winnerId]);
 
   return (
     <div className={className}>
-      <p className="font-semibold text-lg">{lot.description}</p>
-      <p className="text-sm text-gray-600">{lot.details}</p>
-      <p className="text-blue-700">
-        Precio actual: {lot.currentPrice ?? lot.startingPrice}
-      </p>
+      <button onClick={onCardClick ? () => onCardClick(lot) : undefined}>
+        <div
+          className="relative w-[300px] h-[400px] max-h-[500px] max-w-[350px]
+          rounded-2xl overflow-hidden transform hover:scale-105 transition-all duration-400 
+          my-8 border border-white shadow-black shadow-3xl"
+        >
+          {/* Imagen de fondo */}
+          <img
+            src={typeof lot.imageUrl === "string" ? lot.imageUrl : undefined}
+            alt="Imagen del lote"
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          />
+          {/* Contraste para que sea mas legible la card */}
+          <div className="absolute inset-0 bg-black/50 z-0" />
 
-      <form onSubmit={handleSubmit} className="space-y-2">
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            {botones.map((boton, idx) => (
-              <button
-                key={idx}
-                type="submit"
-                onClick={() => {
-                  setBase(boton.finalValue);
-                  setBid(boton.finalValue);
-                  setMessage("");
-                }}
-                className="px-3 py-1 bg-cyan-800 rounded"
-              >
-                {boton.label}
-              </button>
-            ))}
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Oferta personalizada"
-              value={bid === 0 ? "" : bid.toString()}
-              onChange={(e) => {
-                const parsed = parseInt(e.target.value);
-                if (!isNaN(parsed)) {
-                  setBid(parsed);
-                } else {
-                  setBid(0); // opcional: podés usar `undefined` o no hacer nada si querés ignorar texto inválido
-                }
-                setMessage("");
-              }}
-              className="w-full border border-gray-300 rounded p-1"
-            />
-          </div>
-          <div className="mt-4 border-t pt-4">
-            <h3 className="font-semibold mb-2 text-sm">Autopuja</h3>
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              <input
-                type="text"
-                placeholder="Puja máxima"
-                className="border p-1 rounded"
-                onChange={(e) => setAutoMaxBid(parseInt(e.target.value))}
-              />
+          {/* Contenido por encima de la imagen */}
+          <div className="relative z-10 p-6 flex flex-col justify-between h-full">
+
+            {/* Título y detalles */}
+            <div>
+              <h3 className="text-xl font-bold mb-2">{lot.title}</h3>
+              {lot.details && (
+                <p className="text-xs italic opacity-90 mb-4">{lot.details}</p>
+              )}
             </div>
-            <button
-              type="button"
-              className="bg-green-600 text-white px-3 py-1 rounded"
-              onClick={handleAutoBid}
-            >
-              Activar Autopuja
-            </button>
+
+            {/* --- CATEGORIAS Y ESTADO JUNTOS --- */}
+            <div>
+              {/* Categorías */}
+              <div className="flex flex-wrap gap-2 mb-2 text-center items-center justify-center">
+                {lot.auction.category.map((id) => {
+                  const cat = categorys.find((c) => c.id === id);
+                  return (
+                    <span
+                      key={id}
+                      className="flex w-10 h-10 my-5 items-center bg-white/20  border border-white p-2 rounded-full text-xs"
+                    >
+                      {cat?.icon}
+                    </span>
+                  );
+                })}
+              </div>
+
+              {/* Estado */}
+              <div className=" flex items-center text-center justify-center">
+                {lot.sold ? (
+                  <>
+                    <span className="flex items-center gap-1 text-gray-500 text-sm border border-gray-500 px-3 py-2 rounded-full bg-gray-500/10">
+                      <CheckCircle2 className="w-4 h-4 text-gray-500" />
+                      <p className="text-sm">Vendido a: {winner?.firstName} {winner?.lastName}</p>
+                    </span>
+
+                  </>
+                ) : (
+                  <span className="text-yellow-300 text-sm border border-yellow-300 px-3 py-2 rounded-full bg-yellow-300/10">
+                    Disponible
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-        {message && <p className="text-sm text-gray-700">{message}</p>}
-      </form>
+      </button>
     </div>
   );
 }

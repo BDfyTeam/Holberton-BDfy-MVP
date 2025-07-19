@@ -1,3 +1,4 @@
+// todo: este componente se tiene que ir a la mierda cuando ande el otro galery de lotes.
 import type { BasicCardItem } from "~/services/types";
 
 type CardProps = {

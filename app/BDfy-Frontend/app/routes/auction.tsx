@@ -1,12 +1,29 @@
 import { useParams } from "react-router";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { getAuctionById } from "~/services/fetchService";
-import type { Auction, BasicCardItem, Lot } from "~/services/types";
+import { getAuctionById, getLotById, getUserById } from "~/services/fetchService";
+import {
+  type Auctioneer,
+  type Auction,
+  type CompleteLot,
+} from "~/services/types";
+import LotToBid from "~/components/LotToBid";
 import LotCard from "~/components/LotCard";
 import * as signalR from "@microsoft/signalr";
 import { getToken } from "~/services/handleToken";
-import GaleryOfCards from "~/components/galeryOfLotCards";
 import categorys from "~/services/categorys";
+import {
+  CalendarIcon,
+  CalendarOffIcon,
+  IdCard,
+  LayoutList,
+  MailIcon,
+  MapPinIcon,
+  SmartphoneIcon,
+  VerifiedIcon,
+} from "lucide-react";
+import { formatDate } from "~/services/formats";
+import gatoCoca from "~/public/assets/gaatoCoca.jpg";
+import Galerys from "~/components/Galerys";
 
 type BidUpdate = {
   LotId: string;
@@ -16,7 +33,7 @@ type BidUpdate = {
 };
 
 type BiddingHistoryDto = {
-  Winner: {
+  User: {
     FirstName: string;
     LastName: string;
   };
@@ -36,10 +53,12 @@ export default function AuctionPage() {
   const [activeListeningLotId, setActiveListeningLotId] = useState<
     string | null
   >(null);
-  const [selectLot, setselectLot] = useState<Lot | null>(null);
+  const [selectLot, setselectLot] = useState<CompleteLot | null>(null);
   const [biddingHistories, setBiddingHistories] = useState<
     Record<string, BiddingHistoryDto[]>
   >({});
+  const [auctioneer, setAuctioneer] = useState<Auctioneer | null>(null);
+  const [lots, setLots] = useState<CompleteLot[]>([]);
 
   useEffect(() => {
     if (selectLot) {
@@ -48,10 +67,39 @@ export default function AuctionPage() {
   }, [selectLot]);
 
   useEffect(() => {
-    const fetchAuction = async () => {
+    const fetchAuctionAndUser = async () => {
       try {
         const data = await getAuctionById(String(id));
         setAuction(data);
+        const user = await getUserById(data.auctioneer.userId);
+        setAuctioneer({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          password: user.password,
+          ci: user.ci,
+          reputation: user.reputation,
+          phone: user.phone,
+          role: user.role,
+          imageUrl: user.imageUrl,
+          direction: {
+            street: user.direction.street,
+            streetNumber: user.direction.streetNumber,
+            corner: user.direction.corner,
+            zipCode: user.direction.zipCode,
+            department: user.direction.department,
+          },
+          id: user.id,
+          auctionHouse: user.auctioneerDetails.auctionHouse,
+          plate: user.auctioneerDetails.plate
+        });
+
+        const lotPromises = data.lots.map((l: CompleteLot) =>
+          getLotById(l.id) as Promise<CompleteLot>
+        );
+        const lotsData = await Promise.all(lotPromises);
+        setLots(lotsData);
+
 
         if (data.lots && data.lots.length > 0) {
           setActiveListeningLotId(data.lots[0].id);
@@ -63,25 +111,31 @@ export default function AuctionPage() {
       }
     };
 
-    if (id) fetchAuction();
+    if (id) fetchAuctionAndUser();
   }, [id]);
 
   const handleBidUpdate = useCallback((bidUpdate: BidUpdate) => {
     setAuction((prev) => {
-      if (!prev) {
-        return prev;
-      }
-
-      const updatedLots = prev.lots.map((lot) => {
-        if (lot.id === bidUpdate.LotId) {
-          return { ...lot, currentPrice: bidUpdate.CurrentPrice };
-        }
-        return lot;
-      });
-
+      if (!prev) return prev;
+  
+      const updatedLots = prev.lots.map((lot) =>
+        lot.id === bidUpdate.LotId
+          ? { ...lot, currentPrice: bidUpdate.CurrentPrice }
+          : lot
+      );
+  
       return { ...prev, lots: updatedLots };
     });
+  
+    // Actualizar selectLot si es el lote afectado
+    setselectLot((prev) => {
+      if (prev?.id === bidUpdate.LotId) {
+        return { ...prev, currentPrice: bidUpdate.CurrentPrice };
+      }
+      return prev;
+    });
   }, []);
+  
 
   const handleBiddingHistory = useCallback(
     (history: BiddingHistoryDto[]) => {
@@ -95,13 +149,13 @@ export default function AuctionPage() {
   );
 
   useEffect(() => {
-    if (!auction || !selectLot) return;
-
-    const updatedLot = auction.lots.find((l) => l.id === selectLot.id);
+    if (!selectLot) return;
+  
+    const updatedLot = lots.find((l) => l.id === selectLot.id);
     if (updatedLot) {
       setselectLot(updatedLot);
     }
-  }, [auction, selectLot?.id]);
+  }, [lots, selectLot?.id]);
 
   const handleMessage = useCallback((type: string, message: string) => {
     console.log(`[${type.toUpperCase()}] ${message}`);
@@ -280,63 +334,197 @@ export default function AuctionPage() {
     // category: lot.category
   }));
 
-  const handleCardClick = (item: BasicCardItem) => {
-    const lote = auction?.lots.find((l) => l.id === item.id);
+  const handleCardClick = (item: CompleteLot) => {
+    const lote = lots.find((l) => l.id === item.id);
     if (lote) setselectLot(lote);
   };
 
   const history = selectLot ? biddingHistories[selectLot.id] || [] : [];
 
+
   return (
-    <div className="p-6 text-white">
-      <div className="mb-4 flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{auction.title}</h1>
-        <p className="text-gray-300">{auction.description}</p>
+    // INFORMACION DE LA SUBASTA
+    <div className="items-center text-white">
+      <div className="flex justify-center items-start">
+        {/* Zona principal: 3/4 de la pantalla */}
+        <div
+          className="w-3/4 p-4 flex mt-[100px] mb-10 bg-[#0D4F61] rounded-lg shadow-gray-700 shadow-2xl"
+          style={{
+            background:
+              "linear-gradient(135deg,rgba(13, 79, 97, 1) 27%, rgba(65, 196, 174, 1) 100%)",
+          }}
+        >
+          {/* Información de la subasta (2/4) */}
+          <div className="w-3/4 pr-8">
+            {/* Titulo */}
+            <h1 className="text-5xl font-bold text-white text-center my-[2vw]">
+              {auction.title.toUpperCase()}
+            </h1>
+
+            {/* Imagen de la casa de subasta y descripción */}
+            <div className="flex justify-between items-start mt-6">
+              {/* Columna izquierda: Imagen y nombre de la casa de subastas */}
+              <div className="w-2/4 mr-25 ml-40 flex flex-col items-center">
+                <img
+                  src={typeof auction.imageUrl === "string" ? auction.imageUrl : undefined}
+                  alt={auction.title}
+                  className="max-w-[90%] h-auto rounded-2xl mb-4"
+                />
+                <p className="text-white mb-2 text-center">
+                  {auctioneer?.auctionHouse}
+                </p>
+              </div>
+
+              {/* Columna derecha: Información de la subasta */}
+              <div className="w-3/4 flex flex-col">
+                {/* Categorías */}
+                <div className="flex flex-wrap gap-2 my-5">
+                  {auction.category.map((catId, index) => {
+                    // Encontrar la categoría por su id
+                    const category = categorys.find((c) => c.id === catId);
+                    return (
+                      <span
+                        key={index}
+                        className="bg-white/20 text-white text-xm font-medium px-3 py-1 rounded-full border border-white/40"
+                      >
+                        {category ? category.name : `Categoría ${catId}`}
+                      </span>
+                    );
+                  })}
+                </div>
+
+                {/* Número de lotes */}
+                <p className="flex items-center mb-4 text-xl">
+                  <LayoutList className="w-7 h-7 text-white mr-2" />
+                  N° de lotes: {auction.lots.length}
+                </p>
+
+                {/* Fecha de inicio */}
+                <p className="flex items-center mb-4 text-xl">
+                  <CalendarIcon className="w-7 h-7 text-white mr-2" />
+                  {formatDate(auction.startAt)}
+                </p>
+
+                {/* Fecha de fin */}
+                <p className="flex items-center mb-4 text-xl">
+                  <CalendarOffIcon className="w-7 h-7 text-white mr-2" />
+                  {formatDate(
+                    auction.endAt ? auction.endAt : "Fecha no disponible"
+                  )}
+                </p>
+
+                {/* Dirección */}
+                <p className="flex items-center mb-4 text-xl">
+                  <MapPinIcon className="w-8 h-8 text-white mr-2" />
+                  {auction.direction.street} {auction.direction.streetNumber}{" "}
+                  esq. {auction.direction.corner} -{" "}
+                  {auction.direction.department}
+                </p>
+              </div>
+            </div>
+
+            <div className="w-3/4 h-0.5 mx-auto my-10 bg-white"></div>
+
+            {/* Descripción centrada debajo de las columnas */}
+            <div className="text-center my-8">
+              <p className="text-2xl text-white">{auction.description}</p>
+            </div>
+          </div>
+
+          {/* Zona del subastador (1/4) */}
+          <div className="w-1/4 bg-[#F0F8FF] p-4 rounded-lg shadow-md">
+            {/* Foto del subastador */}
+            <div className="flex flex-col items-center mb-4">
+              {/* Imagen del subastador */}
+              <img
+                src={auctioneer?.imageUrl || gatoCoca}
+                alt={`${auctioneer?.firstName} ${auctioneer?.lastName}`}
+                className="w-35 h-35 rounded-full object-cover mt-4 mb-6"
+              />
+              <div className="text-center">
+                {/* Nombre del subastador */}
+                <h2 className="text-3xl font-semibold text-[#0D4F61]">
+                  {auctioneer?.firstName} {auctioneer?.lastName}
+                </h2>
+
+                {/* Reputación */}
+                <p className="flex items-center text-[#0D4F61] justify-center mb-1">
+                  <VerifiedIcon className="w-5 h-5 mr-2" />
+                  {auctioneer?.reputation}%
+                </p>
+
+                {/* placa */}
+                <p className="flex items-center text-[#0D4F61] justify-center mb-4">
+                  <IdCard className="w-5 h-5 mr-2 inline-block" />
+                  {auctioneer?.plate}
+                </p>
+              </div>
+            </div>
+
+            {/* Información de contacto */}
+            <div className="space-y-4 ml-8">
+              {/* Email */}
+              <p className="flex items-center text-[#0D4F61]">
+                <MailIcon className="w-5 h-5 mr-2" />
+                {auctioneer?.email}
+              </p>
+
+              {/* Teléfono */}
+              <p className="flex items-center text-[#0D4F61]">
+                <SmartphoneIcon className="w-5 h-5 mr-2" />
+                {auctioneer?.phone}
+              </p>
+
+              {/* Dirección */}
+              <p className="flex items-center text-[#0D4F61]">
+                <MapPinIcon className="w-8 h-8 mr-2" />
+                {auctioneer?.direction.street}{" "}
+                {auctioneer?.direction.streetNumber} esq.{" "}
+                {auctioneer?.direction.corner} - {auctioneer?.direction.zipCode}
+                , {auctioneer?.direction.department}
+              </p>
+            </div>
+
+            <div className="mt-16 text-center">
+              <button className="px-6 py-2 rounded-full border-2 border-[#0D4F61] text-[#0D4F61] font-semibold hover:bg-[#0D4F61] hover:text-white transition duration-300">
+                Ver perfil
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <GaleryOfCards
-          items={items}
-          onCardClick={handleCardClick}
-          className="bg-[#DDE9F0] text-black p-4 rounded-lg shadow space-y-2 space-x-4 w-full flex flex-col justify-between"
-        />
-      </div>
+      <Galerys
+        lots={lots}
+        component={LotCard}
+        onCardClick={handleCardClick}
+        className="flex w-4/5 mx-auto flex-col items-center"
+        internalClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+      />
+
+      {/* SECCION DE MODAL DESPLEGALE */}
       {selectLot && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded p-4 max-w-lg w-full relative">
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => setselectLot(null)}
+        >
+          <div 
+            className="flex flex-col-2 max-h-[90vh] w-[100vh] bg-[#D3E3EB] rounded-2xl p-6 relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}    
+          >
             <button
               onClick={() => setselectLot(null)}
-              className="absolute top-2 right-2 text-black text-xl font-bold"
+              className="absolute top-3 right-4 text-black text-xl font-bold"
             >
               ✕
             </button>
 
-            <LotCard
+            <LotToBid
               lot={selectLot}
               onBidInitiated={suscribirseAlLote}
-              className="text-black"
+              className="flex flex-col-2 gap-4 w-full text-black"
+              history={history}
             />
-
-            {/* Historial */}
-            {history.length > 0 && (
-              <div className="mt-4 p-4 bg-gray-100 rounded text-black">
-                <h2 className="text-xl font-semibold mb-2">
-                  Historial de pujas
-                </h2>
-                <ul className="space-y-1">
-                  {history.map((entry, index) => (
-                    <li key={index} className="border-b pb-1">
-                      <span className="font-bold">
-                        {entry.Winner.FirstName} {entry.Winner.LastName}
-                      </span>{" "}
-                      ofreció ${entry.Amount} a las{" "}
-                      {new Date(entry.Time).toLocaleTimeString()}{" "}
-                      {entry.IsAutoBid ? "(Auto)" : ""}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         </div>
       )}

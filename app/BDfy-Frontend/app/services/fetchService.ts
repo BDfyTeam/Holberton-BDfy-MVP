@@ -1,11 +1,11 @@
 import { getToken, getUserIdFromToken } from "./handleToken";
 import type {
-  AuctionCard,
-  RegisterUserPayload,
-  LotCard,
+  RegisterUser,
+  RegisterAuctioneer,
+  FormLot,
   CompleteLot,
+  AuctionForm
 } from "./types";
-import type { RegisterAuctioneerPayload } from "./types";
 
 // LOGUEAR UN USUARIO
 export async function loginUser(email: string, password: string) {
@@ -35,7 +35,7 @@ export async function loginUser(email: string, password: string) {
 }
 
 // REGISTRAR UN USUARIO
-export async function registerUser(payload: RegisterUserPayload) {
+export async function registerUser(payload: RegisterUser) {
   try {
     const response = await fetch(
       "https://api.bdfy.tech/api/1.0/users/register",
@@ -63,7 +63,7 @@ export async function registerUser(payload: RegisterUserPayload) {
 }
 
 // REGISTRAR UN SUBASTADOR
-export async function registerAuctioner(payload: RegisterAuctioneerPayload) {
+export async function registerAuctioner(payload: RegisterAuctioneer) {
   try {
     const response = await fetch(
       "https://api.bdfy.tech/api/1.0/users/register",
@@ -160,7 +160,7 @@ export async function getAllAuctions() {
 }
 
 // CREAR UNA SUBASTA
-export async function createAuction(payload: AuctionCard) {
+export async function createAuction(payload: AuctionForm) {
   try {
     const token = getToken();
     if (!token) {
@@ -171,15 +171,35 @@ export async function createAuction(payload: AuctionCard) {
       throw new Error("No se pudo obtener el ID del usuario desde el token.");
     }
 
+    const formData = new FormData();
+    formData.append("title", payload.title);
+    formData.append("image", payload.image);
+    formData.append("description", payload.description);
+    formData.append("startAt", payload.startAt);
+    if (payload.endAt) {
+      formData.append("endAt", payload.endAt);
+    }
+    payload.category.forEach((cat) =>
+      formData.append("Category", cat.toString())
+    );
+    formData.append("status", payload.status.toString());
+    formData.append("Direction.Street", payload.direction.street);
+    formData.append(
+      "Direction.StreetNumber",
+      payload.direction.streetNumber.toString()
+    );
+    formData.append("Direction.Corner", payload.direction.corner);
+    formData.append("Direction.Department", payload.direction.department);
+    formData.append("Direction.ZipCode", payload.direction.zipCode.toString());
+
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/auctions/${userId}`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Enviamos el token de autenticación
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
     if (!response.ok) {
@@ -257,28 +277,55 @@ export async function getAuctionById(id: string) {
 }
 
 // ACTUALIZAR SUBASTA
-export async function updateAuction(payload: AuctionCard) {
+export async function updateAuction(payload: AuctionForm) {
   try {
     const token = getToken();
     if (!token) {
       throw new Error("No se encontró el token de autenticación.");
     }
     const auctionId = payload.id;
+
+    const formData = new FormData();
+    formData.append("Title", payload.title);
+    if (payload.image instanceof File && payload.image.size > 0) {
+      formData.append("Image", payload.image);
+    }        
+    formData.append("Description", payload.description);
+    formData.append("StartAt", payload.startAt);
+    if (payload.endAt) formData.append("EndAt", payload.endAt);
+    payload.category.forEach((cat) =>
+      formData.append("Category", cat.toString())
+    );
+    formData.append("Status", payload.status.toString());
+    formData.append("Direction.Street", payload.direction.street);
+    formData.append(
+      "Direction.StreetNumber",
+      payload.direction.streetNumber.toString() 
+    );
+    formData.append("Direction.Corner", payload.direction.corner);
+    formData.append("Direction.Department", payload.direction.department);
+    formData.append("Direction.ZipCode", payload.direction.zipCode.toString());
+
+    for (const pair of formData.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
+    
+
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/auctions/${auctionId}`,
       {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Error al actualizar subasta");
+      const errorText = await response.text();
+      console.log(errorText);
+      throw new Error(errorText  || "Error al actualizar subasta");
     }
 
     return "Subasta editada con éxito";
@@ -289,22 +336,30 @@ export async function updateAuction(payload: AuctionCard) {
 }
 
 // CREAR UN LOTE
-export async function createLot(payload: LotCard) {
+export async function createLot(payload: FormLot) {
   try {
     const token = getToken();
     if (!token) {
       throw new Error("No se encontró el token de autenticación.");
     }
     const auctionId = payload.auctionId;
+    const formData = new FormData();
+    formData.append("title", payload.title);
+    formData.append("image", payload.image);
+    formData.append("lotNumber", payload.lotNumber.toString());
+    formData.append("description", payload.description);
+    formData.append("details", payload.details);
+    formData.append("startingPrice", payload.startingPrice.toString());
+    formData.append("auctionId", auctionId);
+
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/lots/${auctionId}`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`, // Enviamos el token de autenticación
         },
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
     if (!response.ok) {
@@ -321,8 +376,8 @@ export async function createLot(payload: LotCard) {
 
 // TRAER UN LOTE ESPESIFICO
 export async function getLotById(lotId: string) {
-  const token = getToken();
-  if (!token) throw new Error("No se encontró el token de autenticación.");
+  // const token = getToken();
+  // if (!token) throw new Error("No se encontró el token de autenticación.");
 
   try {
     const response = await fetch(
@@ -331,7 +386,7 @@ export async function getLotById(lotId: string) {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -348,36 +403,47 @@ export async function getLotById(lotId: string) {
 }
 
 // ACTUALIZAR LOTE
-export async function updateLot(payload: LotCard) {
+export async function updateLot(payload: FormLot) {
   try {
     const token = getToken();
     if (!token) {
       throw new Error("No se encontró el token de autenticación.");
     }
+    
     const lotId = payload.id;
+    const formData = new FormData();
+    
+    // El request body es Form asi q cargamos el payload a un form
+    if (payload.title) formData.append('title', payload.title);
+    if (payload.lotNumber) formData.append('lotNumber', payload.lotNumber.toString());
+    if (payload.description) formData.append('description', payload.description);
+    if (payload.details) formData.append('details', payload.details);
+    if (payload.startingPrice) formData.append('startingPrice', payload.startingPrice.toString());
+    if (payload.auctionId) formData.append('auctionId', payload.auctionId);
+    
+    if (payload.image) { // Desde editLot se manda una URL no un File (cambiar)
+      formData.append('image', payload.image);
+    }
+    
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/lots/${lotId}/edit`,
       {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
+          // Content-Type - el browser lo establece automaticamente
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          lotNumber: payload.lotNumber,
-          description: payload.description,
-          details: payload.details,
-          startingPrice: payload.startingPrice,
-          auctionId: payload.auctionId,
-        }),
+        body: formData,
       }
     );
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.log("Error body:", errorData);
       throw new Error(errorData.message || "Error al actualizar lote");
     }
-    return "Lote actualizado con exito";
+    
+    return "Lote actualizado con éxito";
   } catch (err) {
     console.error("Error al actualizar el lote:", err);
     throw err;
@@ -417,6 +483,7 @@ export async function getAllStorageLots() {
     const storageData = data.filter(
       (lot: CompleteLot) => lot.auction.status === 3
     );
+    console.log("Lotes en el storage:", storageData);
     return storageData;
   } catch (error) {
     console.error("Error al obtener el almacenamiento:", error);
@@ -478,6 +545,7 @@ export async function makeAutoBid(
       throw new Error("No se pudo obtener el ID del usario desde el token.");
     }
 
+    // AUTOPUJA
     const response = await fetch(
       `https://api.bdfy.tech/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
       {
@@ -503,5 +571,33 @@ export async function makeAutoBid(
   } catch (error) {
     console.error("Error al hacer la autopuja:", error);
     throw error;
+  }
+}
+
+// SELECCIONAR TODOS LAS SUBASTAS POR CATEGORIA
+export async function getAuctionsByCategory(categoryId: number) {
+  try {
+    const response = await fetch(
+      `https://api.bdfy.tech/api/1.0/auctions/category/${categoryId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Error al obtener las subastas por categoria."
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error("Error al obtener las subastas por categoria:", err);
+    throw new Error("Error al obtener las subastas por categoria");
   }
 }
