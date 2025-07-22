@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Facebook, Youtube, Twitter, Instagram, Phone } from "lucide-react";
+import { Facebook, Youtube, Twitter, Instagram } from "lucide-react";
 
 interface Props {
   className?: string;
@@ -13,178 +13,64 @@ export default function Footer({ className }: Props) {
   };
 
   return (
-    <footer className={className}>
-      <div className="container mx-auto px-6">
-        {/* Sección de columnas */}
+    <footer className={`${className} bg-[#0D4F61] text-white`}>
+      <div className="container mx-auto px-6 py-10">
+        {/* Grid principal */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {/* Navegación */}
           <div>
             <h3 className="font-semibold text-2xl mb-4">Navegación</h3>
             <ul>
-              <li>
-                <a href="/home" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  Inicio
-                </a>
-              </li>
-              <li>
-                <a href="/galery" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  Explorar subastas
-                </a>
-              </li>
-              <li>
-                <a href="/support" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  Soporte
-                </a>
-              </li>
+              <li><a href="/home" className="hover:text-gray-300 transition">Inicio</a></li>
+              <li><a href="/galery" className="hover:text-gray-300 transition">Explorar subastas</a></li>
+              <li><a href="/support" className="hover:text-gray-300 transition">Soporte</a></li>
             </ul>
           </div>
 
-          {/* Contacta con nosotros */}
+          {/* Contacto y redes */}
           <div>
-            <h3 className="font-semibold text-2xl mb-4">
-              Contacta con nosotros
-            </h3>
+            <h3 className="font-semibold text-2xl mb-4">Contáctanos</h3>
             <ul>
-              <li>
-                <a
-                  href="mailto:bdfycontacto@bdfy.com"
-                  className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300"
-                >
-                  <Mail className="inline mr-0.5" /> bdfycontacto@bdfy.com
-                </a>
-              </li>
-              <li>
-                <a href="https://www.facebook.com/BDfy" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  <Facebook className="inline mr-0.5" /> Facebook
-                </a>
-              </li>
-              <li>
-                <a href="https://www.youtube.com/BDfy" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  <Youtube className="inline mr-0.5" /> Youtube
-                </a>
-              </li>
-              <li>
-                <a href="https://www.twitter.com/BDfy" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  <Twitter className="inline mr-0.5" /> Twitter
-                </a>
-              </li>
-              <li>
-                <a href="https://www.instagram.com/BDfy" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  <Instagram className="inline mr-0.5" /> Instagram
-                </a>
-              </li>
-              <li>
-                <a href="tel:+123456789" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  <Phone className="inline mr-0.5" /> 098 933 325
-                </a>
-              </li>
+              <li><a href="#" className="hover:text-gray-300 transition"><Facebook className="inline mr-1" /> Facebook</a></li>
+              <li><a href="#" className="hover:text-gray-300 transition"><Youtube className="inline mr-1" /> YouTube</a></li>
+              <li><a href="#" className="hover:text-gray-300 transition"><Twitter className="inline mr-1" /> Twitter</a></li>
+              <li><a href="#" className="hover:text-gray-300 transition"><Instagram className="inline mr-1" /> Instagram</a></li>
+              <li><a href="https://github.com/BDfyTeam/Holberton-BDfy-MVP" className="hover:text-gray-300 transition ml-6">GitHub</a></li>
             </ul>
           </div>
 
-          {/* Acerca de BDfy */}
+          {/* BDfy info */}
           <div>
             <h3 className="font-semibold text-2xl mb-4">BDfy</h3>
-              <ul>
-              <li>
-                <a
-                  href="/about"
-                  className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300"
-                >
-                  Sobre nosotros
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/terms"
-                  className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300"
-                >
-                  Términos de uso
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/privacy-policy"
-                  className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300"
-                >
-                  Políticas de privacidad
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/how-to-create-auction"
-                  className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300"
-                >
-                  ¿Cómo creo una subasta?
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/how-to-participate"
-                  className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300"
-                >
-                  ¿Cómo participo en una subasta?
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/faq"
-                  className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300"
-                >
-                  Preguntas frecuentes
-                </a>
-              </li>
-              </ul>
+            <ul>
+              <li><a href="/about" className="hover:text-gray-300 transition">Sobre nosotros</a></li>
+              <li><a href="/terms" className="hover:text-gray-300 transition">Términos de uso</a></li>
+              <li><a href="/privacy-policy" className="hover:text-gray-300 transition">Políticas de privacidad</a></li>
+              <li><a href="/how-to-create-auction" className="hover:text-gray-300 transition">¿Cómo creo una subasta?</a></li>
+              <li><a href="/how-to-participate" className="hover:text-gray-300 transition">¿Cómo participo?</a></li>
+              <li><a href="/faq" className="hover:text-gray-300 transition">Preguntas frecuentes</a></li>
+            </ul>
           </div>
 
           {/* Cuenta */}
           <div>
             <h3 className="font-semibold text-2xl mb-4">Cuenta</h3>
             <ul>
-              <li>
-                <a href="/login" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  Iniciar sesión
-                </a>
-              </li>
-              <li>
-                <a href="/register" className="hover:drop-shadow-[0_0_6px_#ffffff] hover:text-white transition duration-300">
-                  Crear cuenta
-                </a>
-              </li>
+              <li><a href="/login" className="hover:text-gray-300 transition">Iniciar sesión</a></li>
+              <li><a href="/register" className="hover:text-gray-300 transition">Crear cuenta</a></li>
             </ul>
           </div>
         </div>
 
         {/* Separador */}
-        <div className="border-t border-white-600 my-8"></div>
+        <div className="border-t border-white/30 my-8"></div>
 
-        {/* Información de derechos de autor y selector de idioma */}
-        <div className="flex flex-col sm:flex-row justify-between items-center">
-          <div className="text-xl">
-            <p>© 2025 BDfy. Todos los derechos reservados.</p>
-          </div>
-
-          <div className="flex items-center mt-4 sm:mt-0">
-            <select
-              id="language"
-              value={selectedLanguage}
-              onChange={handleLanguageChange}
-              className="bg-[#0D4F61] hover:text-white  text-xl p-2 hover:bg-[#0D4F61] transition duration-300"
-            >
-              <option value="es">Español</option>
-              <option value="en">English</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Separador */}
-        <div className="border-t border-white-600 my-8"></div>
-
-        {/* Acerca de BDfy (textos informativos adicionales) */}
-        <div className="mt-8 text-center">
-          <p className="text-sm">
-            BDfy está comprometido con ofrecer una experiencia de subastas
-            segura y transparente. Conoce más sobre cómo puedes beneficiarte al
-            unirte a nuestra plataforma.
+        {/* Info final */}
+        <div className="text-center text-sm space-y-4">
+          <p>© 2025 BDfy. Todos los derechos reservados.</p>
+          <p>
+            BDfy está comprometido con ofrecer una experiencia de subastas segura y transparente. 
+            Conoce más sobre cómo puedes beneficiarte al unirte a nuestra plataforma.
           </p>
         </div>
       </div>

@@ -6,6 +6,10 @@ const translations = {
     title: "BDfy",
     subtitle: "Simple y Seguro",
     cta: "Prueba nuestra web",
+    img1: "app/public/assets/homePage.png",
+    img2: "app/public/assets/misSubastas.png",
+    img3: "app/public/assets/inventory.png",
+    img4: "app/public/assets/bids.png",
     feature1: "UX irresistiblemente simple",
     feature2: "Sube tu subasta en un pestañeo",
     feature3: "Inventario bajo control total",
@@ -19,6 +23,10 @@ const translations = {
     title: "BDfy",
     subtitle: "Simple & Secure",
     cta: "Try our website",
+    img1: "app/public/assets/homePage.png",
+    img2: "app/public/assets/misSubastas.png",
+    img3: "app/public/assets/inventory.png",
+    img4: "app/public/assets/bids.png",
     feature1: "UX aprueba de bobos",
     feature2: "Publica tu subasta en menos de lo que gastas el aguinaldo",
     feature3: "Manejo de inventario sin empleados de por medio",
@@ -36,28 +44,28 @@ const teamMembers = [
     role: "PM · DevOps · Frontend",
     github: "https://github.com/Ifabri31",
     linkedin: "https://linkedin.com/in/oviedofabrizzio31",
-    avatar: "imagen",
+    avatar: "app/public/assets/fabri.jpg"
   },
   {
     name: "Rodrigo Ferrer",
     role: "Backend · QA",
     github: "https://github.com/rodrigoferrer",
     linkedin: "https://linkedin.com/in/rodrigo-ferrer-742034227",
-    avatar: "imagen",
+    avatar: "app/public/assets/rodri.jpg",
   },
   {
     name: "Franco Reyes",
     role: "Frontend · UX · UI",
     github: "https://github.com/Franco-byte",
     linkedin: "https://linkedin.com/in/francoreyesortiz",
-    avatar: "imagen",
+    avatar: "app/public/assets/fran.jpg",
   },
   {
     name: "Lucas Andrada",
     role: "Backend · DB",
     github: "https://github.com/lucas2mz",
     linkedin: "https://linkedin.com/in/lucas-andrada2606",
-    avatar: "imagen",
+    avatar: "app/public/assets/lucas.jpg",
   },
 ]
 
@@ -107,50 +115,77 @@ export default function Landing() {
 
       {/* Key Benefits */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-1 gap-12">
           {[t.feature1].map((text, i) => (
-            <div key={i} className="text-center p-6">
-              <h3 className="text-xl font-semibold mb-4 text-[#0D4F61]">
-                {text}
-              </h3>
+            <div key={i} className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="md:w-1/2">
+                <h3 className="text-4xl font-semibold mb-4 text-[#0D4F61]">
+                  {text}
+                </h3>
+              </div>
+              <div className="md:w-1/2">
+                <img
+                  src={t.img1}
+                  alt={t.feature1}
+                  className="w-full max-w-[600px] rounded-2xl shadow-lg"
+                />
+              </div>
             </div>
           ))}
         </div>
       </section>
 
+      {/* Feature 2 - texto derecha, imagen izquierda */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
-        <div className="grid md:grid-cols-3 gap-8">
-          {[t.feature2].map((text, i) => (
-            <div key={i} className="text-center p-6">
-              <h3 className="text-xl font-semibold mb-4 text-[#0D4F61]">
-                {text}
-              </h3>
-            </div>
-          ))}
+        <div className="flex flex-col md:flex-row-reverse items-center justify-between gap-12">
+          <div className="md:w-1/2">
+            <h3 className="text-4xl font-semibold mb-4 text-[#0D4F61]">
+              {t.feature2}
+            </h3>
+          </div>
+          <div className="md:w-1/2">
+            <img
+              src={t.img2}
+              alt={t.feature2}
+              className="w-full max-w-[600px] rounded-2xl shadow-lg"
+            />
+          </div>
         </div>
       </section>
 
+      {/* Feature 3 - texto izquierda, imagen derecha */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
-        <div className="grid md:grid-cols-3 gap-8">
-          {[t.feature3].map((text, i) => (
-            <div key={i} className="text-center p-6">
-              <h3 className="text-xl font-semibold mb-4 text-[#0D4F61]">
-                {text}
-              </h3>
-            </div>
-          ))}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-12">
+          <div className="md:w-1/2">
+            <h3 className="text-4xl font-semibold mb-4 items-center text-[#0D4F61]">
+              {t.feature3}
+            </h3>
+          </div>
+          <div className="md:w-1/2">
+            <img
+              src={t.img3}
+              alt={t.feature3}
+              className="w-full max-w-[600px] h-70 rounded-2xl shadow-lg items-right "
+            />
+          </div>
         </div>
       </section>
 
+      {/* Feature 4 - texto derecha, imagen izquierda */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20">
-        <div className="grid md:grid-cols-3 gap-8">
-          {[t.feature4].map((text, i) => (
-            <div key={i} className="text-center p-6">
-              <h2 className="text-xl font-semibold mb-4 text-[#0D4F61]">
-                {text}
-              </h2>
-            </div>
-          ))}
+        <div className="flex flex-col md:flex-row-reverse items-center justify-between gap-12">
+          <div className="md:w-1/2">
+            <h3 className="text-4xl font-semibold mb-4 text-[#0D4F61]">
+              {t.feature4}
+            </h3>
+          </div>
+          <div className="md:w-1/2">
+            <img
+              src={t.img4}
+              alt={t.feature4}
+              className="w-full max-w-[600px] rounded-2xl shadow-lg"
+            />
+          </div>
         </div>
       </section>
 
@@ -180,7 +215,7 @@ export default function Landing() {
                 <img
                   src={member.avatar}
                   alt={member.name}
-                  className="w-20 h-20 rounded-full object-cover"
+                  className="w-30 h-30 rounded-full object-cover"
                 />
               </div>
               <h3 className="font-semibold text-lg mb-2 text-[#0D4F61]">
@@ -228,27 +263,6 @@ export default function Landing() {
           </a>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-gray-600">{t.footerText}</p>
-          <div className="flex items-center gap-6">
-            <a
-              href="https://github.com/BDfyTeam/Holberton-BDfy-MVP"
-              className="text-sm text-gray-600 hover:text-[#0D4F61] transition-colors"
-            >
-              GitHub
-            </a>
-            <a
-              href="#"
-              className="text-sm text-gray-600 hover:text-[#0D4F61] transition-colors"
-            >
-              {t.privacy}
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

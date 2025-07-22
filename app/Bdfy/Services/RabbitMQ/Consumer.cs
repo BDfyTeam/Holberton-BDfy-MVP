@@ -38,10 +38,10 @@ namespace BDfy.Services
 
             var factory = new ConnectionFactory
             {
-                HostName = hostName,
-                UserName = userName,
-                Password = password,
-                VirtualHost = virtualHost,
+                HostName = "localhost",
+                // UserName = userName,
+                // Password = password,
+                // VirtualHost = virtualHost,
                 Port = 5672
             };
             // Console.WriteLine(">> VHOST CONFIG: " + _configuration["RabbitMQ:VirtualHost"]);
