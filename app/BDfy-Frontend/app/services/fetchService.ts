@@ -11,7 +11,7 @@ import type {
 export async function loginUser(email: string, password: string) {
   try {
     // Llamamos al back con los datos del formulario
-    const response = await fetch("http://localhost:5015/api/1.0/users/login", {
+    const response = await fetch("https://api.bdfy.tech/api/1.0/users/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json", // Le decimos que enviamos JSON
@@ -38,7 +38,7 @@ export async function loginUser(email: string, password: string) {
 export async function registerUser(payload: RegisterUser) {
   try {
     const response = await fetch(
-      "http://localhost:5015/api/1.0/users/register",
+      "https://api.bdfy.tech/api/1.0/users/register",
       {
         method: "POST",
         headers: {
@@ -66,7 +66,7 @@ export async function registerUser(payload: RegisterUser) {
 export async function registerAuctioner(payload: RegisterAuctioneer) {
   try {
     const response = await fetch(
-      "http://localhost:5015/api/1.0/users/register",
+      "https://api.bdfy.tech/api/1.0/users/register",
       {
         method: "POST",
         headers: {
@@ -95,7 +95,7 @@ export async function getUserById(userId: string) {
   try {
     const token = getToken();
 
-    const response = await fetch(`http://localhost:5015/api/1.0/users/${userId}`, {
+    const response = await fetch(`https://api.bdfy.tech/api/1.0/users/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -122,7 +122,7 @@ export async function fetchRole() {
     }
 
     const response = await fetch(
-      `http://localhost:5015/api/1.0/users/${userId}`
+      `https://api.bdfy.tech/api/1.0/users/${userId}`
     );
     const data = await response.json();
 
@@ -138,7 +138,7 @@ export async function fetchRole() {
 // ENTRAR EN UNA SUBASTA (GET all auctions)
 export async function getAllAuctions() {
   try {
-    const response = await fetch("http://localhost:5015/api/1.0/auctions", {
+    const response = await fetch("https://api.bdfy.tech/api/1.0/auctions", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -193,7 +193,7 @@ export async function createAuction(payload: AuctionForm) {
     formData.append("Direction.ZipCode", payload.direction.zipCode.toString());
 
     const response = await fetch(
-      `http://localhost:5015/api/1.0/auctions/${userId}`,
+      `https://api.bdfy.tech/api/1.0/auctions/${userId}`,
       {
         method: "POST",
         headers: {
@@ -227,7 +227,7 @@ export async function getAuctionsByAuctioneer() {
     }
 
     const response = await fetch(
-      `http://localhost:5015/api/1.0/auctions/auctioneer/${userId}`,
+      `https://api.bdfy.tech/api/1.0/auctions/auctioneer/${userId}`,
       {
         method: "GET",
         headers: {
@@ -257,7 +257,7 @@ export async function getAuctionsByAuctioneer() {
 export async function getAuctionById(id: string) {
   try {
     const response = await fetch(
-      `http://localhost:5015/api/1.0/auctions/specific/${id}`,
+      `https://api.bdfy.tech/api/1.0/auctions/specific/${id}`,
       {
         method: "GET",
         headers: {
@@ -312,7 +312,7 @@ export async function updateAuction(payload: AuctionForm) {
     
 
     const response = await fetch(
-      `http://localhost:5015/api/1.0/auctions/${auctionId}`,
+      `https://api.bdfy.tech/api/1.0/auctions/${auctionId}`,
       {
         method: "PUT",
         headers: {
@@ -353,7 +353,7 @@ export async function createLot(payload: FormLot) {
     formData.append("auctionId", auctionId);
 
     const response = await fetch(
-      `http://localhost:5015/api/1.0/lots/${auctionId}`,
+      `https://api.bdfy.tech/api/1.0/lots/${auctionId}`,
       {
         method: "POST",
         headers: {
@@ -381,7 +381,7 @@ export async function getLotById(lotId: string) {
 
   try {
     const response = await fetch(
-      `http://localhost:5015/api/1.0/lots/specific/${lotId}`,
+      `https://api.bdfy.tech/api/1.0/lots/specific/${lotId}`,
       {
         method: "GET",
         headers: {
@@ -426,7 +426,7 @@ export async function updateLot(payload: FormLot) {
     }
     
     const response = await fetch(
-      `http://localhost:5015/api/1.0/lots/${lotId}/edit`,
+      `https://api.bdfy.tech/api/1.0/lots/${lotId}/edit`,
       {
         method: "PUT",
         headers: {
@@ -462,7 +462,7 @@ export async function getAllStorageLots() {
   }
   try {
     const response = await fetch(
-      `http://localhost:5015/api/1.0/lots/${auctioneer_id}`,
+      `https://api.bdfy.tech/api/1.0/lots/${auctioneer_id}`,
       {
         method: "GET",
         headers: {
@@ -500,7 +500,7 @@ export async function makeBid(lotId: string, bid: number) {
     }
     const dateNow = new Date();
     const response = await fetch(
-      `http://localhost:5015/api/1.0/lots/bid/${lotId}`,
+      `https://api.bdfy.tech/api/1.0/lots/bid/${lotId}`,
       {
         method: "POST",
         headers: {
@@ -547,7 +547,7 @@ export async function makeAutoBid(
 
     // AUTOPUJA
     const response = await fetch(
-      `http://localhost:5015/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
+      `https://api.bdfy.tech/api/1.0/lots/auto-bid/${lotId}/${buyerId}`,
       {
         method: "POST",
         headers: {
@@ -578,7 +578,7 @@ export async function makeAutoBid(
 export async function getAuctionsByCategory(categoryId: number) {
   try {
     const response = await fetch(
-      `http://localhost:5015/api/1.0/auctions/category/${categoryId}`,
+      `https://api.bdfy.tech/api/1.0/auctions/category/${categoryId}`,
       {
         method: "GET",
         headers: {
