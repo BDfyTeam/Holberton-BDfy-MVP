@@ -166,6 +166,7 @@ builder.Services.AddScoped<AuctionServices>(); // Servicio donde se encuentran t
 builder.Services.AddScoped<IAutoBidService, AutoBidService>(); // Servicio para hacer Auto-bids
 builder.Services.AddScoped<BiddingHistoryService>(); // Servicio para buscar el historial de ofertas en un lote
 builder.Services.AddScoped<GcsImageService>(); // Servicio de imagenes de Cloud
+builder.Services.AddScoped<LiveKitService, LiveKit>(); // Servicio de WebRTC
 builder.Services.AddScoped<UserServices>(); // Servicio donde se encuentran todos las apis de Users
 builder.Services.AddScoped<LotService>(); // Servicio donde se encuentran todos las apis de Lots
 builder.Services.AddScoped<PasswordHasher>(); // Servicio para hashear la password
@@ -216,6 +217,7 @@ app.Use(async (context, next) =>
 
 // Middleware
 app.UseRouting();
+app.UseCors("SignalRCorsPolicy");
 app.UseRateLimiter();       // Activate the rate limiter
 app.UseAuthentication();    // Jwt
 app.UseAuthorization();     // Rols & claims

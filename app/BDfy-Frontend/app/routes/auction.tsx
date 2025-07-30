@@ -8,6 +8,7 @@ import {
 } from "~/services/types";
 import LotToBid from "~/components/LotToBid";
 import LotCard from "~/components/LotCard";
+import LiveVideoClient from "~/components/AuctionVideo";
 import * as signalR from "@microsoft/signalr";
 import { getToken } from "~/services/handleToken";
 import categorys from "~/services/categorys";
@@ -528,6 +529,7 @@ export default function AuctionPage() {
           </div>
         </div>
       )}
+      <LiveVideoClient auctionId={auction.id}></LiveVideoClient>
     </div>
   );
 }
