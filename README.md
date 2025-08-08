@@ -63,7 +63,7 @@ Principalmente desarrollada en C# (.NET) y React en el frontend, emplea RabbitMQ
 
 ## Flujo
 
-![image](https://raw.githubusercontent.com/lucas2mz/Lucas2mz/refs/heads/flow-BDfy/Diagrama%20Arquitectura%20bien%20centrado.jpg)
+![image](https://raw.githubusercontent.com/lucas2mz/Lucas2mz/refs/heads/flow-BDfy/Diagrama%20Nuevo%20ai%2C%20rtc.jpg)
 
 ---
 
