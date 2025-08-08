@@ -170,6 +170,7 @@ builder.Services.AddScoped<LiveKitService, LiveKit>(); // Servicio de WebRTC
 builder.Services.AddScoped<UserServices>(); // Servicio donde se encuentran todos las apis de Users
 builder.Services.AddScoped<LotService>(); // Servicio donde se encuentran todos las apis de Lots
 builder.Services.AddScoped<PasswordHasher>(); // Servicio para hashear la password
+builder.Services.AddScoped<ChatBot>();
 
 
 var app = builder.Build();
